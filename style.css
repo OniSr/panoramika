@@ -2,262 +2,240 @@
    Domo 360 — hoja de estilos
    CSS3 nativo, sin frameworks. Mobile-first: las reglas base son para teléfono
    y luego @media (min-width: …) ajusta para pantallas grandes.
+
+   Índice:
+     1. Tokens de diseño (:root)     5. Selector de escenas
+     2. Reset mínimo                 6. Pantalla de bienvenida (.intro)
+     3. Lienzo del visor             7. Hoja de compartir
+     4. Barra superior               8. Avisos, pista, botones
+                                     9. Escritorio + accesibilidad
    ========================================================================== */
 
-/* --- 1. Tokens de diseño -------------------------------------------------- */
-/* Todo el color, tipografía y espaciado sale de aquí. Cambiar la marca = tocar
-   solo estas variables. Paleta oscura a propósito: la interfaz desaparece y la
-   fotografía aérea es la protagonista (mismo criterio que Street View/Matterport). */
+/* --- 1. Tokens de diseño ------------------------------------------------- */
 :root {
-  /* Superficies */
-  --sup-fondo:        #0d0f12;   /* negro azulado del lienzo */
-  --sup-panel:        rgba(18, 21, 26, 0.72);  /* barras translúcidas */
+  --sup-fondo:        #0d0f12;
+  --sup-panel:        rgba(18, 21, 26, 0.72);
   --sup-panel-solido: #14171c;
   --sup-borde:        rgba(255, 255, 255, 0.10);
 
-  /* Texto */
-  --tx-fuerte:  #f4f6f8;
-  --tx-medio:   #b9c0c8;
-  --tx-suave:   #7d858f;
+  --tx-fuerte: #f4f6f8;
+  --tx-medio:  #b9c0c8;
+  --tx-suave:  #7d858f;
 
-  /* Acento: ámbar/bronce arquitectónico. Distinto del típico azul SaaS,
-     transmite calidez y "hecho a medida". */
-  --acento:        #d99a4e;
-  --acento-claro:  #e8c27a;
-  --acento-tinte:  rgba(217, 154, 78, 0.16);
+  /* Acento ámbar/bronce arquitectónico: calidez y "hecho a medida". */
+  --acento:       #d99a4e;
+  --acento-claro: #e8c27a;
+  --acento-tinte: rgba(217, 154, 78, 0.16);
+  --acento-tx:    #1c1206;
 
-  /* Estados de lote (se reutilizan si más adelante vuelve el mapa) */
-  --estado-ok:    #46b17a;
-  --estado-medio: #d9a441;
-  --estado-no:    #d1615a;
+  --ok:    #46b17a;
+  --wa:    #25d366;   /* verde WhatsApp */
 
-  /* Tipografía: pila del sistema = cero descargas, render instantáneo. */
   --fuente: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
             "Helvetica Neue", Arial, sans-serif;
 
-  /* Escala de espaciado (múltiplos de 4px) */
-  --e-1: 4px;
-  --e-2: 8px;
-  --e-3: 12px;
-  --e-4: 16px;
-  --e-5: 24px;
-  --e-6: 32px;
-
-  --radio:      12px;
+  --e-1: 4px;  --e-2: 8px;  --e-3: 12px;  --e-4: 16px;  --e-5: 24px;  --e-6: 32px;
+  --radio: 12px;
   --radio-pill: 999px;
-
   --sombra: 0 8px 30px rgba(0, 0, 0, 0.45);
   --difuminado: blur(14px) saturate(1.2);
 
-  /* Respeta la muesca / barra de gestos en móviles modernos */
   --safe-top:    env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* --- 2. Reset mínimo ---------------------------------------------------- */
-*,
-*::before,
-*::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+/* --- 2. Reset mínimo --------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
-
 body {
   background: var(--sup-fondo);
   color: var(--tx-fuerte);
   font-family: var(--fuente);
   line-height: 1.5;
-  overflow: hidden;              /* el visor ocupa todo; nada de scroll de página */
+  overflow: hidden;
+  overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
-  overscroll-behavior: none;     /* evita el "pull to refresh" al arrastrar la esfera */
 }
-
 button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+[hidden] { display: none !important; }
 
-/* --- 3. Lienzo del visor --------------------------------------------------- */
+/* --- 3. Lienzo del visor ---------------------------------------------- */
 #panorama {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  position: fixed; inset: 0; width: 100%; height: 100%;
   background: radial-gradient(circle at 50% 40%, #1a1e24, var(--sup-fondo) 70%);
 }
-
-/* Pannellum inyecta su propia UI; suavizamos su tipografía y su botón de carga. */
 .pnlm-container { font-family: var(--fuente) !important; }
 .pnlm-load-box  { border-radius: var(--radio) !important; }
 
-/* --- 4. Barra superior --------------------------------------------------- */
-.barra-superior {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--e-3);
-  padding: calc(var(--safe-top) + var(--e-3)) var(--e-4) var(--e-3);
-  background: linear-gradient(to bottom, rgba(13, 15, 18, 0.85), rgba(13, 15, 18, 0));
-  pointer-events: none;          /* la barra no bloquea el arrastre del 360 … */
-}
-.barra-superior > * { pointer-events: auto; }   /* … pero sus hijos sí son clicables */
-
-.marca {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--e-2);
-  font-weight: 650;
-  letter-spacing: 0.02em;
-}
+/* --- Marca (logotipo de texto) -------------------------------------- */
+.marca { display: inline-flex; align-items: center; gap: var(--e-2); font-weight: 650; letter-spacing: 0.02em; }
 .marca__punto {
-  width: 9px; height: 9px;
-  border-radius: 50%;
-  background: var(--acento);
-  box-shadow: 0 0 0 4px var(--acento-tinte);
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--acento); box-shadow: 0 0 0 4px var(--acento-tinte);
 }
 .marca__texto { font-size: 0.95rem; }
 
+/* --- 4. Barra superior ---------------------------------------------- */
+.barra-superior {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--e-3);
+  padding: calc(var(--safe-top) + var(--e-3)) var(--e-4) var(--e-3);
+  background: linear-gradient(to bottom, rgba(13, 15, 18, 0.85), rgba(13, 15, 18, 0));
+  pointer-events: none;
+}
+.barra-superior > * { pointer-events: auto; }
+.barra-superior__derecha { display: inline-flex; align-items: center; gap: var(--e-2); }
+
 .escena-actual {
-  font-size: 0.8rem;
-  font-weight: 550;
-  color: var(--tx-medio);
-  background: var(--sup-panel);
-  -webkit-backdrop-filter: var(--difuminado);
-  backdrop-filter: var(--difuminado);
+  font-size: 0.8rem; font-weight: 550; color: var(--tx-medio);
+  background: var(--sup-panel); -webkit-backdrop-filter: var(--difuminado); backdrop-filter: var(--difuminado);
   border: 1px solid var(--sup-borde);
-  padding: var(--e-1) var(--e-3);
-  border-radius: var(--radio-pill);
-  max-width: 55vw;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  padding: var(--e-1) var(--e-3); border-radius: var(--radio-pill);
+  max-width: 44vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* --- 5. Selector de escenas (abajo) ------------------------------------- */
+.btn-icono {
+  display: grid; place-items: center;
+  width: 38px; height: 38px; border-radius: 50%;
+  color: var(--tx-medio);
+  background: var(--sup-panel); -webkit-backdrop-filter: var(--difuminado); backdrop-filter: var(--difuminado);
+  border: 1px solid var(--sup-borde);
+  transition: color 0.15s, border-color 0.15s;
+}
+.btn-icono:hover { color: var(--tx-fuerte); border-color: var(--acento); }
+.btn-icono:focus-visible { outline: 2px solid var(--acento-claro); outline-offset: 2px; }
+
+/* --- 5. Selector de escenas --------------------------------------- */
 .selector-escenas {
-  position: fixed;
-  left: 0; right: 0;
-  bottom: calc(var(--safe-bottom) + var(--e-4));
-  z-index: 20;
-  display: flex;
-  gap: var(--e-2);
-  padding: 0 var(--e-4);
-  overflow-x: auto;
-  scrollbar-width: none;              /* Firefox */
-  justify-content: flex-start;
-  scroll-snap-type: x proximity;
+  position: fixed; left: 0; right: 0; bottom: calc(var(--safe-bottom) + var(--e-4)); z-index: 20;
+  display: flex; gap: var(--e-2); padding: 0 var(--e-4);
+  overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity;
 }
 .selector-escenas::-webkit-scrollbar { display: none; }
-
 .selector-escenas__btn {
-  scroll-snap-align: center;
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--e-2);
-  padding: var(--e-2) var(--e-4);
-  font-size: 0.82rem;
-  font-weight: 550;
-  color: var(--tx-medio);
-  background: var(--sup-panel);
-  -webkit-backdrop-filter: var(--difuminado);
-  backdrop-filter: var(--difuminado);
-  border: 1px solid var(--sup-borde);
-  border-radius: var(--radio-pill);
+  scroll-snap-align: center; flex: 0 0 auto;
+  display: inline-flex; align-items: center; gap: var(--e-2);
+  padding: var(--e-2) var(--e-4); min-height: 40px;
+  font-size: 0.82rem; font-weight: 550; color: var(--tx-medio);
+  background: var(--sup-panel); -webkit-backdrop-filter: var(--difuminado); backdrop-filter: var(--difuminado);
+  border: 1px solid var(--sup-borde); border-radius: var(--radio-pill);
   transition: color 0.15s, border-color 0.15s, background 0.15s;
-  min-height: 40px;                   /* objetivo táctil cómodo */
 }
 .selector-escenas__btn:hover { color: var(--tx-fuerte); }
-.selector-escenas__btn[aria-current="true"] {
-  color: #1c1206;
-  background: var(--acento);
-  border-color: var(--acento);
-}
-.selector-escenas__btn:focus-visible {
-  outline: 2px solid var(--acento-claro);
-  outline-offset: 2px;
-}
+.selector-escenas__btn[aria-current="true"] { color: var(--acento-tx); background: var(--acento); border-color: var(--acento); }
+.selector-escenas__btn:focus-visible { outline: 2px solid var(--acento-claro); outline-offset: 2px; }
 
-/* --- 6. Capa de aviso (carga / error) --------------------------------- */
+/* --- 6. Pantalla de bienvenida ---------------------------------- */
+.intro {
+  position: fixed; inset: 0; z-index: 30;
+  display: grid; align-items: end;
+  padding: var(--e-6) var(--e-5) calc(var(--safe-bottom) + var(--e-6));
+  background:
+    linear-gradient(to top, rgba(13,15,18,0.96) 8%, rgba(13,15,18,0.45) 55%, rgba(13,15,18,0.75)),
+    var(--portada, none) center / cover no-repeat,
+    var(--sup-fondo);
+  transition: opacity 0.4s ease;
+}
+.intro.--saliendo { opacity: 0; pointer-events: none; }
+.intro__contenido { max-width: 560px; }
+.marca--intro { margin-bottom: var(--e-5); }
+.marca--intro .marca__texto { font-size: 1.05rem; }
+
+.intro__ubicacion {
+  font-size: 0.78rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--acento); margin-bottom: var(--e-2);
+}
+.intro__titulo {
+  font-size: clamp(1.9rem, 7vw, 3rem); line-height: 1.1; font-weight: 700;
+  letter-spacing: -0.01em; margin-bottom: var(--e-3);
+}
+.intro__descripcion { color: var(--tx-medio); font-size: 0.98rem; max-width: 42ch; margin-bottom: var(--e-5); }
+
+/* --- 7. Hoja de compartir ------------------------------------ */
+.hoja { position: fixed; inset: 0; z-index: 50; display: grid; align-items: end; }
+.hoja__fondo { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.55); }
+.hoja__caja {
+  position: relative; z-index: 1;
+  margin: 0 auto; width: 100%; max-width: 420px;
+  display: flex; flex-direction: column; gap: var(--e-2);
+  padding: var(--e-5) var(--e-5) calc(var(--safe-bottom) + var(--e-5));
+  background: var(--sup-panel-solido);
+  border: 1px solid var(--sup-borde);
+  border-radius: 20px 20px 0 0;
+  box-shadow: var(--sombra);
+  animation: subir 0.25s ease;
+}
+@keyframes subir { from { transform: translateY(30px); opacity: 0; } }
+.hoja__titulo { font-size: 1rem; margin-bottom: var(--e-2); }
+.hoja__opcion {
+  display: block; text-align: center; text-decoration: none;
+  padding: var(--e-3) var(--e-4); min-height: 48px;
+  font-weight: 600; color: var(--tx-fuerte);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--sup-borde); border-radius: var(--radio);
+}
+.hoja__opcion--wa { background: var(--wa); color: #04340f; border-color: transparent; }
+.hoja__cerrar { padding: var(--e-3); color: var(--tx-suave); font-weight: 550; }
+
+/* --- 8b. Botones ------------------------------------------- */
+.btn-primario {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: var(--e-3) var(--e-6); min-height: 50px;
+  font-size: 0.98rem; font-weight: 650;
+  color: var(--acento-tx); background: var(--acento);
+  border-radius: var(--radio-pill);
+  box-shadow: 0 6px 24px var(--acento-tinte);
+  transition: transform 0.12s ease, box-shadow 0.2s ease;
+}
+.btn-primario:hover { transform: translateY(-1px); box-shadow: 0 10px 32px var(--acento-tinte); }
+.btn-primario:active { transform: translateY(0); }
+.btn-primario:focus-visible { outline: 2px solid var(--acento-claro); outline-offset: 3px; }
+
+/* --- 8. Capa de aviso (carga / error) --------------------- */
 .aviso {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  display: grid;
-  place-items: center;
-  padding: var(--e-5);
-  background: rgba(13, 15, 18, 0.94);
+  position: fixed; inset: 0; z-index: 60; display: grid; place-items: center;
+  padding: var(--e-5); background: rgba(13, 15, 18, 0.94);
   transition: opacity 0.3s ease;
 }
-.aviso[hidden] { display: none; }
 .aviso.--oculto { opacity: 0; pointer-events: none; }
-
-.aviso__caja {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--e-4);
-  max-width: 340px;
-  text-align: center;
-}
+.aviso__caja { display: flex; flex-direction: column; align-items: center; gap: var(--e-4); max-width: 340px; text-align: center; }
 .aviso__texto { color: var(--tx-medio); font-size: 0.92rem; }
-
 .aviso__spinner {
   width: 34px; height: 34px;
-  border: 3px solid var(--sup-borde);
-  border-top-color: var(--acento);
-  border-radius: 50%;
-  animation: girar 0.9s linear infinite;
+  border: 3px solid var(--sup-borde); border-top-color: var(--acento);
+  border-radius: 50%; animation: girar 0.9s linear infinite;
 }
 .aviso.--error .aviso__spinner { display: none; }
-
 .aviso__reintentar {
-  padding: var(--e-2) var(--e-5);
-  font-weight: 600;
-  color: #1c1206;
-  background: var(--acento);
-  border-radius: var(--radio-pill);
-  min-height: 44px;
+  padding: var(--e-2) var(--e-5); min-height: 44px; font-weight: 600;
+  color: var(--acento-tx); background: var(--acento); border-radius: var(--radio-pill);
 }
 .aviso__reintentar:focus-visible { outline: 2px solid var(--acento-claro); outline-offset: 2px; }
-
 @keyframes girar { to { transform: rotate(360deg); } }
 
-/* --- 7. Pista de arrastre (se desvanece sola) ------------------------- */
+/* --- Pista de arrastre ---------------------------------- */
 .pista-arrastre {
-  position: fixed;
-  left: 50%;
-  bottom: calc(var(--safe-bottom) + 76px);
-  transform: translateX(-50%);
-  z-index: 15;
-  font-size: 0.78rem;
-  color: var(--tx-suave);
-  background: var(--sup-panel);
-  -webkit-backdrop-filter: var(--difuminado);
-  backdrop-filter: var(--difuminado);
-  padding: var(--e-1) var(--e-3);
-  border-radius: var(--radio-pill);
-  border: 1px solid var(--sup-borde);
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  pointer-events: none;
+  position: fixed; left: 50%; bottom: calc(var(--safe-bottom) + 76px); transform: translateX(-50%);
+  z-index: 15; font-size: 0.78rem; color: var(--tx-suave);
+  background: var(--sup-panel); -webkit-backdrop-filter: var(--difuminado); backdrop-filter: var(--difuminado);
+  padding: var(--e-1) var(--e-3); border-radius: var(--radio-pill); border: 1px solid var(--sup-borde);
+  opacity: 0; transition: opacity 0.4s ease; pointer-events: none;
 }
 .pista-arrastre.--visible { opacity: 1; }
 
-/* --- 8. Escritorio / tablet ------------------------------------------- */
+/* --- 9. Escritorio / tablet --------------------------- */
 @media (min-width: 768px) {
   .barra-superior { padding-left: var(--e-6); padding-right: var(--e-6); }
-  .marca__texto   { font-size: 1.05rem; }
-  .escena-actual  { font-size: 0.85rem; max-width: 40vw; }
-
-  .selector-escenas {
-    justify-content: center;
-    bottom: calc(var(--safe-bottom) + var(--e-5));
-  }
-  .selector-escenas__btn { font-size: 0.85rem; }
+  .marca__texto { font-size: 1.05rem; }
+  .escena-actual { font-size: 0.85rem; max-width: 30vw; }
+  .selector-escenas { justify-content: center; bottom: calc(var(--safe-bottom) + var(--e-5)); }
+  .intro { align-items: center; padding-left: 8vw; }
+  .hoja { align-items: center; }
+  .hoja__caja { border-radius: 20px; }
 }
 
-/* --- 9. Accesibilidad: menos movimiento ----------------------------- */
+/* --- Accesibilidad: menos movimiento ---------------- */
 @media (prefers-reduced-motion: reduce) {
   .aviso__spinner { animation-duration: 2s; }
-  * { transition-duration: 0.01ms !important; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }

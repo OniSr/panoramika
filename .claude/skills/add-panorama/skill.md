@@ -1,84 +1,88 @@
 ---
 name: add-panorama
 description: >-
-  Cómo añadir una toma panorámica 360 nueva al visor: colocar la imagen, inicializar
-  o extender Pannellum, estructurar el objeto de ESCENAS y configurar los hotspots
-  interactivos para saltar de una toma aérea a otra. Úsala cuando Daniel quiera
-  sumar una escena, enlazar tomas, o ajustar la posición de un hotspot.
+  Cómo añadir una toma 360 nueva o un recorrido/proyecto nuevo al visor: colocar
+  la imagen optimizada, estructurar proyecto.json (escenas + hotspots), y probar.
+  Cada recorrido es una carpeta en proyectos/<slug>/ y se abre con
+  index.html?proyecto=<slug>. Úsala cuando Daniel quiera sumar una escena, un
+  proyecto, enlazar tomas o ajustar un hotspot.
 ---
 
-# add-panorama — integrar una toma 360
+# add-panorama — añadir tomas y recorridos
 
-## 1. Preparar la imagen
+## Arquitectura (recordatorio)
 
-1. El original del dron (cosido con DJI Fly / Microsoft ICE) va a
-   `assets/panoramas/_raw/` (no se versiona).
-2. Optimiza a `.webp` con la skill `optimize-assets`
-   (`bash scripts/optimizar-panoramas.sh`). El resultado queda en
-   `assets/panoramas/<nombre>.webp`.
-3. Requisito duro: **proyección equirectangular, proporción 2:1**. Si el original
-   no es 2:1, recórtalo antes (ver nota al final de `scripts/optimizar-panoramas.sh`).
-
-## 2. Añadir la escena a `script.js`
-
-En el **PASO 1** del archivo, agrega un objeto al array `ESCENAS`:
-
-```js
-{
-  id: "jardin",                               // corto, sin espacios, único
-  titulo: "Jardín trasero",                   // texto visible
-  panorama: "assets/panoramas/jardin.webp",
-  hotspots: [
-    { yaw: 30, pitch: -5, destino: "sala", texto: "Entrar a la sala" },
-  ],
-},
+```
+proyectos/<slug>/
+  proyecto.json          ← metadatos + escenas + hotspots
+  panoramas/*.webp       ← las tomas 360 de ESE recorrido (2:1)
 ```
 
-- Para que abra en esta escena, cambia `ESCENA_INICIAL` a su `id`.
-- No hay que tocar nada más: `construirConfigPannellum()`, el selector de botones y
-  los eventos ya recorren `ESCENAS` en automático.
+`script.js` NO se toca: lee `?proyecto=<slug>` de la URL, descarga
+`proyectos/<slug>/proyecto.json`, y arma el visor. Si no hay `?proyecto=`, usa
+`PROYECTO_POR_DEFECTO` (`xalapa-demo`).
 
-## 3. Cómo funciona la config de Pannellum
+## A) Añadir una escena a un recorrido que ya existe
 
-`construirConfigPannellum()` traduce cada entrada de `ESCENAS` a:
+1. Optimiza la toma a la carpeta del proyecto:
+   ```bash
+   # deja el original en assets/panoramas/_raw/  y luego:
+   python scripts/optimizar_panoramas.py proyectos/<slug>/panoramas
+   ```
+2. Abre `proyectos/<slug>/proyecto.json` y agrega un objeto a `escenas`:
+   ```json
+   {
+     "id": "jardin",
+     "titulo": "Jardín trasero",
+     "panorama": "panoramas/jardin.webp",
+     "miradaInicial": { "yaw": 0, "pitch": -5 },
+     "hotspots": [
+       { "yaw": 30, "pitch": -5, "destino": "sala", "texto": "Entrar a la sala" }
+     ]
+   }
+   ```
+3. Añade en las OTRAS escenas un hotspot con `"destino": "jardin"` para poder llegar.
 
-```js
-scenes[id] = {
-  type: "equirectangular",
-  panorama: "<ruta>",
-  autoLoad: true,
-  hotSpots: [ { pitch, yaw, type: "scene", text, sceneId: "<destino>" } ],
-};
+## B) Crear un recorrido/proyecto nuevo
+
+```bash
+cp -r proyectos/_plantilla proyectos/<slug>     # slug: solo minúsculas, números y -
 ```
 
-Y el bloque `default` define escena inicial, fundido, `hfov` (campo de visión),
-autorrotación de presentación, etc. Ahí se ajusta el comportamiento global.
+1. Pon las tomas optimizadas en `proyectos/<slug>/panoramas/`.
+2. Edita `proyectos/<slug>/proyecto.json`:
+   - `nombre`, `ubicacion`, `descripcion` → se ven en la pantalla de bienvenida.
+   - `portada` → imagen de fondo de esa pantalla (una de las panorámicas).
+   - `escenaInicial` → `id` de la escena con la que abre.
+   - `escenas[]` → ver formato arriba.
+3. Enlace para compartir: `.../index.html?proyecto=<slug>`
 
-## 4. Colocar hotspots (yaw / pitch)
+## Campos de una escena
 
-- **yaw**: giro horizontal, `-180` a `180`. `0` mira al centro de la foto,
-  valores positivos giran a la derecha.
-- **pitch**: inclinación vertical, `-90` (suelo) a `90` (cielo). Para un hotspot
-  "a nivel del piso" usa `-2` a `-8`.
-- Forma rápida de calibrar: abre el visor, arrastra hasta apuntar donde quieres el
-  hotspot, y en la consola del navegador ejecuta:
-  ```js
-  visor.getYaw(), visor.getPitch()
-  ```
-  Copia esos números al `hotspot`.
-- Un hotspot tipo `scene` salta a `sceneId`. Si necesitas un punto informativo que
-  solo muestra texto, usa `type: "info"` (sin `sceneId`).
+| Campo | Obligatorio | Nota |
+|---|---|---|
+| `id` | sí | corto, sin espacios, único dentro del proyecto |
+| `titulo` | no | texto del botón y de la barra; si falta usa `id` |
+| `panorama` | sí | ruta relativa a la carpeta del proyecto |
+| `miradaInicial` | no | `{ yaw, pitch }` hacia dónde mira al entrar |
+| `hotspots` | no | lista de saltos a otras escenas |
 
-## 5. Enlazar tomas (recorrido coherente)
+## Colocar hotspots (yaw / pitch)
 
-- Cada escena debería tener al menos un hotspot de vuelta a donde se llegó, para
-  que el usuario nunca quede "atrapado".
-- Si `destino` no coincide con ningún `id` de `ESCENAS`, el código lo ignora con un
-  `console.warn` (ver `senior-coder`) — pero revísalo, es un error de dato.
+- **yaw**: horizontal, `-180..180`. `0` = centro de la foto, positivo gira a la derecha.
+- **pitch**: vertical, `-90` (suelo) a `90` (cielo). A nivel de piso: `-2` a `-8`.
+- Calibración rápida: abre el visor, apunta a donde quieres el hotspot y en la
+  consola del navegador ejecuta `visor.getYaw(), visor.getPitch()`. Copia los valores.
+- Si `destino` no existe en el proyecto, `script.js` ignora ese hotspot y deja un
+  `console.warn` (no rompe el visor) — pero corrígelo, es un error de dato.
 
-## 6. Verificar
+## Verificar (obligatorio antes de dar por hecho el fitach)
 
-- `python -m http.server` y probar: la escena carga, los hotspots saltan en ambos
-  sentidos, el botón del selector se marca como activo (`aria-current`).
-- Consola sin warnings de proporción ni de `destino` inexistente.
-- Probar en móvil (emulador DevTools): el hotspot se puede tocar con el dedo.
+- Servir con `python -m http.server` (no `file://`).
+- `index.html?proyecto=<slug>`: carga la bienvenida, "Iniciar" entra al visor,
+  los hotspots saltan en ambos sentidos, el botón activo del selector se marca.
+- Consola sin warnings de proporción (imagen 2:1) ni de `destino` inexistente.
+- Probar en el emulador móvil de DevTools: sin scroll horizontal, hotspots
+  tocables con el dedo.
+- Probar `?proyecto=xxx` inexistente: debe mostrar el aviso de error, no una
+  pantalla en blanco.

@@ -2,19 +2,24 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <!-- Escala correcta en móvil y permite el zoom con pellizco dentro del visor 360. -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
   <title>Domo 360 — Recorridos aéreos con dron | Xalapa</title>
   <meta name="description" content="Recorridos virtuales 360° de terrenos y propiedades capturados con dron DJI Mini 3 en Xalapa, Veracruz." />
   <meta name="theme-color" content="#0d0f12" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
 
-  <!--
-    PANNELLUM — se carga desde el CDN oficial (jsDelivr). Es la biblioteca que
-    dibuja la esfera 360°. Si el CDN no responde, script.js carga la copia local
-    de /vendor/pannellum/ como respaldo (útil en una demo con internet flojo).
-    Versión fijada a 2.5.7: así una actualización del CDN nunca rompe la demo.
-  -->
+  <!-- Vista previa al compartir el enlace (WhatsApp, Facebook, Telegram…).
+       Es genérica: describe el producto. Para una miniatura por proyecto se
+       generan páginas por proyecto (ver DEPLOY.md). -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Recorrido virtual 360° · Domo 360" />
+  <meta property="og:description" content="Explora el terreno en 360° desde el aire. Captura con dron DJI Mini 3, Xalapa." />
+  <meta property="og:image" content="assets/og-imagen.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- PANNELLUM desde el CDN oficial (jsDelivr). Si falla, script.js carga la
+       copia local de /vendor/. Versión fijada a 2.5.7. -->
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/pannellum@2.5.7/build/pannellum.css"
@@ -24,28 +29,57 @@
 </head>
 
 <body>
-  <!--
-    ESTRUCTURA (de atrás hacia adelante en pantalla):
-      1. #panorama  → lienzo a pantalla completa donde Pannellum pinta la toma 360.
-      2. .barra-superior → nombre del proyecto + escena actual.
-      3. .selector-escenas → botones para saltar entre tomas (abajo).
-      4. .aviso  → capa de carga / error, cubre todo cuando hace falta.
-  -->
-
+  <!-- 1 · Lienzo 360 (Pannellum pinta aquí) -->
   <main id="panorama" role="application" aria-label="Visor de recorrido 360 grados"></main>
 
-  <header class="barra-superior">
+  <!-- 2 · Barra superior -->
+  <header class="barra-superior" id="barraSuperior" hidden>
     <div class="marca">
       <span class="marca__punto" aria-hidden="true"></span>
       <span class="marca__texto">Domo&nbsp;360</span>
     </div>
-    <p class="escena-actual" id="escenaActual" aria-live="polite">Cargando…</p>
+    <div class="barra-superior__derecha">
+      <p class="escena-actual" id="escenaActual" aria-live="polite"></p>
+      <button class="btn-icono" id="btnCompartir" type="button" aria-label="Compartir recorrido">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/>
+        </svg>
+      </button>
+    </div>
   </header>
 
-  <nav class="selector-escenas" id="selectorEscenas" aria-label="Escenas del recorrido">
-    <!-- script.js inserta aquí un <button> por cada toma 360. -->
-  </nav>
+  <!-- 3 · Selector de escenas -->
+  <nav class="selector-escenas" id="selectorEscenas" aria-label="Escenas del recorrido" hidden></nav>
 
+  <!-- 4 · Pantalla de bienvenida (branding + botón iniciar) -->
+  <section class="intro" id="intro" hidden>
+    <div class="intro__contenido">
+      <div class="marca marca--intro">
+        <span class="marca__punto" aria-hidden="true"></span>
+        <span class="marca__texto">Domo&nbsp;360</span>
+      </div>
+      <p class="intro__ubicacion" id="introUbicacion"></p>
+      <h1 class="intro__titulo" id="introTitulo"></h1>
+      <p class="intro__descripcion" id="introDescripcion"></p>
+      <button class="btn-primario" id="btnIniciar" type="button">Iniciar recorrido</button>
+    </div>
+  </section>
+
+  <!-- 5 · Panel de compartir -->
+  <div class="hoja" id="hojaCompartir" hidden>
+    <div class="hoja__fondo" id="hojaFondo"></div>
+    <div class="hoja__caja" role="dialog" aria-modal="true" aria-label="Compartir recorrido">
+      <h2 class="hoja__titulo">Compartir este recorrido</h2>
+      <a class="hoja__opcion hoja__opcion--wa" id="compWhatsApp" href="#" target="_blank" rel="noopener">
+        Enviar por WhatsApp
+      </a>
+      <button class="hoja__opcion" id="compCopiar" type="button">Copiar enlace</button>
+      <button class="hoja__cerrar" id="compCerrar" type="button">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- 6 · Capa de aviso (carga / error) -->
   <div class="aviso" id="aviso" role="status" aria-live="assertive">
     <div class="aviso__caja">
       <div class="aviso__spinner" aria-hidden="true"></div>
@@ -56,11 +90,6 @@
 
   <p class="pista-arrastre" id="pistaArrastre" aria-hidden="true">Arrastra para mirar alrededor</p>
 
-  <!--
-    Pannellum desde CDN. El atributo onerror NO basta para todos los navegadores,
-    por eso script.js hace además una comprobación de window.pannellum y, si falta,
-    inyecta /vendor/pannellum/pannellum.js antes de arrancar el visor.
-  -->
   <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.7/build/pannellum.js"></script>
   <script src="script.js"></script>
 </body>

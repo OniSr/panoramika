@@ -26,46 +26,42 @@ assets/panoramas/_raw/foto.jpg   (original pesado, en .gitignore)
 assets/panoramas/foto.webp       (optimizado, esto sí se versiona)
 ```
 
-## Herramienta: `cwebp` (libwebp)
+## Opción recomendada: script de Python (Pillow)
 
-Binario liviano (~1 MB), sin dependencias npm.
-
-| SO | Instalación |
-|---|---|
-| Windows | `winget install Google.WebP` |
-| macOS | `brew install webp` |
-| Linux | `sudo apt install webp` |
-
-## Uso
-
-1. Copia los originales del dron a `assets/panoramas/_raw/`.
-2. Ejecuta:
-   ```bash
-   bash scripts/optimizar-panoramas.sh
-   ```
-   Convierte todos los `.jpg/.jpeg/.png` de `_raw/` y deja los `.webp` en
-   `assets/panoramas/`. Imprime el antes/después en KB.
-3. Variables opcionales:
-   ```bash
-   CALIDAD=85 ANCHO_MAX=6000 bash scripts/optimizar-panoramas.sh
-   ```
-4. Añade la toma a `ESCENAS` en `script.js` (ver skill `add-panorama`).
-
-## Recorte a 2:1
-
-`cwebp` redimensiona pero no recorta. Si el original no es 2:1, la esfera sale
-deformada. Recorta antes en cualquier editor, o con ImageMagick:
+Ya funciona en el equipo de Daniel (Pillow instalado). Además de convertir a WebP,
+**ajusta la proporción a 2:1 exacta** rellenando el lado corto con el color de la
+interfaz (una equirectangular real casi siempre tiene cielo/nadir vacío ahí).
 
 ```bash
-magick _raw/foto.jpg -gravity center -crop 2:1 +repage _raw/foto.jpg
+# 1. copia los originales del dron a assets/panoramas/_raw/
+# 2. optimiza HACIA la carpeta del proyecto:
+python scripts/optimizar_panoramas.py proyectos/<slug>/panoramas
+# opcionales:
+CALIDAD=85 ANCHO_MAX=6000 python scripts/optimizar_panoramas.py proyectos/<slug>/panoramas
 ```
 
-## Alternativas si no quieres instalar cwebp
+Si falta Pillow: `python -m pip install Pillow`.
 
-- **Squoosh CLI** (necesita Node puntualmente, no queda como dependencia):
-  `npx @squoosh/cli --webp '{"quality":82}' -d assets/panoramas assets/panoramas/_raw/*.jpg`
-- **Squoosh web** (<https://squoosh.app>): arrastra la imagen, formato WebP,
-  calidad ~82, descarga a `assets/panoramas/`. Cero instalación.
+## Opción B: `cwebp` (sin Python)
+
+Binario liviano (~1 MB): Windows `winget install Google.WebP`, macOS
+`brew install webp`, Linux `sudo apt install webp`. Luego:
+
+```bash
+bash scripts/optimizar-panoramas.sh          # escribe a assets/panoramas/
+```
+`cwebp` redimensiona pero **no** recorta a 2:1: si el original no es 2:1, recórtalo
+antes en cualquier editor o con ImageMagick
+(`magick in.jpg -gravity center -crop 2:1 +repage _raw/in.jpg`).
+
+## Opción C: sin instalar nada
+
+**Squoosh web** (<https://squoosh.app>): arrastra la imagen, formato WebP,
+calidad ~82, descarga a `proyectos/<slug>/panoramas/`.
+
+## Después
+
+Añade la toma al `proyecto.json` correspondiente (ver skill `add-panorama`).
 
 ## Verificar
 

@@ -1,0 +1,28 @@
+{
+  "_comentario": "Copia esta carpeta _plantilla como proyectos/<slug>/ y edita este archivo. El <slug> es lo que va en la URL: index.html?proyecto=<slug>. Las rutas de panorama son relativas a la carpeta del proyecto.",
+
+  "nombre": "Nombre del proyecto o dirección",
+  "ubicacion": "Colonia, Ciudad",
+  "descripcion": "Una o dos frases que ve el cliente en la pantalla de bienvenida.",
+  "portada": "panoramas/escena-1.webp",
+  "escenaInicial": "escena-1",
+  "escenas": [
+    {
+      "id": "escena-1",
+      "titulo": "Nombre visible de la toma",
+      "panorama": "panoramas/escena-1.webp",
+      "miradaInicial": { "yaw": 0, "pitch": -5 },
+      "hotspots": [
+        { "yaw": 90, "pitch": -5, "destino": "escena-2", "texto": "Ir a la siguiente toma" }
+      ]
+    },
+    {
+      "id": "escena-2",
+      "titulo": "Segunda toma",
+      "panorama": "panoramas/escena-2.webp",
+      "hotspots": [
+        { "yaw": -90, "pitch": -5, "destino": "escena-1", "texto": "Volver" }
+      ]
+    }
+  ]
+}

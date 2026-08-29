@@ -1,0 +1,26 @@
+{
+  "nombre": "Terreno en Las Ánimas",
+  "ubicacion": "Xalapa, Veracruz",
+  "descripcion": "Recorrido aéreo 360° capturado con dron DJI Mini 3. Arrastra para mirar en cualquier dirección.",
+  "portada": "panoramas/aerea-xalapa.webp",
+  "escenaInicial": "aerea",
+  "escenas": [
+    {
+      "id": "aerea",
+      "titulo": "Vista aérea",
+      "panorama": "panoramas/aerea-xalapa.webp",
+      "miradaInicial": { "yaw": 0, "pitch": -8 },
+      "hotspots": [
+        { "yaw": 55, "pitch": -32, "destino": "interior", "texto": "Ver interior (muestra)" }
+      ]
+    },
+    {
+      "id": "interior",
+      "titulo": "Interior (muestra)",
+      "panorama": "panoramas/interior-muestra.webp",
+      "hotspots": [
+        { "yaw": 0, "pitch": 0, "destino": "aerea", "texto": "Volver a la vista aérea" }
+      ]
+    }
+  ]
+}

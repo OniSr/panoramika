@@ -47,30 +47,40 @@ optimizar imágenes), es un binario del sistema, no una dependencia npm del proy
 
 ## 4. Arquitectura
 
+**Multi-proyecto por datos.** Un solo `index.html`/`style.css`/`script.js` sirve
+todos los recorridos; cada recorrido es una carpeta con su JSON.
+
 ```
-index.html   ──carga──>  Pannellum (CDN, con respaldo en vendor/)
-     │                    style.css   (tokens de diseño + layout responsivo)
-     │                    script.js
-     ▼
+proyectos/
+  <slug>/
+    proyecto.json      ← metadatos + escenas + hotspots (el "modelo de datos")
+    panoramas/*.webp   ← tomas 360 de ESE recorrido (2:1)
+  _plantilla/          ← copiar para crear un recorrido nuevo
+  xalapa-demo/         ← recorrido por defecto
+
+index.html  → Pannellum (CDN + respaldo vendor/) + style.css + script.js
 script.js
-  PASO 1  const ESCENAS = [...]        ← ÚNICO lugar que se edita al añadir tomas
+  PASO 1  PROYECTO_POR_DEFECTO
   PASO 2  refs al DOM + mostrarAviso/ocultarAviso
-  PASO 3  asegurarPannellum()  → CDN o /vendor/ como fallback
-          precargarImagen()    → valida la panorámica antes de pintarla
-  PASO 4  construirConfigPannellum()   ← traduce ESCENAS al formato de Pannellum
-  PASO 5  iniciarVisor() + selector de escenas + hotspots + pista de arrastre
-     ▼
-assets/panoramas/   tomas 360 (2:1, .webp preferido).  _raw/ = originales del
-                    dron, en .gitignore (respaldo local, no se sube)
+  PASO 3  obtenerSlug() (?proyecto=) → cargarProyecto() → validarProyecto()
+  PASO 4  asegurarPannellum() (CDN→vendor) + precargarImagen() (valida antes de pintar)
+  PASO 5  mostrarIntro()  (pantalla de bienvenida desde el JSON)
+  PASO 6  construirConfigPannellum() + iniciarVisor()   ← traduce el JSON a Pannellum
+  PASO 7  selector de escenas + hotspots + pista
+  PASO 8  compartir (navigator.share → WhatsApp → copiar enlace)
 ```
 
-- **`ESCENAS`** en `script.js` es el "modelo de datos" actual. Cada entrada:
-  `{ id, titulo, panorama, hotspots: [{ yaw, pitch, destino, texto }] }`.
-- **Carga diferida**: nativa de Pannellum — solo descarga la textura de la escena
-  visible; las demás se piden al saltar.
-- **Programación defensiva** (ver skill `senior-coder`): validar imágenes antes de
-  usarlas, mensajes de error visibles (`mostrarAviso(..., { error:true })`), nunca
-  un lienzo negro sin explicación.
+- **`script.js` NO se edita al añadir contenido.** Añadir una toma = editar un
+  `proyecto.json`. Añadir un recorrido = `cp -r proyectos/_plantilla proyectos/<slug>`.
+  Ver skill `add-panorama`.
+- Enlace público de un recorrido: `index.html?proyecto=<slug>`. El `slug` se limpia
+  a `[a-z0-9-]` para evitar rutas maliciosas.
+- **Carga diferida**: nativa de Pannellum — solo baja la textura de la escena
+  visible. `script.js` además solo precarga la panorámica inicial.
+- **Programación defensiva** (skill `senior-coder`): validar el JSON y las imágenes
+  antes de usarlas, `mostrarAviso(..., { error:true })` con "Reintentar", hotspots a
+  destinos inexistentes se ignoran con `console.warn`. Nunca un lienzo negro mudo.
+- Los `console.*` van prefijados con `[Domo360]`.
 
 ## 5. Estilo de código
 
@@ -87,13 +97,16 @@ assets/panoramas/   tomas 360 (2:1, .webp preferido).  _raw/ = originales del
 python -m http.server 8000        # y abrir http://localhost:8000
 # o la extensión "Live Server" de VS Code
 
-# Optimizar tomas del dron a WebP:
-bash scripts/optimizar-panoramas.sh
+# Optimizar tomas del dron a WebP 2:1 (Pillow ya instalado):
+python scripts/optimizar_panoramas.py proyectos/<slug>/panoramas
+
+# Regenerar la miniatura de compartir (Open Graph):
+python scripts/generar_og.py <imagen> "<Título>" "<Kicker>"
 ```
 
-Despliegue: rama por fitach (`fitach/<nombre>`), commits limpios, `git push`, PR
-con `gh`. Ver skill **`github-deploy`**. GitHub Pages sirve `main` desde la raíz;
-`.nojekyll` evita el procesado Jekyll.
+Despliegue: ver **`DEPLOY.md`** y la skill **`github-deploy`**. Rama por fitach
+(`fitach/<nombre>`), commits limpios, `git push`, PR con `gh`. GitHub Pages sirve
+`main` desde la raíz; `.nojekyll` evita el procesado Jekyll.
 
 **Pendiente de Daniel:** `gh` (GitHub CLI) no está instalado —
 `winget install --id GitHub.cli` y `gh auth login`. Sin eso no se puede crear el
