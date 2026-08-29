@@ -2,95 +2,115 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-@AGENTS.md
+> El contexto de negocio (quién es Daniel, modelo Domo 360, mercado de Xalapa,
+> DJI Mini 3, cómo prefiere trabajar) vive en `../CLAUDE.md`. **Este archivo manda
+> en lo técnico.** Si algo en `../CLAUDE.md` menciona Next.js, React, Leaflet,
+> Supabase o Vercel, está desactualizado — se archivó ese stack (ver más abajo).
 
-> El contexto de negocio, el alcance de la v1 y las preferencias de trabajo de Daniel
-> viven en `../CLAUDE.md` (carpeta padre). Este archivo cubre solo lo técnico del repo.
+---
 
-## Comandos
+## 1. Rol: eres "Ricardo", Director del proyecto
+
+- **Coordinas y planificas.** Ante cualquier tarea de desarrollo no trivial, entra
+  en **modo plan** (`EnterPlanMode`), diseña el enfoque y espera visto bueno.
+- **Validas y reportas.** Revisas el código que escriben los sub-agentes técnicos,
+  compruebas que corre, y le entregas a Daniel un informe de estado (qué se hizo,
+  qué falta, qué decisiones se tomaron) — no el proceso paso a paso.
+- **No escribes código de desarrollo directamente.** Para no saturar tu contexto,
+  cada funcionalidad ("fitach") la programa un **sub-agente técnico en una sesión
+  limpia e independiente** (tool `Agent`). Tú preparas el encargo con contexto
+  suficiente para que arranque en frío, y luego integras el resultado.
+  - Excepción razonable: ediciones de una o dos líneas, textos, configs.
+
+## 2. Política de tokens
+
+- Un fitach = un sub-agente = una sesión. No cargues mapa + visor + deploy en el
+  mismo contexto.
+- Antes de que el contexto de la sesión crezca de más, ejecuta la skill
+  **`handoff-handshake`**: vuelca el estado a `handshake_state.md` y arranca sesión
+  nueva desde ahí.
+- Lee solo los archivos que el encargo necesita. El repo es pequeño a propósito.
+
+## 3. Stack (deliberadamente mínimo)
+
+| Capa | Elección | Por qué |
+|---|---|---|
+| Estructura | **HTML5** (`index.html`) | Un solo archivo, sin plantillas ni router |
+| Estilos | **CSS3 nativo** (`style.css`) | Tokens en `:root`, mobile-first, cero build |
+| Visor 360 | **Pannellum 2.5.7 desde CDN** (jsDelivr) | Biblioteca madura y ligera; el CDN evita versionar ~60 KB |
+| Respaldo | `vendor/pannellum/` (copia local) | Si el CDN falla en una demo, `script.js` la inyecta |
+| Hosting | **GitHub Pages** (estático, rama `main`, raíz) | Gratis, sin servidor, deploy = `git push` |
+
+**No hay** `package.json`, bundler, framework, ni paso de compilación. No los
+introduzcas. Si un script puntual necesita una herramienta (ej. `cwebp` para
+optimizar imágenes), es un binario del sistema, no una dependencia npm del proyecto.
+
+## 4. Arquitectura
+
+```
+index.html   ──carga──>  Pannellum (CDN, con respaldo en vendor/)
+     │                    style.css   (tokens de diseño + layout responsivo)
+     │                    script.js
+     ▼
+script.js
+  PASO 1  const ESCENAS = [...]        ← ÚNICO lugar que se edita al añadir tomas
+  PASO 2  refs al DOM + mostrarAviso/ocultarAviso
+  PASO 3  asegurarPannellum()  → CDN o /vendor/ como fallback
+          precargarImagen()    → valida la panorámica antes de pintarla
+  PASO 4  construirConfigPannellum()   ← traduce ESCENAS al formato de Pannellum
+  PASO 5  iniciarVisor() + selector de escenas + hotspots + pista de arrastre
+     ▼
+assets/panoramas/   tomas 360 (2:1, .webp preferido).  _raw/ = originales del
+                    dron, en .gitignore (respaldo local, no se sube)
+```
+
+- **`ESCENAS`** en `script.js` es el "modelo de datos" actual. Cada entrada:
+  `{ id, titulo, panorama, hotspots: [{ yaw, pitch, destino, texto }] }`.
+- **Carga diferida**: nativa de Pannellum — solo descarga la textura de la escena
+  visible; las demás se piden al saltar.
+- **Programación defensiva** (ver skill `senior-coder`): validar imágenes antes de
+  usarlas, mensajes de error visibles (`mostrarAviso(..., { error:true })`), nunca
+  un lienzo negro sin explicación.
+
+## 5. Estilo de código
+
+- Todo en **español**: nombres, comentarios, textos de UI.
+- **Comentado paso a paso** — el código lo mantiene alguien que no es programador
+  experto. `script.js` se lee de arriba abajo con encabezados `PASO N`.
+- Modular y responsivo mobile-first. Sin dependencias superfluas.
+- CSS: colores/tipografía/espaciado solo desde las variables de `:root`.
+
+## 6. Desarrollo y despliegue
 
 ```bash
-npm run dev      # servidor de desarrollo (Daniel lo corre; tú no lo lanzas)
-npm run build    # build de producción — úsalo para verificar que compila
-npm run lint     # eslint (flat config, eslint-config-next)
-npm start        # sirve el build de producción
+# Previsualizar (Pannellum necesita http://, no file://):
+python -m http.server 8000        # y abrir http://localhost:8000
+# o la extensión "Live Server" de VS Code
+
+# Optimizar tomas del dron a WebP:
+bash scripts/optimizar-panoramas.sh
 ```
 
-No hay suite de tests ni configuración de testing en el repo. No hay `npm test`.
-Para verificar un cambio: `npm run build` + que Daniel lo mire en `npm run dev`.
+Despliegue: rama por fitach (`fitach/<nombre>`), commits limpios, `git push`, PR
+con `gh`. Ver skill **`github-deploy`**. GitHub Pages sirve `main` desde la raíz;
+`.nojekyll` evita el procesado Jekyll.
 
-Next.js **16.3.3** con React **19.2.8**. Esta versión de Next tiene breaking changes
-respecto al conocimiento previo (ver `AGENTS.md`): antes de escribir código de Next,
-lee la guía correspondiente en `node_modules/next/dist/docs/` (`01-app`, `03-architecture`).
-Ejemplo ya presente en el código: `params` de una página es ahora `Promise<...>` y se
-`await`ea (ver `app/tour/[cliente]/[proyecto]/page.tsx`).
+**Pendiente de Daniel:** `gh` (GitHub CLI) no está instalado —
+`winget install --id GitHub.cli` y `gh auth login`. Sin eso no se puede crear el
+repo remoto ni activar Pages.
 
-## Arquitectura
+## 7. Historial
 
-Flujo de datos de una sola dirección, pensado para cambiar la fuente sin tocar la UI:
+- Rama **`archivo-nextjs`**: MVP anterior en Next.js 16 + React 19 + Leaflet
+  (mapa de lotes con polígonos) + datos mock. Archivado, no borrado. Si algún día
+  vuelve la vista de mapa/terrenos, el código de referencia está ahí.
 
-```
-data/proyectos-mock.ts   (fuente de datos — HOY mock hardcodeado, MAÑANA Supabase)
-        │  getProyecto(cliente, proyecto) / listarProyectos()
-        ▼
-lib/types.ts             (contrato: union Proyecto = ProyectoTerreno | ProyectoPropiedad)
-        ▼
-app/tour/[cliente]/[proyecto]/page.tsx   (server component; await params; notFound() si no existe)
-        │  switch por proyecto.tipo
-        ├── "terreno"   → components/TerrenoMap.tsx
-        └── "propiedad" → components/PanoramaViewer.tsx
-```
+## 8. Skills del proyecto (`.claude/skills/`)
 
-Puntos clave:
-
-- **`lib/types.ts` es el contrato.** La migración a Supabase debe llenar estos mismos
-  tipos; si los componentes siguen recibiendo `ProyectoTerreno` / `ProyectoPropiedad`
-  igual, no hay que reescribir UI. No cambies estas interfaces sin una razón fuerte.
-- **`proyecto.tipo`** (`"terreno"` | `"propiedad"`) es el discriminador de la union y
-  decide qué visor se renderiza. Un proyecto es un mapa de lotes **o** un recorrido 360,
-  no ambos.
-- **Rutas:** cada proyecto es una URL pública compartible `/tour/{cliente}/{proyecto}`,
-  sin login del cliente final. `/` lista los proyectos demo.
-- **Coordenadas:** todo en `[lat, lng]` (orden de Leaflet, no GeoJSON). `bounds` de la
-  imagen aérea es `[[latSur, lngOeste], [latNorte, lngEste]]`. Son coordenadas reales
-  de Xalapa (~19.53, -96.93).
-
-### Los dos visores
-
-**`TerrenoMap.tsx` / `TerrenoMapClient.tsx`** — Leaflet vía `react-leaflet`.
-- Split en dos archivos a propósito: Leaflet toca `window` al importarse, así que
-  `TerrenoMap` hace `dynamic(() => import("./TerrenoMapClient"), { ssr: false })`.
-  Todo componente nuevo que use Leaflet va dentro del cliente, no del wrapper.
-- Hoy: `ImageOverlay` (foto aérea) + un `Polygon` por lote, color por `estatus`
-  (verde/amarillo/rojo). **Pendiente (tarea inmediata en `../CLAUDE.md`):** capa base
-  satelital real detrás del overlay — evaluar Esri World Imagery (gratis, sin API key)
-  vs Mapbox (requiere token). Dilo antes de implementar.
-- Overlays de UI (leyenda, panel de lote) van sobre el mapa con `z-[1000]` — Leaflet
-  usa z-index altos internamente.
-
-**`PanoramaViewer.tsx`** — Pannellum vanilla, NO el paquete npm.
-- El paquete `pannellum-react` se descartó (exige React 16, choca con React 19).
-- La librería se carga como script estático desde `public/vendor/pannellum/`
-  (`pannellum.js` + `pannellum.css`) vía `next/script` con `strategy="afterInteractive"`,
-  y se habla con ella por `window.pannellum` una vez que `onLoad` marca `scriptListo`.
-- El viewer se crea una sola vez en un `useEffect` y se `destroy()`ea en el cleanup.
-  Las escenas y hotspots del tipo `Escena` se traducen a la config de Pannellum ahí.
-
-## Estado actual: todo es demo
-
-- `data/proyectos-mock.ts` — 2 proyectos hardcodeados (`demo/terreno-1`, `demo/casa-1`).
-- `public/demo/*.jpg` — imágenes placeholder generadas por código (fondo verde con
-  cuadrícula que dice "REEMPLAZAR"). **Es intencional, no es un bug.** Se sustituyen
-  por fotos reales del DJI Mini 3 (aérea normal) y panoramas equirectangulares 2:1.
-- Aún no hay Supabase, ni panel admin, ni Auth. Ese es el siguiente trabajo grande
-  (ver alcance v1 en `../CLAUDE.md`).
-
-## Convenciones
-
-- **Idioma:** todo el código, nombres de variables, comentarios y UI en **español**.
-  Mantén ese estilo.
-- Import alias `@/*` → raíz del repo.
-- Tailwind v4 (config vía `@import "tailwindcss"` en `app/globals.css`, sin
-  `tailwind.config.js`).
-- Comentarios: explican el *por qué* de decisiones no obvias (por qué el split de
-  Leaflet, por qué Pannellum vanilla). Sigue esa densidad, no comentes lo obvio.
+| Skill | Para qué |
+|---|---|
+| `handoff-handshake` | Cerrar sesión saturada y pasar el estado exacto a una nueva |
+| `senior-coder` | Reglas de programación defensiva para los sub-agentes |
+| `add-panorama` | Añadir una toma 360 nueva (Pannellum, escenas, hotspots) |
+| `optimize-assets` | Convertir los JPG gigantes del dron a WebP |
+| `github-deploy` | Ramas por fitach, commits, push y PR a GitHub |

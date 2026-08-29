@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Escala correcta en móvil y permite el zoom con pellizco dentro del visor 360. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <title>Domo 360 — Recorridos aéreos con dron | Xalapa</title>
+  <meta name="description" content="Recorridos virtuales 360° de terrenos y propiedades capturados con dron DJI Mini 3 en Xalapa, Veracruz." />
+  <meta name="theme-color" content="#0d0f12" />
+
+  <!--
+    PANNELLUM — se carga desde el CDN oficial (jsDelivr). Es la biblioteca que
+    dibuja la esfera 360°. Si el CDN no responde, script.js carga la copia local
+    de /vendor/pannellum/ como respaldo (útil en una demo con internet flojo).
+    Versión fijada a 2.5.7: así una actualización del CDN nunca rompe la demo.
+  -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/pannellum@2.5.7/build/pannellum.css"
+    onerror="this.onerror=null; this.href='vendor/pannellum/pannellum.css';"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <!--
+    ESTRUCTURA (de atrás hacia adelante en pantalla):
+      1. #panorama  → lienzo a pantalla completa donde Pannellum pinta la toma 360.
+      2. .barra-superior → nombre del proyecto + escena actual.
+      3. .selector-escenas → botones para saltar entre tomas (abajo).
+      4. .aviso  → capa de carga / error, cubre todo cuando hace falta.
+  -->
+
+  <main id="panorama" role="application" aria-label="Visor de recorrido 360 grados"></main>
+
+  <header class="barra-superior">
+    <div class="marca">
+      <span class="marca__punto" aria-hidden="true"></span>
+      <span class="marca__texto">Domo&nbsp;360</span>
+    </div>
+    <p class="escena-actual" id="escenaActual" aria-live="polite">Cargando…</p>
+  </header>
+
+  <nav class="selector-escenas" id="selectorEscenas" aria-label="Escenas del recorrido">
+    <!-- script.js inserta aquí un <button> por cada toma 360. -->
+  </nav>
+
+  <div class="aviso" id="aviso" role="status" aria-live="assertive">
+    <div class="aviso__caja">
+      <div class="aviso__spinner" aria-hidden="true"></div>
+      <p class="aviso__texto" id="avisoTexto">Preparando el recorrido…</p>
+      <button class="aviso__reintentar" id="avisoReintentar" hidden>Reintentar</button>
+    </div>
+  </div>
+
+  <p class="pista-arrastre" id="pistaArrastre" aria-hidden="true">Arrastra para mirar alrededor</p>
+
+  <!--
+    Pannellum desde CDN. El atributo onerror NO basta para todos los navegadores,
+    por eso script.js hace además una comprobación de window.pannellum y, si falta,
+    inyecta /vendor/pannellum/pannellum.js antes de arrancar el visor.
+  -->
+  <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.7/build/pannellum.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -3,7 +3,13 @@
     "allow": [
       "Bash(git add *)",
       "Bash(git commit -q -m ' *)",
-      "Bash(git branch *)"
+      "Bash(git branch *)",
+      "Bash(mkdir -p assets/panoramas assets/panoramas/_raw vendor/pannellum scripts)",
+      "Bash(git mv *)",
+      "Bash(git rm *)",
+      "Bash(rm -rf node_modules .next public)",
+      "Bash(rm -rf node_modules .next public next-env.d.ts)",
+      "Bash(:)"
     ]
   }
 }

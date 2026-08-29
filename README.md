@@ -1,23 +1,45 @@
-# Tours 360 — Plataforma propia (MVP)
+# Domo 360 — Recorridos 360° con dron (Xalapa)
+
+Sitio estático que muestra tomas panorámicas 360° del DJI Mini 3 con navegación
+entre escenas mediante hotspots. Sin frameworks: **HTML + CSS + Pannellum.js**.
 
 ## Correr en local
+
+Pannellum necesita `http://` (no `file://`) para cargar las texturas:
+
 ```bash
-npm install
-npm run dev
+python -m http.server 8000
 ```
-Abre http://localhost:3000
 
-## Qué hay ahora
-- `/` — lista de proyectos demo
-- `/tour/demo/terreno-1` — mapa aéreo con polígonos de lotes (clic en un lote = ficha con precio/estatus)
-- `/tour/demo/casa-1` — visor 360 navegable entre 2 escenas (sala/cocina)
+Abre <http://localhost:8000>. (O usa la extensión *Live Server* de VS Code.)
 
-## Reemplazar por contenido real
-- `public/demo/aerea-demo.jpg` → tu captura aérea del Mini 3 (foto normal, no necesita ser 360)
-- `public/demo/pano-sala.jpg` y `pano-cocina.jpg` → tus panoramas 360 equirectangulares (relación 2:1, ej. 4096x2048)
-- `data/proyectos-mock.ts` → aquí defines cada proyecto nuevo (coordenadas de lotes, escenas y hotspots). Esto es temporal: el siguiente paso es mover esto a Supabase para que lo puedas cargar desde un panel admin en vez de editar código.
+## Estructura
 
-## Siguiente fase
-1. Panel admin (subir fotos, dibujar polígonos visualmente, no a mano en el código)
-2. Supabase: Storage (fotos) + Postgres (datos de proyectos/lotes/escenas) + Auth (tu login)
-3. Deploy a Vercel con dominio propio
+| Ruta | Qué es |
+|---|---|
+| `index.html` | Estructura de la página |
+| `style.css` | Estilos (tokens de diseño en `:root`, responsivo) |
+| `script.js` | Lógica del visor. El array `ESCENAS` (arriba del archivo) es lo único que editas para añadir tomas |
+| `assets/panoramas/` | Imágenes 360 (2:1, `.webp` preferido). `_raw/` = originales del dron, no se versionan |
+| `vendor/pannellum/` | Copia local de Pannellum, respaldo si el CDN falla |
+| `scripts/optimizar-panoramas.sh` | Convierte los JPG del dron a WebP con `cwebp` |
+| `.claude/skills/` | Procedimientos del proyecto (ver `CLAUDE.md`) |
+
+## Añadir una toma nueva
+
+1. Cose la esfera 360 (DJI Fly / Microsoft ICE) → guarda el original en
+   `assets/panoramas/_raw/`.
+2. `bash scripts/optimizar-panoramas.sh` → genera el `.webp` en `assets/panoramas/`.
+3. Agrega un bloque al array `ESCENAS` en `script.js` con su `id`, `titulo`,
+   `panorama` y los `hotspots` hacia otras escenas.
+
+## Despliegue
+
+GitHub Pages, estático, desde `main` (raíz). Requiere GitHub CLI:
+`winget install --id GitHub.cli` → `gh auth login`. Detalle en la skill
+`.claude/skills/github-deploy/`.
+
+## Historial
+
+El MVP anterior en Next.js + Leaflet (mapa de lotes) está archivado en la rama
+`archivo-nextjs`.
