@@ -7,7 +7,7 @@
   <title>Asistente de captura · Panorámika</title>
   <meta name="theme-color" content="#0d0f12" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="captura.css?v=5" />
+  <link rel="stylesheet" href="captura.css?v=6" />
 </head>
 
 <body>
@@ -18,7 +18,7 @@
   <!-- ================= PANTALLA 1 · BIENVENIDA ================= -->
   <section class="pantalla pantalla--intro" id="pantallaIntro">
     <div class="tarjeta">
-      <div class="marca"><span class="marca__punto"></span> Panorámika <span class="version">v5</span></div>
+      <div class="marca"><span class="marca__punto"></span> Panorámika <span class="version">v6</span></div>
       <h1>Asistente de captura 360°</h1>
       <p>Te guía para tomar las fotos de una toma esférica. Necesitas:</p>
       <ul>
@@ -86,7 +86,10 @@
 
     <header class="hud-top">
       <span class="progreso" id="progreso">0 / 26</span>
-      <button class="hud-btn" id="btnReiniciar" aria-label="Reiniciar">↻</button>
+      <div class="hud-acciones">
+        <button class="hud-btn" id="btnRehacer" aria-label="Rehacer última toma" disabled>↩</button>
+        <button class="hud-btn" id="btnReiniciar" aria-label="Reiniciar todo">↻</button>
+      </div>
     </header>
 
     <div class="hud-bottom">
@@ -114,6 +117,6 @@
     </div>
   </section>
 
-  <script src="captura.js?v=5"></script>
+  <script src="captura.js?v=6"></script>
 </body>
 </html>

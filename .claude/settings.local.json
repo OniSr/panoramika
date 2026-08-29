@@ -44,7 +44,13 @@
       "PowerShell($hoy = \\(Get-Date\\).Date; Get-ChildItem \"G:\\\\Mi unidad\" -Directory -Recurse -Depth 2 -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -ge $hoy } | Select-Object FullName,LastWriteTime | Format-Table -Auto; \"--- o carpetas con IMG_21 ---\"; Get-ChildItem \"G:\\\\Mi unidad\" -Recurse -Depth 3 -Filter \"IMG_2100.JPG\" -File -ErrorAction SilentlyContinue | Select-Object -First 3 Directory)",
       "Bash(time bash scripts/armar-esfera.sh '/g/Mi unidad/PANORAMIKA/Prueba cuarto lagos' C:/Users/danie/AppData/Local/Temp/claude/C--Users-danie-Downloads-tours360-mvp/1c3c7beb-eb89-47bd-9275-5b4a4ac52a9f/scratchpad/cuarto-lagos.webp)",
       "Bash(bash scripts/armar-esfera.sh '/g/Mi unidad/PANORAMIKA/Prueba cuarto lagos' C:/Users/danie/AppData/Local/Temp/claude/C--Users-danie-Downloads-tours360-mvp/1c3c7beb-eb89-47bd-9275-5b4a4ac52a9f/scratchpad/esfera-prueba-2.webp)",
-      "Bash(python -)"
+      "Bash(python -)",
+      "PowerShell($gh = \"$env:LOCALAPPDATA\\\\Microsoft\\\\WinGet\\\\Packages\\\\GitHub.cli_Microsoft.Winget.Source_8wekyb3d8bbwe\\\\bin\\\\gh.exe\"; Start-Sleep 40; \\(& $gh api \"repos/OniSr/panoramika/pages/builds/latest\" | ConvertFrom-Json\\).status; \\(Invoke-WebRequest -UseBasicParsing \"https://onisr.github.io/panoramika/capturar/?x\" -TimeoutSec 20\\).Content -match 'v=5')",
+      "mcp__0f79d7d5-7d84-4851-9e6b-e90195d116b1__create_file",
+      "mcp__0f79d7d5-7d84-4851-9e6b-e90195d116b1__update_file",
+      "Bash(sleep 8 && find \"/g/Mi unidad/PANORAMIKA\" -maxdepth 4 2>/dev/null | sed 's#/g/Mi unidad/PANORAMIKA#PANORAMIKA#' | sort && echo \"---\" && ls \"/g/Mi unidad/PANORAMIKA/recorridos/pruebas/cuarto-lagos/crudo/\" 2>/dev/null | wc -l)",
+      "Bash(python -m http.server 8767 --bind 127.0.0.1)",
+      "Bash(powershell -NoProfile -Command 'Get-CimInstance Win32_Process -Filter \"Name='\\\\''python.exe'\\\\''\" | Where-Object { $_.CommandLine -like '\\\\''*http.server 87*'\\\\'' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }; '\\\\''ok'\\\\''')"
     ]
   }
 }

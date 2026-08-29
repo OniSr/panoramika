@@ -58,6 +58,7 @@ function irA(nombre) {
 
 /* Estado */
 const fotos = new Array(DIANAS.length).fill(null); // Blob por diana
+const historial = [];                              // índices en orden de captura (para "rehacer")
 let streamCamara = null;
 let refYaw = null;          // yaw del teléfono al empezar (cero relativo)
 let orientacionOK = false;  // llegan datos de los sensores
@@ -257,11 +258,22 @@ $("btnComenzarCaptura").addEventListener("click", () => {
 });
 
 $("btnReiniciar").addEventListener("click", () => {
-  if (confirm("¿Reiniciar la toma? Se borran las fotos de esta sesión.")) {
+  if (confirm("¿Reiniciar TODO? Se borran las fotos de esta sesión.")) {
     fotos.fill(null);
+    historial.length = 0;
     refYaw = null;
     construirTiras();
   }
+});
+
+// Rehacer solo la última foto: la desmarca para volver a apuntar a esa diana.
+$("btnRehacer").addEventListener("click", () => {
+  const i = historial.pop();
+  if (i === undefined) return;
+  fotos[i] = null;
+  if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
+  $("instruccion").textContent = "Rehaciendo la última — vuelve a esa posición";
+  actualizarProgreso();
 });
 
 function construirTiras() {
@@ -279,6 +291,7 @@ function construirTiras() {
 function actualizarProgreso() {
   const hechas = fotos.filter(Boolean).length;
   $("progreso").textContent = `${hechas} / ${DIANAS.length}`;
+  $("btnRehacer").disabled = historial.length === 0;
   [...$("tiras").children].forEach((t, i) => {
     t.classList.toggle("--hecha", !!fotos[i]);
     t.classList.toggle("--activa", i === objetivoActual && !fotos[i]);
@@ -375,7 +388,9 @@ function capturarFoto(indice) {
   lienzo.getContext("2d").drawImage(video, 0, 0, vw, vh);
   lienzo.toBlob((blob) => {
     if (!blob) return;
+    const nueva = !fotos[indice];
     fotos[indice] = blob;
+    if (nueva) historial.push(indice);   // solo si no estaba ya hecha
     if (navigator.vibrate) navigator.vibrate(60);
     const dest = $("destello");
     dest.classList.remove("--flash"); void dest.offsetWidth; dest.classList.add("--flash");

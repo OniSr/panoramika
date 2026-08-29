@@ -143,10 +143,12 @@ strong { color: var(--tx-fuerte); font-weight: 650; }
   font-weight: 650; font-size: 0.95rem;
   background: rgba(0,0,0,0.5); padding: 5px 12px; border-radius: 999px;
 }
+.hud-acciones { display: flex; gap: 8px; }
 .hud-btn {
   width: 40px; height: 40px; border-radius: 50%;
   background: rgba(0,0,0,0.5); font-size: 1.1rem;
 }
+.hud-btn:disabled { opacity: 0.35; }
 
 .hud-bottom {
   position: absolute; left: 0; right: 0; bottom: 0;
