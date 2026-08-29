@@ -3,55 +3,29 @@
 Sitio 100 % estático → **GitHub Pages**. No hay servidor, base de datos ni build.
 Publicar = `git push`.
 
----
+## Estado actual (ya publicado)
 
-## Requisito único: GitHub CLI (una sola vez)
+| | |
+|---|---|
+| Repo | https://github.com/OniSr/tours360 (público) |
+| Cuenta | `OniSr` |
+| Sitio en vivo | **https://onisr.github.io/tours360/** |
+| Recorrido demo | https://onisr.github.io/tours360/?proyecto=xalapa-demo |
+| Rama que sirve Pages | `main`, carpeta raíz |
+| MVP Next.js archivado | rama `archivo-nextjs` |
 
-`gh` **no está instalado**. En PowerShell:
-
-```powershell
-winget install --id GitHub.cli
-```
-
-Cierra y reabre la terminal, luego:
-
-```bash
-gh auth login          # GitHub.com · HTTPS · autenticar con el navegador
-gh auth status         # debe decir "Logged in"
-```
-
-> `gh auth login` abre el navegador para iniciar sesión — eso lo haces tú, no se
-> puede automatizar.
+`gh` quedó instalado con `winget install --id GitHub.cli --scope user` (el MSI
+normal falla sin permisos de administrador; el `--scope user` usa la versión
+portable).
 
 ---
 
-## Primera publicación (una sola vez)
+## Cómo se hizo la primera publicación (referencia)
 
 ```bash
-# 1. Crear el repo remoto a partir de esta carpeta
-gh repo create domo360 --public --source=. --remote=origin --push
-
-# 2. Subir también la rama con el MVP viejo archivado
+gh repo create tours360 --public --source=. --remote=origin --push
 git push -u origin archivo-nextjs
-
-# 3. Activar GitHub Pages (rama main, carpeta raíz)
-gh api -X POST "repos/{owner}/domo360/pages" -f "source[branch]=main" -f "source[path]=/"
-```
-
-`{owner}` = tu usuario de GitHub (`gh api user -q .login` lo dice).
-Si el paso 3 da error, hazlo por web: **Settings → Pages → Source: Deploy from a
-branch → `main` / `/ (root)` → Save**.
-
-En 1–2 minutos el sitio está en:
-
-```
-https://<usuario>.github.io/domo360/
-```
-
-Enlace de un recorrido concreto:
-
-```
-https://<usuario>.github.io/domo360/?proyecto=xalapa-demo
+gh api -X POST "repos/OniSr/tours360/pages" -f "source[branch]=main" -f "source[path]=/"
 ```
 
 ---
