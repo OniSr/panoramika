@@ -79,6 +79,8 @@ strong { color: var(--tx-fuerte); font-weight: 650; }
   margin-top: 6px;
 }
 .btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.4; pointer-events: none; }
+.btn + .btn { margin-top: 10px; }
 .btn--fantasma { color: var(--tx-medio); background: transparent; border: 1px solid var(--sup-borde); margin-top: 10px; }
 
 .nota { font-size: 0.85rem; color: var(--tx-medio); margin-top: 14px; }

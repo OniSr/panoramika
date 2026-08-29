@@ -38,9 +38,14 @@
   <section class="pantalla pantalla--permisos" id="pantallaPermisos" hidden>
     <div class="tarjeta">
       <h2>Permisos</h2>
-      <p id="textoPermisos">Toca "Permitir" en los dos avisos que aparecerán: cámara y movimiento.</p>
-      <button class="btn" id="btnPermisos">Dar permisos</button>
+      <p>Son dos permisos, <strong>uno a la vez</strong>. Toca cada botón y elige "Permitir".</p>
+      <button class="btn" id="btnPermMovimiento">1 · Permitir movimiento</button>
+      <button class="btn" id="btnPermCamara" disabled>2 · Permitir cámara</button>
       <p class="nota error" id="errorPermisos" hidden></p>
+      <p class="nota" id="ayudaPermisos" hidden>
+        Si un permiso quedó bloqueado: <strong>Ajustes → Apps → Safari → Cámara</strong>
+        (y <strong>Movimiento y orientación</strong>) → Permitir, y recarga.
+      </p>
     </div>
   </section>
 

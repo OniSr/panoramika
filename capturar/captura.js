@@ -77,10 +77,37 @@ $("notaEscritorio").hidden = esMovil;
 
 $("btnEmpezar").addEventListener("click", () => irA("permisos"));
 
-$("btnPermisos").addEventListener("click", async () => {
+/* iOS pide UN permiso por toque, y requestPermission() SOLO funciona si se llama
+   antes de cualquier `await` dentro del gesto. Por eso van dos botones separados:
+   primero movimiento, luego cámara. */
+
+let permMovimientoOK = false;
+
+$("btnPermMovimiento").addEventListener("click", async () => {
   $("errorPermisos").hidden = true;
   try {
-    // Cámara: pedimos la mayor resolución posible (para que las fotos sirvan).
+    if (necesitaPermisoOrientacion) {
+      const r = await DeviceOrientationEvent.requestPermission();
+      if (r !== "granted") {
+        mostrarAyuda();
+        return falloPermisos('Elegiste "No permitir" para el movimiento. Actívalo en Ajustes y recarga.');
+      }
+    }
+    escucharOrientacion();
+    permMovimientoOK = true;
+    const b = $("btnPermMovimiento");
+    b.textContent = "1 · Movimiento ✓";
+    b.disabled = true;
+    $("btnPermCamara").disabled = false;
+  } catch (e) {
+    mostrarAyuda();
+    falloPermisos("El sensor de movimiento falló: " + textoError(e) + ". Recarga e intenta de nuevo.");
+  }
+});
+
+$("btnPermCamara").addEventListener("click", async () => {
+  $("errorPermisos").hidden = true;
+  try {
     streamCamara = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: { ideal: "environment" },
@@ -92,29 +119,18 @@ $("btnPermisos").addEventListener("click", async () => {
     video.srcObject = streamCamara;
     await video.play().catch(() => {});
   } catch (e) {
-    return falloPermisos("No se pudo abrir la cámara. Revisa los permisos del navegador y recarga.");
+    mostrarAyuda();
+    return falloPermisos("No se pudo abrir la cámara: " + textoError(e));
   }
 
-  // Sensores de movimiento (iOS 13+ exige pedirlo tras un toque).
-  if (necesitaPermisoOrientacion) {
-    try {
-      const r = await DeviceOrientationEvent.requestPermission();
-      if (r !== "granted")
-        return falloPermisos("Necesito permiso de 'Movimiento y orientación'. Actívalo en Ajustes › Safari y recarga.");
-    } catch {
-      return falloPermisos("No se pudo pedir el permiso de movimiento. Abre esta página en Safari.");
-    }
-  }
-  escucharOrientacion();
-
-  // Damos un momento a que lleguen datos de los sensores.
+  // Un momento para confirmar que los sensores mandan datos.
   setTimeout(() => {
-    if (!orientacionOK && esMovil) {
-      falloPermisos("No estoy recibiendo el sensor de orientación. Cierra y vuelve a abrir la página en Safari.");
+    if (necesitaPermisoOrientacion && !orientacionOK && esMovil) {
+      falloPermisos("La cámara sí funciona, pero no llegan datos de movimiento. Recarga la página.");
     } else {
       irA("tips");
     }
-  }, 700);
+  }, 800);
 });
 
 function falloPermisos(msg) {
@@ -122,6 +138,8 @@ function falloPermisos(msg) {
   el.textContent = msg;
   el.hidden = false;
 }
+function mostrarAyuda() { $("ayudaPermisos").hidden = false; }
+function textoError(e) { return e && e.message ? e.message : String(e); }
 
 /* ============================================================================
    PASO 4 · ORIENTACIÓN DEL TELÉFONO
