@@ -66,8 +66,20 @@ TRABAJO="$(mktemp -d)"
 trap 'rm -rf "$TRABAJO"' EXIT
 PTO="$TRABAJO/proyecto.pto"
 
+# ¿Las fotos traen distancia focal en el EXIF? Las del asistente de captura NO
+# (el canvas la borra), así que hay que decirle a Hugin el ángulo de visión.
+# iPhone (cámara principal, video) ≈ 63° horizontal en vertical. El dron sí trae
+# EXIF: entonces dejamos que Hugin lo calcule (FOV_CAMARA vacío).
+FOV_CAMARA="${FOV_CAMARA-63}"
+tiene_focal="$(python -c "from PIL import Image; e=Image.open(r'${FOTOS[0]}').getexif(); print(1 if e.get(37386) else 0)" 2>/dev/null || echo 0)"
+
 echo "--- 1/6  Creando el proyecto (pto_gen)"
-pto_gen -o "$PTO" "${FOTOS[@]}"
+if [ "$tiene_focal" = "1" ] || [ -z "$FOV_CAMARA" ]; then
+  pto_gen -o "$PTO" "${FOTOS[@]}"
+else
+  echo "    (sin EXIF de lente → usando FOV horizontal = ${FOV_CAMARA}°)"
+  pto_gen --fov="$FOV_CAMARA" -o "$PTO" "${FOTOS[@]}"
+fi
 
 echo "--- 2/6  Buscando puntos de control (cpfind --multirow)"
 cpfind --multirow -o "$PTO" "$PTO"
@@ -75,7 +87,10 @@ cpfind --multirow -o "$PTO" "$PTO"
 echo "--- 3/6  Limpiando puntos de control malos (cpclean)"
 cpclean -o "$PTO" "$PTO"
 
-echo "--- 4/6  Optimizando posiciones, exposición y nivelado (autooptimiser)"
+echo "--- 4/6  Optimizando posiciones, nivelado y exposición (autooptimiser -a)"
+# El modo -a alinea posiciones y ajusta el FOV a partir de los puntos de control.
+# (Liberar también la distorsión a,b,c aquí desestabiliza la solución cuando hay
+#  poco traslape, así que NO se hace.)
 autooptimiser -a -m -l -s -o "$PTO" "$PTO"
 
 echo "--- 5/6  Fijando salida equirectangular 360x180 (pano_modify)"

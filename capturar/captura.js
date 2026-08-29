@@ -154,6 +154,8 @@ function textoError(e) { return e && e.message ? e.message : String(e); }
 let yawTel = 0, pitchTel = 0, rollTel = 0;
 let ultimoDatoOrient = 0;      // timestamp del último evento válido
 let listenerOrientPuesto = false;
+let brujulaOK = false;         // ¿tenemos rumbo de brújula (absoluto)?
+let brujulaCalibrada = true;   // webkitCompassAccuracy razonable
 
 function escucharOrientacion() {
   if (listenerOrientPuesto) return;   // no duplicar al reintentar
@@ -173,12 +175,24 @@ function escucharOrientacion() {
     // Tercera columna de R = Rz(a)·Rx(b)·Ry(g)  →  eje Z del aparato en el mundo.
     // La cámara trasera mira a −Z, así que negamos.
     const mundoX = -(cA * sG + cG * sA * sB);
-    const mundoY = -(sA * sG - cA * cG * sB);
     const mundoZ = -(cB * cG);
 
     pitchTel = Math.asin(Math.max(-1, Math.min(1, mundoZ))) * 180 / Math.PI;
-    yawTel = Math.atan2(mundoX, mundoY) * 180 / Math.PI;
     rollTel = e.gamma;
+
+    // YAW: la brújula (webkitCompassHeading) es ABSOLUTA y no deriva con el
+    // tiempo; e.alpha sí deriva y arruinaba la cobertura. Usamos la brújula
+    // cuando está y caemos a la matriz solo si no hay.
+    if (typeof e.webkitCompassHeading === "number" && e.webkitCompassHeading >= 0) {
+      yawTel = e.webkitCompassHeading;   // 0 = norte, aumenta al girar a la derecha
+      brujulaOK = true;
+      if (typeof e.webkitCompassAccuracy === "number")
+        brujulaCalibrada = e.webkitCompassAccuracy > 0 && e.webkitCompassAccuracy < 25;
+    } else {
+      const mundoY = -(sA * sG - cA * cG * sB);
+      yawTel = Math.atan2(mundoX, mundoY) * 180 / Math.PI;
+      brujulaOK = false;
+    }
   }, true);
 }
 
@@ -222,7 +236,19 @@ function pintarDiana(dyaw, dpitch, alineada, esPolo) {
 /* ============================================================================
    PASO 6 · BUCLE DE CAPTURA
    ========================================================================== */
+let nombreToma = "toma";
+
+function limpiarNombre(txt) {
+  return ((txt || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")   // quita acentos
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40)) || "toma";
+}
+
 $("btnComenzarCaptura").addEventListener("click", () => {
+  nombreToma = limpiarNombre($("nombreToma").value);
   irA("captura");
   construirTiras();
   refYaw = null; // se fija en el primer frame del bucle
@@ -292,10 +318,17 @@ function bucle(ahora) {
     return requestAnimationFrame(bucle);
   }
 
-  // Aviso si el teléfono está muy acostado (la técnica pide vertical).
+  // Avisos que ocupan la capa central (prioridad: acostado > brújula sin calibrar).
   const acostado = Math.abs(rollTel) > 45;
-  avG.hidden = !acostado;
-  if (acostado) avG.textContent = "Pon el teléfono vertical";
+  if (acostado) {
+    avG.hidden = false;
+    avG.textContent = "Pon el teléfono vertical";
+  } else if (brujulaOK && !brujulaCalibrada) {
+    avG.hidden = false;
+    avG.innerHTML = "Mueve el teléfono en <strong>ocho</strong> para calibrar la brújula";
+  } else {
+    avG.hidden = true;
+  }
 
   if (refYaw === null && orientacionOK) refYaw = yawTel;
 
@@ -380,9 +413,16 @@ function terminar() {
 }
 
 function archivos() {
-  const ts = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "");
+  // Nombre: <toma>_AAMMDD_NN.jpg  → fácil de identificar y de ordenar.
+  const d = new Date();
+  const fecha = d.getFullYear().toString().slice(2) +
+    String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0");
   return fotos
-    .map((b, i) => b && new File([b], `pano_${ts}_${String(i + 1).padStart(2, "0")}.jpg`, { type: "image/jpeg" }))
+    .map((b, i) => b && new File(
+      [b],
+      `${nombreToma}_${fecha}_${String(i + 1).padStart(2, "0")}.jpg`,
+      { type: "image/jpeg" }
+    ))
     .filter(Boolean);
 }
 

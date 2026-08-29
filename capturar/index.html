@@ -7,7 +7,7 @@
   <title>Asistente de captura · Panorámika</title>
   <meta name="theme-color" content="#0d0f12" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="captura.css?v=4" />
+  <link rel="stylesheet" href="captura.css?v=5" />
 </head>
 
 <body>
@@ -18,7 +18,7 @@
   <!-- ================= PANTALLA 1 · BIENVENIDA ================= -->
   <section class="pantalla pantalla--intro" id="pantallaIntro">
     <div class="tarjeta">
-      <div class="marca"><span class="marca__punto"></span> Panorámika <span class="version">v4</span></div>
+      <div class="marca"><span class="marca__punto"></span> Panorámika <span class="version">v5</span></div>
       <h1>Asistente de captura 360°</h1>
       <p>Te guía para tomar las fotos de una toma esférica. Necesitas:</p>
       <ul>
@@ -53,14 +53,23 @@
   <section class="pantalla pantalla--tips" id="pantallaTips" hidden>
     <div class="tarjeta">
       <h2>Antes de empezar</h2>
+
+      <label class="campo">
+        ¿Qué estás capturando?
+        <input type="text" id="nombreToma" inputmode="text" autocapitalize="none"
+               autocorrect="off" spellcheck="false"
+               placeholder="ej: cuarto-lagos" maxlength="40" />
+        <span class="campo__ayuda">Se usa para nombrar las fotos. Solo letras, números y guiones.</span>
+      </label>
+
       <ol>
-        <li><strong>Bloquea la exposición y el foco</strong>: en la cámara nativa,
-          mantén presionado el centro hasta que diga "AE/AF Lock". Aquí no hace
-          falta, pero acostúmbrate.</li>
-        <li><strong>Sostén el teléfono vertical</strong> (de pie, no acostado).</li>
-        <li><strong>No camines.</strong> Gira solo tu cuerpo, el teléfono cerca de tu cara.</li>
-        <li>Sigue el <strong>círculo</strong>: cuando quede dentro de la mira y
-          vibre, la foto se toma sola.</li>
+        <li><strong>Sostén el teléfono vertical</strong>, pegado a tu cara, y gira
+          <strong>solo tu cuerpo</strong> — no el brazo. No camines.</li>
+        <li>Mueve el teléfono en <strong>ocho</strong> unos segundos: calibra la brújula.</li>
+        <li>Sigue el <strong>círculo</strong>: cuando entre en la mira y vibre, la
+          foto se toma sola.</li>
+        <li>Si puedes, bloquea exposición/foco en la cámara nativa antes (mantén
+          presionado el centro → "AE/AF Lock").</li>
       </ol>
       <button class="btn" id="btnComenzarCaptura">Comenzar</button>
     </div>
@@ -105,6 +114,6 @@
     </div>
   </section>
 
-  <script src="captura.js?v=4"></script>
+  <script src="captura.js?v=5"></script>
 </body>
 </html>
