@@ -1,0 +1,178 @@
+/* ============================================================================
+   Asistente de captura 360 — estilos
+   Mismos tokens que el visor (style.css de la raíz), en versión reducida.
+   ========================================================================== */
+:root {
+  --sup-fondo: #0d0f12;
+  --sup-panel: rgba(18, 21, 26, 0.82);
+  --sup-borde: rgba(255, 255, 255, 0.12);
+  --tx-fuerte: #f4f6f8;
+  --tx-medio:  #b9c0c8;
+  --acento:       #d99a4e;
+  --acento-claro: #e8c27a;
+  --acento-tx:    #1c1206;
+  --ok: #46b17a;
+  --error: #d1615a;
+  --fuente: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--sup-fondo);
+  color: var(--tx-fuerte);
+  font-family: var(--fuente);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+[hidden] { display: none !important; }
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+strong { color: var(--tx-fuerte); font-weight: 650; }
+
+/* --- Cámara de fondo --- */
+#video {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  background: #000;
+  z-index: 0;
+}
+
+/* --- Pantallas --- */
+.pantalla {
+  position: fixed; inset: 0; z-index: 10;
+  display: grid; place-items: center;
+  padding: calc(var(--safe-top) + 20px) 20px calc(var(--safe-bottom) + 20px);
+}
+.pantalla--intro, .pantalla--permisos, .pantalla--tips, .pantalla--fin {
+  background: rgba(13, 15, 18, 0.88);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  overflow-y: auto;
+}
+
+.tarjeta {
+  width: 100%; max-width: 440px;
+  background: var(--sup-panel);
+  border: 1px solid var(--sup-borde);
+  border-radius: 18px;
+  padding: 26px;
+}
+.tarjeta h1 { font-size: 1.5rem; line-height: 1.15; margin: 14px 0 10px; letter-spacing: -0.01em; }
+.tarjeta h2 { font-size: 1.25rem; margin-bottom: 12px; }
+.tarjeta p  { color: var(--tx-medio); margin-bottom: 12px; }
+.tarjeta ul, .tarjeta ol { color: var(--tx-medio); margin: 0 0 18px 18px; }
+.tarjeta li { margin-bottom: 7px; }
+
+.marca { display: inline-flex; align-items: center; gap: 8px; font-weight: 650; letter-spacing: 0.02em; }
+.marca__punto { width: 9px; height: 9px; border-radius: 50%; background: var(--acento); box-shadow: 0 0 0 4px rgba(217,154,78,0.16); }
+
+.btn {
+  display: block; width: 100%;
+  padding: 14px 20px; min-height: 52px;
+  font-size: 1rem; font-weight: 650;
+  color: var(--acento-tx); background: var(--acento);
+  border-radius: 999px;
+  margin-top: 6px;
+}
+.btn:active { transform: translateY(1px); }
+.btn--fantasma { color: var(--tx-medio); background: transparent; border: 1px solid var(--sup-borde); margin-top: 10px; }
+
+.nota { font-size: 0.85rem; color: var(--tx-medio); margin-top: 14px; }
+.nota.error { color: var(--error); }
+
+/* --- HUD de captura --- */
+.pantalla--captura { background: transparent; display: block; padding: 0; }
+
+.mira {
+  position: absolute; top: 50%; left: 50%;
+  width: 84px; height: 84px; margin: -42px 0 0 -42px;
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.35), inset 0 0 0 2px rgba(0,0,0,0.35);
+}
+.mira::after {
+  content: ""; position: absolute; inset: 38px;
+  border-radius: 50%; background: rgba(255,255,255,0.9);
+}
+
+.diana {
+  position: absolute; top: 50%; left: 50%;
+  width: 64px; height: 64px; margin: -32px 0 0 -32px;
+  border: 4px solid var(--acento);
+  border-radius: 50%;
+  background: rgba(217, 154, 78, 0.18);
+  transition: transform 0.08s linear, border-color 0.15s, background 0.15s;
+  will-change: transform;
+}
+.diana.--alineada { border-color: var(--ok); background: rgba(70, 177, 122, 0.28); }
+
+.flecha {
+  position: absolute; top: 50%; left: 50%;
+  width: 0; height: 0;
+  border-left: 16px solid transparent; border-right: 16px solid transparent;
+  border-bottom: 26px solid var(--acento);
+  transform-origin: 50% 70%;
+  filter: drop-shadow(0 0 3px rgba(0,0,0,0.5));
+}
+
+.hud-top {
+  position: absolute; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: calc(var(--safe-top) + 12px) 16px 12px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
+}
+.progreso {
+  font-weight: 650; font-size: 0.95rem;
+  background: rgba(0,0,0,0.5); padding: 5px 12px; border-radius: 999px;
+}
+.hud-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(0,0,0,0.5); font-size: 1.1rem;
+}
+
+.hud-bottom {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 16px 16px calc(var(--safe-bottom) + 16px);
+  background: linear-gradient(to top, rgba(0,0,0,0.55), transparent);
+  text-align: center;
+}
+.instruccion {
+  font-size: 0.95rem; font-weight: 550;
+  background: rgba(0,0,0,0.45); display: inline-block;
+  padding: 6px 14px; border-radius: 999px; margin-bottom: 10px;
+}
+.tiras { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; }
+.tira {
+  width: 10px; height: 5px; border-radius: 2px;
+  background: rgba(255, 255, 255, 0.28);
+}
+.tira.--hecha { background: var(--ok); }
+.tira.--activa { background: var(--acento); }
+
+.destello {
+  position: absolute; inset: 0; background: #fff; opacity: 0;
+  pointer-events: none;
+}
+.destello.--flash { animation: flash 0.28s ease; }
+@keyframes flash { 0% { opacity: 0.85; } 100% { opacity: 0; } }
+
+.aviso-giro {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.75); padding: 14px 20px; border-radius: 14px;
+  font-weight: 550; text-align: center;
+}
+
+/* --- Galería final --- */
+.galeria {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  gap: 4px; margin: 14px 0 18px; max-height: 40vh; overflow-y: auto;
+}
+.galeria img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; display: block; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}

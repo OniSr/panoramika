@@ -58,6 +58,12 @@ proyectos/
     panoramas/*.webp   ← tomas 360 de ESE recorrido (2:1)
   _plantilla/          ← copiar para crear un recorrido nuevo
   xalapa-demo/         ← recorrido por defecto
+capturar/              ← asistente de captura (herramienta interna, noindex)
+                          index.html + captura.css + captura.js
+scripts/
+  armar-esfera.sh      ← cose fotos sueltas (dron/iPhone) → equirectangular con Hugin
+  optimizar_panoramas.py ← imagen → WebP 2:1 (lote o un solo archivo)
+  generar_og.py        ← miniatura Open Graph
 
 index.html  → Pannellum (CDN + respaldo vendor/) + style.css + script.js
 script.js
@@ -111,6 +117,18 @@ Despliegue: ver **`DEPLOY.md`** y la skill **`github-deploy`**. Rama por fitach
 
 Ya publicado: repo `OniSr/panoramika`, en vivo en **https://onisr.github.io/panoramika/**.
 `gh` instalado con `winget install --id GitHub.cli --scope user`.
+
+## 6b. Flujo de producción de un recorrido
+
+1. **Capturar**: dron DJI Mini 3 (modo panorámico → entrega las tomas SUELTAS) o
+   iPhone con el asistente `capturar/` (guía la cuadrícula de fotos).
+2. **Armar la esfera**: `bash scripts/armar-esfera.sh <carpeta-fotos> [salida.webp]`
+   (Hugin: pto_gen→cpfind→cpclean→autooptimiser→pano_modify→nona→enblend → WebP 2:1).
+3. **Publicar**: `cp -r proyectos/_plantilla proyectos/<slug>`, mover la esfera a
+   `panoramas/`, editar `proyecto.json`, `generar_og.py`, commit + push.
+
+Modelo de negocio (Fase 1): producción del recorrido (pago único $2,500–8,000 MXN)
++ renta mensual de alojamiento ($200–500 MXN/mes por propiedad publicada).
 
 ## 7. Historial
 

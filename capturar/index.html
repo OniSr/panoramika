@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="robots" content="noindex" />
+  <title>Asistente de captura · Panorámika</title>
+  <meta name="theme-color" content="#0d0f12" />
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="captura.css" />
+</head>
+
+<body>
+  <!-- Cámara en vivo de fondo (se activa al dar permiso) -->
+  <video id="video" playsinline muted autoplay></video>
+  <canvas id="lienzo" hidden></canvas>
+
+  <!-- ================= PANTALLA 1 · BIENVENIDA ================= -->
+  <section class="pantalla pantalla--intro" id="pantallaIntro">
+    <div class="tarjeta">
+      <div class="marca"><span class="marca__punto"></span> Panorámika</div>
+      <h1>Asistente de captura 360°</h1>
+      <p>Te guía para tomar las fotos de una toma esférica. Necesitas:</p>
+      <ul>
+        <li>Estar parado en el punto exacto donde quieres el recorrido</li>
+        <li>Girar sobre tu propio eje sin caminar</li>
+        <li>Buena luz y, si se puede, un tripié o palo</li>
+      </ul>
+      <button class="btn" id="btnEmpezar">Empezar</button>
+      <p class="nota" id="notaEscritorio" hidden>
+        Esto funciona en el navegador de tu <strong>iPhone</strong>. En computadora
+        solo verás la vista previa.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= PANTALLA 2 · PERMISOS ================= -->
+  <section class="pantalla pantalla--permisos" id="pantallaPermisos" hidden>
+    <div class="tarjeta">
+      <h2>Permisos</h2>
+      <p id="textoPermisos">Toca "Permitir" en los dos avisos que aparecerán: cámara y movimiento.</p>
+      <button class="btn" id="btnPermisos">Dar permisos</button>
+      <p class="nota error" id="errorPermisos" hidden></p>
+    </div>
+  </section>
+
+  <!-- ================= PANTALLA 3 · RECORDATORIOS ================= -->
+  <section class="pantalla pantalla--tips" id="pantallaTips" hidden>
+    <div class="tarjeta">
+      <h2>Antes de empezar</h2>
+      <ol>
+        <li><strong>Bloquea la exposición y el foco</strong>: en la cámara nativa,
+          mantén presionado el centro hasta que diga "AE/AF Lock". Aquí no hace
+          falta, pero acostúmbrate.</li>
+        <li><strong>Sostén el teléfono vertical</strong> (de pie, no acostado).</li>
+        <li><strong>No camines.</strong> Gira solo tu cuerpo, el teléfono cerca de tu cara.</li>
+        <li>Sigue el <strong>círculo</strong>: cuando quede dentro de la mira y
+          vibre, la foto se toma sola.</li>
+      </ol>
+      <button class="btn" id="btnComenzarCaptura">Comenzar</button>
+    </div>
+  </section>
+
+  <!-- ================= PANTALLA 4 · CAPTURA ================= -->
+  <section class="pantalla pantalla--captura" id="pantallaCaptura" hidden>
+    <!-- mira central fija -->
+    <div class="mira" id="mira"></div>
+    <!-- diana objetivo (se mueve con la orientación) -->
+    <div class="diana" id="diana"></div>
+    <!-- flecha cuando la diana está fuera de cuadro -->
+    <div class="flecha" id="flecha" hidden></div>
+
+    <header class="hud-top">
+      <span class="progreso" id="progreso">0 / 26</span>
+      <button class="hud-btn" id="btnReiniciar" aria-label="Reiniciar">↻</button>
+    </header>
+
+    <div class="hud-bottom">
+      <p class="instruccion" id="instruccion">Alinea el círculo con la mira</p>
+      <div class="tiras" id="tiras"></div>
+    </div>
+
+    <div class="destello" id="destello"></div>
+    <div class="aviso-giro" id="avisoGiro" hidden>Pon el teléfono <strong>vertical</strong></div>
+  </section>
+
+  <!-- ================= PANTALLA 5 · FIN ================= -->
+  <section class="pantalla pantalla--fin" id="pantallaFin" hidden>
+    <div class="tarjeta">
+      <h2 id="finTitulo">¡Listo!</h2>
+      <p id="finResumen"></p>
+      <p class="nota" id="finCalidad"></p>
+      <div class="galeria" id="galeria"></div>
+      <button class="btn" id="btnCompartir">Compartir / Guardar las fotos</button>
+      <button class="btn btn--fantasma" id="btnDescargar">Descargar una por una</button>
+      <button class="btn btn--fantasma" id="btnOtra">Hacer otra toma</button>
+      <p class="nota">
+        Sube las fotos a la carpeta del proyecto en Drive y avísame para armar la esfera.
+      </p>
+    </div>
+  </section>
+
+  <script src="captura.js"></script>
+</body>
+</html>

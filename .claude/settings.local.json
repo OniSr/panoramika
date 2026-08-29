@@ -25,7 +25,12 @@
       "Bash(python -c ' *)",
       "Bash(bash scripts/armar-esfera.sh C:/Users/danie/AppData/Local/Temp/claude/C--Users-danie-Downloads-tours360-mvp/1c3c7beb-eb89-47bd-9275-5b4a4ac52a9f/scratchpad/esfera-test C:/Users/danie/AppData/Local/Temp/claude/C--Users-danie-Downloads-tours360-mvp/1c3c7beb-eb89-47bd-9275-5b4a4ac52a9f/scratchpad/esfera-out.webp)",
       "Bash(python -c \"import ast; ast.parse\\(open\\('scripts/optimizar_panoramas.py',encoding='utf-8'\\).read\\(\\)\\); ast.parse\\(open\\('scripts/generar_og.py',encoding='utf-8'\\).read\\(\\)\\); print\\('py ok'\\)\")",
-      "Bash(bash -n scripts/armar-esfera.sh)"
+      "Bash(bash -n scripts/armar-esfera.sh)",
+      "PowerShell($gh = \"$env:LOCALAPPDATA\\\\Microsoft\\\\WinGet\\\\Packages\\\\GitHub.cli_Microsoft.Winget.Source_8wekyb3d8bbwe\\\\bin\\\\gh.exe\"; Set-Location \"C:\\\\Users\\\\danie\\\\Downloads\\\\tours360-mvp\"; & $gh repo rename panoramika --repo OniSr/tours360 --yes; git remote set-url origin https://github.com/OniSr/panoramika.git; git push -q origin main; git push -q origin archivo-nextjs; \"--- remoto ---\"; git remote -v; \"--- pages ---\"; & $gh api \"repos/OniSr/panoramika/pages\" | ConvertFrom-Json | Select-Object html_url,status,cname)",
+      "PowerShell($gh = \"$env:LOCALAPPDATA\\\\Microsoft\\\\WinGet\\\\Packages\\\\GitHub.cli_Microsoft.Winget.Source_8wekyb3d8bbwe\\\\bin\\\\gh.exe\"; Start-Sleep 30; $b = & $gh api \"repos/OniSr/panoramika/pages/builds/latest\" | ConvertFrom-Json; \"status: $\\($b.status\\)\"; \"error: $\\($b.error.message\\)\"; \"duration: $\\($b.duration\\)\"; \"--- forzar rebuild ---\"; & $gh api -X POST \"repos/OniSr/panoramika/pages/builds\" | ConvertFrom-Json | Select-Object status)",
+      "Bash(node -c capturar/captura.js)",
+      "Bash(python -m http.server 8766 --bind 127.0.0.1)",
+      "Bash(git push *)"
     ]
   }
 }

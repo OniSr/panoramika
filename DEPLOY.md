@@ -7,16 +7,17 @@ Publicar = `git push`.
 
 | | |
 |---|---|
-| Repo | https://github.com/OniSr/tours360 (público) |
+| Repo | https://github.com/OniSr/panoramika (público) |
 | Cuenta | `OniSr` |
-| Sitio en vivo | **https://onisr.github.io/tours360/** |
-| Recorrido demo | https://onisr.github.io/tours360/?proyecto=xalapa-demo |
+| Sitio en vivo | **https://onisr.github.io/panoramika/** |
+| Recorrido demo | https://onisr.github.io/panoramika/?proyecto=xalapa-demo |
+| Asistente de captura | https://onisr.github.io/panoramika/capturar/ |
 | Rama que sirve Pages | `main`, carpeta raíz |
 | MVP Next.js archivado | rama `archivo-nextjs` |
 
-`gh` quedó instalado con `winget install --id GitHub.cli --scope user` (el MSI
-normal falla sin permisos de administrador; el `--scope user` usa la versión
-portable).
+`gh` quedó instalado con `winget install --id GitHub.cli --scope user`.
+Hugin (armado de esferas) con `winget install --id Hugin.Hugin`.
+El repo se creó como `tours360` y se renombró a `panoramika` con `gh repo rename`.
 
 ---
 
@@ -26,6 +27,7 @@ portable).
 gh repo create tours360 --public --source=. --remote=origin --push
 git push -u origin archivo-nextjs
 gh api -X POST "repos/OniSr/tours360/pages" -f "source[branch]=main" -f "source[path]=/"
+gh repo rename panoramika --repo OniSr/tours360 --yes
 ```
 
 ---
