@@ -1,5 +1,5 @@
 /* ============================================================================
-   Domo 360 — lógica del visor
+   Panorámika — lógica del visor
    JavaScript "vanilla" (sin frameworks). Solo depende de Pannellum, cargado
    desde el CDN en index.html (con respaldo local en /vendor/).
 
@@ -91,7 +91,7 @@ function validarProyecto(p) {
   for (const e of p.escenas) {
     for (const h of e.hotspots || []) {
       if (!ids.has(h.destino))
-        console.warn(`[Domo360] Hotspot en "${e.id}" apunta a "${h.destino}", que no existe.`);
+        console.warn(`[Panoramika] Hotspot en "${e.id}" apunta a "${h.destino}", que no existe.`);
     }
   }
   return p;
@@ -118,7 +118,7 @@ async function cargarProyecto(slug) {
 function asegurarPannellum() {
   return new Promise((resolver, rechazar) => {
     if (window.pannellum) return resolver();
-    console.warn("[Domo360] Pannellum no llegó del CDN. Probando copia local…");
+    console.warn("[Panoramika] Pannellum no llegó del CDN. Probando copia local…");
     const s = document.createElement("script");
     s.src = PANNELLUM_LOCAL_JS;
     s.onload = () => (window.pannellum ? resolver() : rechazar(new Error("Pannellum local no inicializó.")));
@@ -134,7 +134,7 @@ function precargarImagen(src) {
     img.onload = () => {
       const prop = img.naturalWidth / img.naturalHeight;
       if (Math.abs(prop - 2) > 0.06)
-        console.warn(`[Domo360] "${src}" es ${img.naturalWidth}×${img.naturalHeight} (${prop.toFixed(2)}:1). Debe ser 2:1.`);
+        console.warn(`[Panoramika] "${src}" es ${img.naturalWidth}×${img.naturalHeight} (${prop.toFixed(2)}:1). Debe ser 2:1.`);
       resolver();
     };
     img.onerror = () => rechazar(new Error(`No cargó la imagen: ${src}`));
@@ -160,7 +160,7 @@ function mostrarIntro() {
   if (proyecto.portada) {
     $intro.style.setProperty("--portada", `url("${baseProyecto + proyecto.portada}")`);
   }
-  document.title = `${proyecto.nombre} · Domo 360`;
+  document.title = `${proyecto.nombre} · Panorámika`;
 
   $intro.hidden = false;
   ocultarAviso();
@@ -220,7 +220,7 @@ function iniciarVisor() {
   });
   visor.on("scenechange", alCambiarEscena);
   visor.on("error", (msg) => {
-    console.error("[Domo360] Pannellum:", msg);
+    console.error("[Panoramika] Pannellum:", msg);
     mostrarAviso("No se pudo mostrar esta toma en tu dispositivo. Prueba con otra o desde una computadora.", { error: true });
   });
 
@@ -309,7 +309,7 @@ async function arrancar() {
     await validarImagenInicial();
     mostrarIntro();
   } catch (err) {
-    console.error("[Domo360]", err);
+    console.error("[Panoramika]", err);
     mostrarAviso(err.message || "No se pudo iniciar el recorrido.", { error: true });
   }
 }

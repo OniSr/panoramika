@@ -24,7 +24,7 @@ intentes push sin remoto.
 ## Crear el repositorio remoto (una sola vez)
 
 ```bash
-gh repo create domo360 --private --source=. --remote=origin
+gh repo create panoramika --private --source=. --remote=origin
 git push -u origin main
 git push -u origin archivo-nextjs      # conservar el MVP Next.js archivado
 ```
@@ -65,14 +65,14 @@ gh pr create --fill --base main
 ## Publicar en GitHub Pages (una sola vez)
 
 ```bash
-gh api -X POST repos/:owner/domo360/pages -f 'source[branch]=main' -f 'source[path]=/'
+gh api -X POST repos/:owner/panoramika/pages -f 'source[branch]=main' -f 'source[path]=/'
 ```
 
 O por interfaz: **Settings → Pages → Source: Deploy from a branch → `main` / `/root`**.
 
 - El sitio es estático en la raíz, así que Pages lo sirve tal cual.
 - `.nojekyll` (ya en el repo) evita que Pages procese los archivos con Jekyll.
-- URL resultante: `https://<usuario>.github.io/domo360/`. Tras cada merge a `main`,
+- URL resultante: `https://<usuario>.github.io/panoramika/`. Tras cada merge a `main`,
   Pages redepliega solo en 1–2 min.
 
 ## Merge

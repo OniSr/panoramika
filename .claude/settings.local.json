@@ -9,7 +9,23 @@
       "Bash(git rm *)",
       "Bash(rm -rf node_modules .next public)",
       "Bash(rm -rf node_modules .next public next-env.d.ts)",
-      "Bash(:)"
+      "Bash(:)",
+      "PowerShell($gh = \"$env:LOCALAPPDATA\\\\Microsoft\\\\WinGet\\\\Packages\\\\GitHub.cli_Microsoft.Winget.Source_8wekyb3d8bbwe\\\\bin\\\\gh.exe\"; Set-Location \"C:\\\\Users\\\\danie\\\\Downloads\\\\tours360-mvp\"; & $gh repo create tours360 --public --source=. --remote=origin --push)",
+      "PowerShell(winget install --id Hugin.Hugin --scope user --accept-source-agreements --accept-package-agreements --disable-interactivity 2>&1)",
+      "Bash(sed -i 's/\\\\[Domo360\\\\]/[Panoramika]/g; s/Domo 360 — lógica del visor/Panorámika — lógica del visor/; s/`${proyecto.nombre} · Domo 360`/`${proyecto.nombre} · Panorámika`/' script.js)",
+      "Bash(sed -i 's/Domo 360 — hoja de estilos/Panorámika — hoja de estilos/' style.css)",
+      "Bash(sed -i 's/Domo 360 — Recorridos aéreos con dron/Panorámika — Recorridos aéreos con dron/; s/Recorrido virtual 360° · Domo 360/Recorrido virtual 360° · Panorámika/; s/Domo&nbsp;360/Panorámika/g' index.html)",
+      "Bash(sed -i 's/^# Domo 360 —/# Panorámika —/' README.md)",
+      "Bash(sed -i 's/^# Despliegue — Domo 360/# Despliegue — Panorámika/; s/domo360\\\\.mx/panoramika.mx/g' DEPLOY.md)",
+      "Bash(sed -i 's/\"Domo 360 · Xalapa\"/\"Panorámika · Xalapa\"/' scripts/generar_og.py)",
+      "Bash(sed -i 's/modelo Domo 360, mercado de Xalapa/modelo de Domo360 \\(competidor, JEBN Hunter\\), mercado de Xalapa/; s/Los `console.\\\\*` van prefijados con `\\\\[Domo360\\\\]`./Los `console.*` van prefijados con `[Panoramika]`./' CLAUDE.md)",
+      "Bash(python scripts/generar_og.py proyectos/xalapa-demo/panoramas/aerea-xalapa.webp \"Terreno en Las Ánimas\" \"Panorámika · Recorrido 360°\")",
+      "PowerShell(winget install --id Hugin.Hugin --accept-source-agreements --accept-package-agreements 2>&1)",
+      "Bash(mkdir -p C:/Users/danie/AppData/Local/Temp/claude/C--Users-danie-Downloads-tours360-mvp/1c3c7beb-eb89-47bd-9275-5b4a4ac52a9f/scratchpad/esfera-test)",
+      "Bash(python -c ' *)",
+      "Bash(bash scripts/armar-esfera.sh C:/Users/danie/AppData/Local/Temp/claude/C--Users-danie-Downloads-tours360-mvp/1c3c7beb-eb89-47bd-9275-5b4a4ac52a9f/scratchpad/esfera-test C:/Users/danie/AppData/Local/Temp/claude/C--Users-danie-Downloads-tours360-mvp/1c3c7beb-eb89-47bd-9275-5b4a4ac52a9f/scratchpad/esfera-out.webp)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('scripts/optimizar_panoramas.py',encoding='utf-8'\\).read\\(\\)\\); ast.parse\\(open\\('scripts/generar_og.py',encoding='utf-8'\\).read\\(\\)\\); print\\('py ok'\\)\")",
+      "Bash(bash -n scripts/armar-esfera.sh)"
     ]
   }
 }

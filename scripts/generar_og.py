@@ -26,7 +26,7 @@ ACENTO = (217, 154, 78)
 fondo_src = sys.argv[1] if len(sys.argv) > 1 else \
     os.path.join(RAIZ, "proyectos", "xalapa-demo", "panoramas", "aerea-xalapa.webp")
 titulo = sys.argv[2] if len(sys.argv) > 2 else "Recorrido virtual 360°"
-subtitulo = sys.argv[3] if len(sys.argv) > 3 else "Domo 360 · Xalapa"
+subtitulo = sys.argv[3] if len(sys.argv) > 3 else "Panorámika · Xalapa"
 salida = os.path.join(RAIZ, "assets", "og-imagen.jpg")
 
 

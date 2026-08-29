@@ -34,8 +34,8 @@ paso, y a prueba de fallos evidentes**.
 
 ### Errores en general
 - Envuelve el arranque en `.catch(...)` / `try…catch` y traduce el error a lenguaje
-  de usuario. El detalle técnico va a `console.error("[Domo360]", err)`.
-- Prefijo `[Domo360]` en todos los `console.*` para poder filtrar.
+  de usuario. El detalle técnico va a `console.error("[Panoramika]", err)`.
+- Prefijo `[Panoramika]` en todos los `console.*` para poder filtrar.
 - Degradación elegante: si un hotspot apunta a un `destino` que no existe en
   `ESCENAS`, no rompas el visor — ignóralo con un `console.warn`.
 

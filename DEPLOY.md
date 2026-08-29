@@ -1,4 +1,4 @@
-# Despliegue — Domo 360
+# Despliegue — Panorámika
 
 Sitio 100 % estático → **GitHub Pages**. No hay servidor, base de datos ni build.
 Publicar = `git push`.
@@ -52,7 +52,7 @@ Al hacer merge a `main`, Pages redepliega solo. Detalle en
 
 ## Dominio propio (opcional, más adelante)
 
-1. Compra el dominio (ej. `domo360.mx`).
+1. Compra el dominio (ej. `panoramika.mx`).
 2. `Settings → Pages → Custom domain` → escribe el dominio → Save.
 3. En tu proveedor DNS: un registro `CNAME` de `www` → `<usuario>.github.io`, y
    los 4 registros `A` de GitHub Pages para el dominio raíz.

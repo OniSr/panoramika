@@ -11,8 +11,9 @@
 # (Alternativa sin Python: scripts/optimizar-panoramas.sh, que usa cwebp.)
 #
 # Uso:
-#   python scripts/optimizar_panoramas.py                 # -> assets/panoramas/
-#   python scripts/optimizar_panoramas.py proyectos/xalapa-demo/panoramas
+#   python scripts/optimizar_panoramas.py                       # lote -> assets/panoramas/
+#   python scripts/optimizar_panoramas.py proyectos/x/panoramas # lote -> esa carpeta
+#   python scripts/optimizar_panoramas.py entrada.tif salida.webp   # un solo archivo
 #   CALIDAD=85 ANCHO_MAX=6000 python scripts/optimizar_panoramas.py <destino>
 # ============================================================================
 import os
@@ -26,7 +27,6 @@ except ImportError:
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ORIGEN = os.path.join(RAIZ, "assets", "panoramas", "_raw")
-DESTINO = sys.argv[1] if len(sys.argv) > 1 else os.path.join(RAIZ, "assets", "panoramas")
 
 CALIDAD = int(os.environ.get("CALIDAD", "82"))      # 0-100; 80-85 es el punto dulce
 ANCHO_MAX = int(os.environ.get("ANCHO_MAX", "5760"))  # ancho máximo de salida
@@ -51,31 +51,40 @@ def a_proporcion_2_1(img):
     return lienzo
 
 
-def optimizar(ruta_entrada, carpeta_salida):
-    nombre = os.path.splitext(os.path.basename(ruta_entrada))[0]
-    ruta_salida = os.path.join(carpeta_salida, nombre + ".webp")
-
+def optimizar(ruta_entrada, ruta_salida):
     with Image.open(ruta_entrada) as img:
         img = ImageOps.exif_transpose(img).convert("RGB")  # respeta orientación EXIF
         img = a_proporcion_2_1(img)
         if img.width > ANCHO_MAX:
             img = img.resize((ANCHO_MAX, ANCHO_MAX // 2), Image.LANCZOS)
+        os.makedirs(os.path.dirname(os.path.abspath(ruta_salida)), exist_ok=True)
         img.save(ruta_salida, "WEBP", quality=CALIDAD, method=6)
+        w, h = img.size
 
     antes = os.path.getsize(ruta_entrada) // 1024
     despues = os.path.getsize(ruta_salida) // 1024
-    print(f"  {os.path.basename(ruta_entrada)}  {antes} KB -> {despues} KB  "
-          f"({Image.open(ruta_salida).size[0]}x{Image.open(ruta_salida).size[1]})")
+    print(f"  {os.path.basename(ruta_entrada)} -> {os.path.basename(ruta_salida)}  "
+          f"{antes} KB -> {despues} KB  ({w}x{h})")
 
 
 def main():
+    args = sys.argv[1:]
+
+    # Modo "un solo archivo":  optimizar_panoramas.py entrada.ext salida.webp
+    if len(args) == 2 and os.path.isfile(args[0]):
+        optimizar(args[0], args[1])
+        print("Listo.")
+        return
+
+    # Modo lote: procesa assets/panoramas/_raw/ -> carpeta destino
+    destino = args[0] if args else os.path.join(RAIZ, "assets", "panoramas")
     if not os.path.isdir(ORIGEN):
         sys.exit(f"ERROR: no existe {ORIGEN}")
-    os.makedirs(DESTINO, exist_ok=True)
+    os.makedirs(destino, exist_ok=True)
 
     # Dedup por ruta real: en Windows el sistema de archivos no distingue
     # mayúsculas y *.jpg / *.JPG devolverían el mismo archivo dos veces.
-    exts = (".jpg", ".jpeg", ".png")
+    exts = (".jpg", ".jpeg", ".png", ".tif", ".tiff")
     vistos, archivos = set(), []
     for f in sorted(glob.glob(os.path.join(ORIGEN, "*"))):
         clave = os.path.normcase(os.path.abspath(f))
@@ -86,9 +95,10 @@ def main():
         print(f"No hay imágenes en {ORIGEN}. Copia ahí los originales del dron.")
         return
 
-    print(f"Optimizando {len(archivos)} imagen(es) -> {DESTINO}")
+    print(f"Optimizando {len(archivos)} imagen(es) -> {destino}")
     for f in archivos:
-        optimizar(f, DESTINO)
+        nombre = os.path.splitext(os.path.basename(f))[0]
+        optimizar(f, os.path.join(destino, nombre + ".webp"))
     print("Listo. Añade las tomas al proyecto (ver skill add-panorama).")
 
 

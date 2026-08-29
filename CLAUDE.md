@@ -2,8 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-> El contexto de negocio (quién es Daniel, modelo Domo 360, mercado de Xalapa,
-> DJI Mini 3, cómo prefiere trabajar) vive en `../CLAUDE.md`. **Este archivo manda
+> El contexto de negocio (quién es Daniel, el modelo de Domo360 de JEBN Hunter que
+> estudió como referencia de competencia, mercado de Xalapa, DJI Mini 3, cómo
+> prefiere trabajar) vive en `../CLAUDE.md`. **Este archivo manda
 > en lo técnico.** Si algo en `../CLAUDE.md` menciona Next.js, React, Leaflet,
 > Supabase o Vercel, está desactualizado — se archivó ese stack (ver más abajo).
 
@@ -80,7 +81,7 @@ script.js
 - **Programación defensiva** (skill `senior-coder`): validar el JSON y las imágenes
   antes de usarlas, `mostrarAviso(..., { error:true })` con "Reintentar", hotspots a
   destinos inexistentes se ignoran con `console.warn`. Nunca un lienzo negro mudo.
-- Los `console.*` van prefijados con `[Domo360]`.
+- Los `console.*` van prefijados con `[Panoramika]`.
 
 ## 5. Estilo de código
 
@@ -108,9 +109,8 @@ Despliegue: ver **`DEPLOY.md`** y la skill **`github-deploy`**. Rama por fitach
 (`fitach/<nombre>`), commits limpios, `git push`, PR con `gh`. GitHub Pages sirve
 `main` desde la raíz; `.nojekyll` evita el procesado Jekyll.
 
-**Pendiente de Daniel:** `gh` (GitHub CLI) no está instalado —
-`winget install --id GitHub.cli` y `gh auth login`. Sin eso no se puede crear el
-repo remoto ni activar Pages.
+Ya publicado: repo `OniSr/panoramika`, en vivo en **https://onisr.github.io/panoramika/**.
+`gh` instalado con `winget install --id GitHub.cli --scope user`.
 
 ## 7. Historial
 

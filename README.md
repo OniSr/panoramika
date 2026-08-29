@@ -1,4 +1,4 @@
-# Domo 360 — Recorridos 360° con dron (Xalapa)
+# Panorámika — Recorridos 360° con dron (Xalapa)
 
 Sitio estático que muestra tomas panorámicas 360° del DJI Mini 3 con navegación
 entre escenas mediante hotspots. Sin frameworks: **HTML + CSS + Pannellum.js**.
