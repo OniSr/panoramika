@@ -77,32 +77,43 @@ $("notaEscritorio").hidden = esMovil;
 
 $("btnEmpezar").addEventListener("click", () => irA("permisos"));
 
-/* iOS pide UN permiso por toque, y requestPermission() SOLO funciona si se llama
-   antes de cualquier `await` dentro del gesto. Por eso van dos botones separados:
-   primero movimiento, luego cámara. */
-
-let permMovimientoOK = false;
+/* iOS pide el permiso de orientación con un POPUP en JS (ya no hay interruptor en
+   Ajustes desde iOS 16.4). requestPermission() SOLO funciona llamado dentro del
+   gesto y antes de cualquier `await`. Va en su propio botón, separado del de la
+   cámara, y es "best-effort": si falla, igual se puede continuar y probar. */
 
 $("btnPermMovimiento").addEventListener("click", async () => {
   $("errorPermisos").hidden = true;
-  try {
-    if (necesitaPermisoOrientacion) {
+  const b = $("btnPermMovimiento");
+  b.disabled = true;
+  b.textContent = "1 · Activando…";
+
+  if (necesitaPermisoOrientacion) {
+    try {
       const r = await DeviceOrientationEvent.requestPermission();
-      if (r !== "granted") {
-        mostrarAyuda();
-        return falloPermisos('Elegiste "No permitir" para el movimiento. Actívalo en Ajustes y recarga.');
-      }
+      if (r !== "granted") mostrarAyuda();
+    } catch (e) {
+      console.warn("[Panoramika] requestPermission:", e);
+      mostrarAyuda();
     }
-    escucharOrientacion();
-    permMovimientoOK = true;
-    const b = $("btnPermMovimiento");
-    b.textContent = "1 · Movimiento ✓";
-    b.disabled = true;
-    $("btnPermCamara").disabled = false;
-  } catch (e) {
-    mostrarAyuda();
-    falloPermisos("El sensor de movimiento falló: " + textoError(e) + ". Recarga e intenta de nuevo.");
   }
+  escucharOrientacion();
+
+  // ¿De verdad están llegando datos del sensor?
+  setTimeout(() => {
+    $("btnPermCamara").disabled = false;
+    if (orientacionOK) {
+      b.textContent = "1 · Movimiento ✓";
+    } else {
+      b.textContent = "1 · Reintentar movimiento";
+      b.disabled = false;
+      falloPermisos(
+        necesitaPermisoOrientacion
+          ? "Aún no llega la orientación. Toca de nuevo este botón; si sigue igual, continúa con la cámara igualmente."
+          : "Este teléfono/navegador no está mandando la orientación."
+      );
+    }
+  }, 1300);
 });
 
 $("btnPermCamara").addEventListener("click", async () => {
@@ -122,15 +133,7 @@ $("btnPermCamara").addEventListener("click", async () => {
     mostrarAyuda();
     return falloPermisos("No se pudo abrir la cámara: " + textoError(e));
   }
-
-  // Un momento para confirmar que los sensores mandan datos.
-  setTimeout(() => {
-    if (necesitaPermisoOrientacion && !orientacionOK && esMovil) {
-      falloPermisos("La cámara sí funciona, pero no llegan datos de movimiento. Recarga la página.");
-    } else {
-      irA("tips");
-    }
-  }, 800);
+  irA("tips");
 });
 
 function falloPermisos(msg) {
@@ -149,11 +152,16 @@ function textoError(e) { return e && e.message ? e.message : String(e); }
    TRASERA (vector (0,0,−1) del aparato, llevado al mundo) y de ahí yaw y pitch.
    ========================================================================== */
 let yawTel = 0, pitchTel = 0, rollTel = 0;
+let ultimoDatoOrient = 0;      // timestamp del último evento válido
+let listenerOrientPuesto = false;
 
 function escucharOrientacion() {
+  if (listenerOrientPuesto) return;   // no duplicar al reintentar
+  listenerOrientPuesto = true;
   window.addEventListener("deviceorientation", (e) => {
     if (e.alpha === null || e.beta === null || e.gamma === null) return;
     orientacionOK = true;
+    ultimoDatoOrient = performance.now();
 
     const a = e.alpha * Math.PI / 180;
     const b = e.beta * Math.PI / 180;
@@ -273,9 +281,21 @@ function yawRelativo() {
 function bucle(ahora) {
   if (!bucleActivo) return;
 
+  // Sin datos de orientación no hay guía posible: avisar y no seguir el bucle.
+  const sinSensor = !orientacionOK || (ahora - ultimoDatoOrient > 2000);
+  const avG = $("avisoGiro");
+  if (sinSensor) {
+    avG.hidden = false;
+    avG.innerHTML =
+      "No estoy recibiendo la <strong>orientación</strong> del teléfono.<br>" +
+      "Sal, recarga la página y vuelve a dar el permiso de movimiento.";
+    return requestAnimationFrame(bucle);
+  }
+
   // Aviso si el teléfono está muy acostado (la técnica pide vertical).
   const acostado = Math.abs(rollTel) > 45;
-  $("avisoGiro").hidden = !acostado;
+  avG.hidden = !acostado;
+  if (acostado) avG.textContent = "Pon el teléfono vertical";
 
   if (refYaw === null && orientacionOK) refYaw = yawTel;
 
