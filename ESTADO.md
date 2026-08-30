@@ -1,0 +1,101 @@
+# ESTADO — Panorámika
+
+> Punto de traspaso entre sesiones. Una sesión nueva lee **esto + CLAUDE.md +
+> ESTRATEGIA.md** y ya puede continuar sin releer el chat. Se actualiza al cerrar
+> cada sesión o antes de compactar contexto. Última actualización: **2026-08-30**.
+
+## Qué es
+
+Sitio estático (HTML/CSS/Pannellum vía CDN) de recorridos virtuales 360 para
+inmobiliaria en Xalapa. En vivo: **https://onisr.github.io/panoramika/**.
+Repo `OniSr/panoramika` (público). Rama de trabajo `main`; MVP viejo Next.js en
+`archivo-nextjs`. Deploy = push a `main` → GitHub Pages redepliega solo.
+
+## Cómo está montado el entorno (ya hecho)
+
+- `gh` CLI instalado (`winget --scope user`), autenticado como `OniSr`.
+- `Hugin` instalado (`winget install Hugin.Hugin`) → `C:\Program Files\Hugin\bin`.
+- `Pillow` disponible en Python. `ffmpeg` disponible (winget Gyan.FFmpeg).
+- **Google Drive para escritorio** montado en `G:` →
+  `G:\Mi unidad\PANORAMIKA\...` son archivos locales (leer de ahí, **NO** con
+  `download_file_content` del MCP que mete base64 al contexto).
+
+## Estructura del código (índice para no leer todo)
+
+| Necesitas tocar… | Archivo | Dónde |
+|---|---|---|
+| Lógica del visor (carga JSON, escenas, hotspots, compartir) | `script.js` | PASO 1–8, se lee de arriba abajo |
+| Marcadores/hotspots del visor | `script.js` | `crearMarcador()`, `construirConfigPannellum()` |
+| Barra de navegación entre escenas | `script.js` | `construirSelector()`, `alCambiarEscena()` |
+| Estilos del visor | `style.css` | secciones numeradas 1–9 |
+| Asistente de captura (pantallas, permisos) | `capturar/captura.js` | PASO 1–7 |
+| Bucle de captura (filas, giro relativo, disparo) | `capturar/captura.js` | PASO 6: `bucle()`, `entrarEnDisparo()`, `capturarFoto()` |
+| Orientación del teléfono (giroscopio) | `capturar/captura.js` | PASO 4: `escucharOrientacion()` |
+| Compartir fotos a Drive (en tandas) | `capturar/captura.js` | PASO 7: `btnCompartir` handler |
+| Datos de un recorrido | `proyectos/<slug>/proyecto.json` | — |
+| Armar esfera de fotos sueltas | `scripts/armar-esfera.sh` | Hugin CLI + detección de lente dron/iPhone |
+| Optimizar imagen → WebP 2:1 | `scripts/optimizar_panoramas.py` | modo lote y modo un-archivo |
+| Placeholder de escena | `scripts/placeholder_panorama.py` | — |
+| Miniatura de compartir | `scripts/generar_og.py` | — |
+
+Recorridos actuales: `proyectos/xalapa-demo/` (demo original 2 escenas),
+`proyectos/depto-lagos/` (piloto real: aérea del dron OK + fachada/sala/recámara
+son placeholders hasta tener fotos).
+
+## Estado de cada frente
+
+### Asistente de captura — `capturar/` (v8, en vivo)
+- **v8**: solo giroscopio (la brújula fallaba en interiores por imanes → v6 solo
+  cubrió ~40%). Captura por filas: horizonte 360° → arriba → abajo → techo → piso.
+  Giro **relativo** (+45° respecto a la foto anterior real) → la deriva del
+  giroscopio no deja huecos.
+- Fotos salen del `<canvas>` del video: **2160×4032, sin EXIF**.
+- **PENDIENTE: probar v8 en el iPhone de Daniel** (mañana / cuando pueda). Cualquier
+  cuarto con textura sirve para calibrar. Si la esfera sale bien cubierta, v8 quedó;
+  si no, ajustar `TOL_YAW`/`TOL_PITCH`/`PASO_YAW`/`FOV_GUIA_*` en PASO 1.
+- Cache-bust: subir el número en `?v=N` de `index.html` (css y js) y en la etiqueta
+  visible `<span class="version">`.
+
+### Armado de esferas — `scripts/armar-esfera.sh` (funciona)
+- Probado con 26 fotos iPhone y 35 del dron. Detecta lente: dron (modelo `FC*`) → 82°,
+  iPhone → 63°. Salida equirectangular 2:1 → `optimizar_panoramas.py`.
+- El aéreo del dron de Los Lagos quedó **excelente** (5760×2880). El interior con
+  fotos v6 salió mal (cobertura, era problema de captura, no del script).
+
+### Visor — navegación tipo Street View (v en vivo)
+- Hotspots = marcadores con etiqueta (`tipo`: `propiedad` / `destino` / `salir`).
+- Barra de escenas **siempre visible**, chips con ícono, contador "2/4 · Fachada".
+- **PENDIENTE**: Daniel confirma cuál edificio es la propiedad en la aérea de
+  `depto-lagos` (marcador ahora en yaw 8, pitch -40, estimado) → ajustar en
+  `proyectos/depto-lagos/proyecto.json`.
+
+## Próximas tareas (orden sugerido)
+
+1. **Daniel prueba captura v8** en el iPhone → calibrar.
+2. Reemplazar placeholders de `depto-lagos` por fotos reales (fachada + cuartos).
+3. Ajustar posición del marcador de la propiedad en la aérea.
+4. **Tapar el nadir** (hueco de abajo) con el logo — script o imagen.
+5. **Página índice** que liste los recorridos (portafolio para brokers).
+6. Después (features tipo competencia "La Rosa"): pestaña PLANO 2D, selector de
+   unidades/lotes (recuperar de `archivo-nextjs`), toggle amueblado/vacío,
+   transiciones más finas.
+7. Marketing: embudo social + 1 recorrido demo impecable.
+
+## Decisiones tomadas (no re-litigar)
+
+- Nombre: **Panorámika** (salió "Domo 360" por tema legal).
+- Stack: HTML/CSS/Pannellum CDN, sin build. No introducir bundler ni framework.
+- Sin cámara 360 dedicada por ahora (no hay capital) → seguir con celular.
+- Subida a Drive: **manual** (botón Compartir → Drive), no automática (para no
+  gastar espacio con capturas malas).
+- Monetización Fase 1: producción (pago único $2,500–8,000 MXN) + renta mensual
+  de alojamiento ($200–500 MXN/mes). Detalle y capas 3–6 en `ESTRATEGIA.md`.
+
+## Flujo de trabajo con Claude (política de contexto)
+
+- **Un "fitach" grande = un sub-agente en sesión limpia** (tool `Agent`). No
+  hacer todo en la sesión principal (fue el error de las sesiones 1–N: el
+  contexto se llenó al 66%).
+- Antes de que el contexto pase de ~25–30%: actualizar este `ESTADO.md`, hacer
+  commit, y compactar (`/compact`) o abrir sesión nueva.
+- Este archivo + `CLAUDE.md` + `ESTRATEGIA.md` + `memory/*.md` son la memoria.

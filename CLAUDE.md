@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **Al empezar una sesión, lee `ESTADO.md`** (punto de traspaso: qué está hecho,
+> qué falta, índice de dónde vive cada cosa) y `ESTRATEGIA.md` (negocio). Con eso
+> + este archivo + `memory/*.md` no hace falta releer el chat viejo.
+
 > El contexto de negocio (quién es Daniel, el modelo de Domo360 de JEBN Hunter que
 > estudió como referencia de competencia, mercado de Xalapa, DJI Mini 3, cómo
 > prefiere trabajar) vive en `../CLAUDE.md`. **Este archivo manda
