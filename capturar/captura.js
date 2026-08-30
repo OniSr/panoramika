@@ -16,27 +16,36 @@
 /* ============================================================================
    PASO 1 · CONFIGURACIÓN
    ============================================================================
-   Las "dianas" son las direcciones a las que hay que apuntar. yaw = giro
-   horizontal (0 = donde empezaste, aumenta al girar tu cuerpo a la derecha).
-   pitch = inclinación (0 = horizonte, + = arriba, − = abajo).
-   Tres filas con buen traslape + cenit + nadir = 26 tomas. */
-function generarDianas() {
-  const d = [];
-  for (let i = 0; i < 8; i++) d.push({ yaw: i * 45, pitch: 0 });          // fila media
-  for (let i = 0; i < 8; i++) d.push({ yaw: i * 45 + 22.5, pitch: 40 });  // fila alta
-  for (let i = 0; i < 8; i++) d.push({ yaw: i * 45 + 22.5, pitch: -40 }); // fila baja
-  d.push({ yaw: 0, pitch: 88 });   // cenit (cielo)
-  d.push({ yaw: 0, pitch: -88 });  // nadir (suelo)
-  return d;
-}
+   La captura va por FILAS: primero el horizonte girando 360°, luego una fila
+   inclinada hacia arriba, otra hacia abajo, y al final techo y piso.
 
-const DIANAS = generarDianas();
+   Clave del diseño (v8): el giro entre foto y foto es RELATIVO a la foto
+   anterior (giras ~45° más), NO a un "norte" fijo. El giroscopio se desvía
+   despacio, pero como cada paso es relativo, esa desviación no deja huecos.
+   La brújula (que sí falla en interiores por los imanes) ya no se usa. */
+const PASO_YAW = 45;              // grados de giro entre foto y foto
+const FILAS = [
+  { id: "horizonte", nombre: "el horizonte",       pitch:   0, disparos: 8 },
+  { id: "arriba",    nombre: "un poco hacia arriba", pitch:  33, disparos: 8 },
+  { id: "abajo",     nombre: "un poco hacia abajo",  pitch: -33, disparos: 8 },
+];
+const POLOS = [
+  { id: "techo", nombre: "al techo", pitch:  82 },
+  { id: "piso",  nombre: "al piso",  pitch: -82 },
+];
 
-const TOLERANCIA_GRADOS = 7;    // qué tan cerca hay que apuntar para "alinear"
-const TOLERANCIA_POLO = 14;     // cenit/nadir: solo importa el pitch
-const MS_PARA_DISPARAR = 800;   // hay que sostener la alineación este tiempo
-const FOV_GUIA_H = 58;          // grados horizontales que "caben" en la pantalla
-const FOV_GUIA_V = 74;          // grados verticales (teléfono vertical)
+/** Plan plano de disparos (26): cada uno sabe a qué fila/polo pertenece. */
+const PLAN = [];
+FILAS.forEach((f) => { for (let i = 0; i < f.disparos; i++) PLAN.push({ tipo: "fila", fila: f, i }); });
+POLOS.forEach((p) => PLAN.push({ tipo: "polo", polo: p }));
+const TOTAL = PLAN.length;
+
+const TOL_YAW = 8;             // margen horizontal para "alineado"
+const TOL_PITCH = 9;           // margen vertical
+const TOL_POLO = 16;           // techo/piso: solo importa el pitch
+const MS_PARA_DISPARAR = 700;  // sostener la alineación este tiempo
+const FOV_GUIA_H = 58;         // grados horizontales que "caben" en la pantalla
+const FOV_GUIA_V = 74;         // grados verticales (teléfono vertical)
 
 /* ============================================================================
    PASO 2 · DOM + NAVEGACIÓN
@@ -57,14 +66,18 @@ function irA(nombre) {
 }
 
 /* Estado */
-const fotos = new Array(DIANAS.length).fill(null); // Blob por diana
-const historial = [];                              // índices en orden de captura (para "rehacer")
+const fotos = new Array(TOTAL).fill(null);  // Blob por disparo
+const historial = [];                       // índices en orden de captura (para "rehacer")
 let streamCamara = null;
-let refYaw = null;          // yaw del teléfono al empezar (cero relativo)
 let orientacionOK = false;  // llegan datos de los sensores
 let bucleActivo = false;
-let alineadaDesde = 0;      // timestamp desde que la diana está alineada
-let objetivoActual = -1;    // índice de diana que se está buscando
+let alineadaDesde = 0;      // timestamp desde que el objetivo está alineado
+
+let idx = 0;                // disparo actual (0 .. TOTAL-1)
+let objetivoYaw = null;     // yaw (marco del teléfono) donde va el círculo; null = "el que tengas ahora"
+let objetivoPitch = 0;      // inclinación objetivo del disparo actual
+let yawUltimoDisparo = 0;   // yaw del teléfono en el último disparo (para encadenar el siguiente)
+let filaAnunciada = -1;     // para mostrar el cartel de "Fila N" una sola vez
 
 /* ============================================================================
    PASO 3 · PERMISOS
@@ -151,12 +164,15 @@ function textoError(e) { return e && e.message ? e.message : String(e); }
    El evento deviceorientation da alpha/beta/gamma (giro del aparato). Con la
    matriz de rotación del estándar W3C sacamos hacia dónde mira la cámara
    TRASERA (vector (0,0,−1) del aparato, llevado al mundo) y de ahí yaw y pitch.
+
+   Se usa SOLO el giroscopio (alpha/beta/gamma). La brújula
+   (webkitCompassHeading) se descartó: en interiores brinca por los imanes
+   (monitor, bocinas…) y arruinaba la captura. El giroscopio se desvía despacio,
+   pero como en v8 cada giro es relativo al disparo anterior, no deja huecos.
    ========================================================================== */
 let yawTel = 0, pitchTel = 0, rollTel = 0;
 let ultimoDatoOrient = 0;      // timestamp del último evento válido
 let listenerOrientPuesto = false;
-let brujulaOK = false;         // ¿tenemos rumbo de brújula (absoluto)?
-let brujulaCalibrada = true;   // webkitCompassAccuracy razonable
 
 function escucharOrientacion() {
   if (listenerOrientPuesto) return;   // no duplicar al reintentar
@@ -176,24 +192,12 @@ function escucharOrientacion() {
     // Tercera columna de R = Rz(a)·Rx(b)·Ry(g)  →  eje Z del aparato en el mundo.
     // La cámara trasera mira a −Z, así que negamos.
     const mundoX = -(cA * sG + cG * sA * sB);
+    const mundoY = -(sA * sG - cA * cG * sB);
     const mundoZ = -(cB * cG);
 
     pitchTel = Math.asin(Math.max(-1, Math.min(1, mundoZ))) * 180 / Math.PI;
+    yawTel = Math.atan2(mundoX, mundoY) * 180 / Math.PI;
     rollTel = e.gamma;
-
-    // YAW: la brújula (webkitCompassHeading) es ABSOLUTA y no deriva con el
-    // tiempo; e.alpha sí deriva y arruinaba la cobertura. Usamos la brújula
-    // cuando está y caemos a la matriz solo si no hay.
-    if (typeof e.webkitCompassHeading === "number" && e.webkitCompassHeading >= 0) {
-      yawTel = e.webkitCompassHeading;   // 0 = norte, aumenta al girar a la derecha
-      brujulaOK = true;
-      if (typeof e.webkitCompassAccuracy === "number")
-        brujulaCalibrada = e.webkitCompassAccuracy > 0 && e.webkitCompassAccuracy < 25;
-    } else {
-      const mundoY = -(sA * sG - cA * cG * sB);
-      yawTel = Math.atan2(mundoX, mundoY) * 180 / Math.PI;
-      brujulaOK = false;
-    }
   }, true);
 }
 
@@ -248,11 +252,17 @@ function limpiarNombre(txt) {
     .slice(0, 40)) || "toma";
 }
 
+const yawPorDisparo = new Array(TOTAL).fill(null);  // yaw del teléfono en cada disparo hecho
+let anuncioHasta = 0;                               // ms hasta cuándo mostrar el cartel de fila
+let capturando = false;                             // evita disparos dobles mientras toBlob resuelve
+
 $("btnComenzarCaptura").addEventListener("click", () => {
   nombreToma = limpiarNombre($("nombreToma").value);
   irA("captura");
   construirTiras();
-  refYaw = null; // se fija en el primer frame del bucle
+  idx = 0;
+  filaAnunciada = -1;
+  entrarEnDisparo(0);
   bucleActivo = true;
   requestAnimationFrame(bucle);
 });
@@ -260,119 +270,143 @@ $("btnComenzarCaptura").addEventListener("click", () => {
 $("btnReiniciar").addEventListener("click", () => {
   if (confirm("¿Reiniciar TODO? Se borran las fotos de esta sesión.")) {
     fotos.fill(null);
+    yawPorDisparo.fill(null);
     historial.length = 0;
-    refYaw = null;
+    idx = 0;
+    filaAnunciada = -1;
+    entrarEnDisparo(0);
     construirTiras();
   }
 });
 
-// Rehacer solo la última foto: la desmarca para volver a apuntar a esa diana.
+// Rehacer la última foto: la desmarca y vuelve a apuntar a esa posición.
 $("btnRehacer").addEventListener("click", () => {
   const i = historial.pop();
   if (i === undefined) return;
   fotos[i] = null;
+  yawPorDisparo[i] = null;
+  idx = i;
+  entrarEnDisparo(i);
   if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
-  $("instruccion").textContent = "Rehaciendo la última — vuelve a esa posición";
   actualizarProgreso();
 });
+
+/** Prepara el objetivo (pitch + yaw) del disparo i. */
+function entrarEnDisparo(i) {
+  const p = PLAN[i];
+  alineadaDesde = 0;
+  if (!p) return;
+  if (p.tipo === "polo") {
+    objetivoPitch = p.polo.pitch;
+    objetivoYaw = null;                 // en los polos el giro no importa
+  } else {
+    objetivoPitch = p.fila.pitch;
+    if (p.i === 0) {
+      objetivoYaw = null;               // primera foto de la fila: donde apuntes
+    } else {
+      const prev = yawPorDisparo[i - 1];
+      objetivoYaw = (prev == null ? yawTel : prev) + PASO_YAW;  // +45° respecto a la anterior
+    }
+  }
+}
 
 function construirTiras() {
   const cont = $("tiras");
   cont.innerHTML = "";
-  DIANAS.forEach((_, i) => {
+  PLAN.forEach((p, i) => {
     const t = document.createElement("span");
     t.className = "tira";
-    t.dataset.i = i;
+    // separación visual al empezar fila/polo nuevo
+    if (i > 0 && grupoDe(p) !== grupoDe(PLAN[i - 1])) t.classList.add("--separa");
     cont.appendChild(t);
   });
   actualizarProgreso();
 }
+function grupoDe(p) { return p.tipo === "polo" ? p.polo.id : p.fila.id; }
 
 function actualizarProgreso() {
   const hechas = fotos.filter(Boolean).length;
-  $("progreso").textContent = `${hechas} / ${DIANAS.length}`;
+  $("progreso").textContent = `${hechas} / ${TOTAL}`;
   $("btnRehacer").disabled = historial.length === 0;
   [...$("tiras").children].forEach((t, i) => {
     t.classList.toggle("--hecha", !!fotos[i]);
-    t.classList.toggle("--activa", i === objetivoActual && !fotos[i]);
+    t.classList.toggle("--activa", i === idx && !fotos[i]);
   });
-  return hechas;
-}
-
-function siguienteObjetivo() {
-  // La diana pendiente más cercana a donde apunta el teléfono ahora.
-  let mejor = -1, mejorDist = Infinity;
-  DIANAS.forEach((d, i) => {
-    if (fotos[i]) return;
-    const dyaw = difAngulo(d.yaw, yawRelativo());
-    const dpitch = d.pitch - pitchTel;
-    const dist = dyaw * dyaw + dpitch * dpitch;
-    if (dist < mejorDist) { mejorDist = dist; mejor = i; }
-  });
-  return mejor;
-}
-
-function yawRelativo() {
-  if (refYaw === null) return yawTel;
-  return difAngulo(yawTel, refYaw); // 0 = donde empezaste
 }
 
 function bucle(ahora) {
   if (!bucleActivo) return;
 
-  // Sin datos de orientación no hay guía posible: avisar y no seguir el bucle.
-  const sinSensor = !orientacionOK || (ahora - ultimoDatoOrient > 2000);
   const avG = $("avisoGiro");
-  if (sinSensor) {
+
+  // Sin datos de orientación no hay guía posible.
+  if (!orientacionOK || ahora - ultimoDatoOrient > 2000) {
     avG.hidden = false;
     avG.innerHTML =
-      "No estoy recibiendo la <strong>orientación</strong> del teléfono.<br>" +
-      "Sal, recarga la página y vuelve a dar el permiso de movimiento.";
+      "No llega la <strong>orientación</strong> del teléfono.<br>" +
+      "Sal, recarga y vuelve a dar el permiso de movimiento.";
     return requestAnimationFrame(bucle);
   }
 
-  // Avisos que ocupan la capa central (prioridad: acostado > brújula sin calibrar).
+  if (idx >= TOTAL) return terminar();
+  const p = PLAN[idx];
+  const esPolo = p.tipo === "polo";
+
+  // Cartel al cambiar de fila / entrar a un polo.
+  const grupoIdx = FILAS.length + (esPolo ? POLOS.indexOf(p.polo) : 0);
+  const claveGrupo = esPolo ? "polo-" + p.polo.id : "fila-" + FILAS.indexOf(p.fila);
+  if (claveGrupo !== String(filaAnunciada)) {
+    filaAnunciada = claveGrupo;
+    anuncioHasta = ahora + 1800;
+  }
+
   const acostado = Math.abs(rollTel) > 45;
+
+  // dpitch y (si aplica) dyaw
+  const dpitch = objetivoPitch - pitchTel;
+  const dyaw = objetivoYaw == null ? 0 : difAngulo(objetivoYaw, yawTel);
+
+  const alineada = !acostado && (
+    esPolo || objetivoYaw == null
+      ? Math.abs(dpitch) < (esPolo ? TOL_POLO : TOL_PITCH)
+      : Math.abs(dyaw) < TOL_YAW && Math.abs(dpitch) < TOL_PITCH
+  );
+
+  pintarDiana(
+    objetivoYaw == null ? 0 : dyaw,
+    Math.max(-FOV_GUIA_V / 2, Math.min(FOV_GUIA_V / 2, dpitch)),
+    alineada,
+    esPolo || objetivoYaw == null
+  );
+
+  // Textos
   if (acostado) {
+    avG.hidden = false; avG.textContent = "Pon el teléfono vertical";
+  } else if (ahora < anuncioHasta) {
     avG.hidden = false;
-    avG.textContent = "Pon el teléfono vertical";
-  } else if (brujulaOK && !brujulaCalibrada) {
-    avG.hidden = false;
-    avG.innerHTML = "Mueve el teléfono en <strong>ocho</strong> para calibrar la brújula";
+    avG.innerHTML = esPolo
+      ? `Ahora apunta <strong>${p.polo.nombre}</strong>`
+      : (p.i === 0
+          ? `Fila ${FILAS.indexOf(p.fila) + 1} de 3 — nivela a <strong>${p.fila.nombre}</strong> y gira`
+          : "");
+    if (!avG.innerHTML) avG.hidden = true;
   } else {
     avG.hidden = true;
   }
 
-  if (refYaw === null && orientacionOK) refYaw = yawTel;
+  $("instruccion").textContent =
+    alineada ? "Quieto… tomando"
+    : esPolo ? `Apunta ${p.polo.nombre}`
+    : objetivoYaw == null ? `Nivela a ${p.fila.nombre}`
+    : dyaw > TOL_YAW ? "Gira despacio a la derecha"
+    : dyaw < -TOL_YAW ? "Te pasaste — regresa un poco a la izquierda"
+    : Math.abs(dpitch) > TOL_PITCH ? (dpitch > 0 ? "Sube un poco el teléfono" : "Baja un poco el teléfono")
+    : "Quieto";
 
-  objetivoActual = siguienteObjetivo();
-
-  if (objetivoActual === -1) return terminar();
-
-  const d = DIANAS[objetivoActual];
-  const esPolo = Math.abs(d.pitch) >= 80;
-  const dyaw = difAngulo(d.yaw, yawRelativo());
-  const dpitch = d.pitch - pitchTel;
-
-  const alineada = esPolo
-    ? Math.abs(dpitch) < TOLERANCIA_POLO
-    : Math.abs(dyaw) < TOLERANCIA_GRADOS && Math.abs(dpitch) < TOLERANCIA_GRADOS;
-
-  pintarDiana(esPolo ? 0 : dyaw, esPolo ? Math.max(-FOV_GUIA_V/2, Math.min(FOV_GUIA_V/2, dpitch)) : dpitch, alineada, esPolo);
-
-  $("instruccion").textContent = alineada
-    ? "¡Quieto! Tomando…"
-    : (esPolo
-        ? (d.pitch > 0 ? "Apunta al cielo" : "Apunta al suelo")
-        : "Alinea el círculo con la mira");
-
-  if (alineada && !acostado) {
+  if (alineada && !capturando) {
     if (!alineadaDesde) alineadaDesde = ahora;
-    if (ahora - alineadaDesde >= MS_PARA_DISPARAR) {
-      capturarFoto(objetivoActual);
-      alineadaDesde = 0;
-    }
-  } else {
+    if (ahora - alineadaDesde >= MS_PARA_DISPARAR) { capturarFoto(idx); alineadaDesde = 0; }
+  } else if (!alineada) {
     alineadaDesde = 0;
   }
 
@@ -386,14 +420,21 @@ function capturarFoto(indice) {
   lienzo.width = vw;
   lienzo.height = vh;
   lienzo.getContext("2d").drawImage(video, 0, 0, vw, vh);
+  yawPorDisparo[indice] = yawTel;        // dónde estabas: base del +45° del siguiente
+  capturando = true;
+
   lienzo.toBlob((blob) => {
+    capturando = false;
     if (!blob) return;
     const nueva = !fotos[indice];
     fotos[indice] = blob;
-    if (nueva) historial.push(indice);   // solo si no estaba ya hecha
+    if (nueva) historial.push(indice);
     if (navigator.vibrate) navigator.vibrate(60);
     const dest = $("destello");
     dest.classList.remove("--flash"); void dest.offsetWidth; dest.classList.add("--flash");
+    // avanzar al siguiente disparo pendiente
+    while (idx < TOTAL && fotos[idx]) idx++;
+    if (idx < TOTAL) entrarEnDisparo(idx);
     actualizarProgreso();
   }, "image/jpeg", 0.92);
 }
@@ -412,8 +453,8 @@ function terminar() {
     totalTandas > 1 ? `Compartir a Drive (tanda 1 de ${totalTandas})` : "Compartir a Drive";
 
   $("finResumen").textContent =
-    `Tomaste ${hechas} de ${DIANAS.length} fotos. ` +
-    (hechas < DIANAS.length ? "Puedes repetir para completar las que falten." : "Cobertura completa.") +
+    `Tomaste ${hechas} de ${TOTAL} fotos. ` +
+    (hechas < TOTAL ? "Puedes repetir para completar las que falten." : "Cobertura completa.") +
     (totalTandas > 1 ? ` Se comparten en ${totalTandas} tandas: toca el botón, elige Drive, y repite.` : "");
 
   const vw = video.videoWidth || 0;

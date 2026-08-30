@@ -168,6 +168,7 @@ strong { color: var(--tx-fuerte); font-weight: 650; }
 }
 .tira.--hecha { background: var(--ok); }
 .tira.--activa { background: var(--acento); }
+.tira.--separa { margin-left: 10px; }   /* separación entre filas / polos */
 
 .destello {
   position: absolute; inset: 0; background: #fff; opacity: 0;
