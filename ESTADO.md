@@ -99,3 +99,9 @@ son placeholders hasta tener fotos).
 - Antes de que el contexto pase de ~25–30%: actualizar este `ESTADO.md`, hacer
   commit, y compactar (`/compact`) o abrir sesión nueva.
 - Este archivo + `CLAUDE.md` + `ESTRATEGIA.md` + `memory/*.md` son la memoria.
+- **Hooks instalados** (`~/.claude/settings.json`, nivel usuario, todos los proyectos):
+  `SessionStart` vuelca este `ESTADO.md` + últimos commits al arrancar;
+  `PreCompact` recuerda actualizarlo antes de compactar. Scripts en
+  `~/.claude/hooks/`.
+- Skill `/handshake` (nivel usuario): aterriza una idea difusa en un doc antes de
+  construir. Distinta de `anthropic-skills:handshake` (calibración de cómo trabajamos).
