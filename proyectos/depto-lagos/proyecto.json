@@ -1,0 +1,16 @@
+{
+  "nombre": "Departamento en renta — Los Lagos",
+  "ubicacion": "Xalapa, Veracruz",
+  "descripcion": "Departamento amueblado en renta. Vista aérea 360° de la zona. La habitación y el resto de espacios se agregan en los próximos días. Arrastra para mirar en cualquier dirección.",
+  "portada": "panoramas/aerea-lagos.webp",
+  "escenaInicial": "aerea",
+  "escenas": [
+    {
+      "id": "aerea",
+      "titulo": "Vista aérea de la zona",
+      "panorama": "panoramas/aerea-lagos.webp",
+      "miradaInicial": { "yaw": 20, "pitch": -12 },
+      "hotspots": []
+    }
+  ]
+}

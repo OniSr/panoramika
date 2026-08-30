@@ -50,7 +50,9 @@
       "mcp__0f79d7d5-7d84-4851-9e6b-e90195d116b1__update_file",
       "Bash(sleep 8 && find \"/g/Mi unidad/PANORAMIKA\" -maxdepth 4 2>/dev/null | sed 's#/g/Mi unidad/PANORAMIKA#PANORAMIKA#' | sort && echo \"---\" && ls \"/g/Mi unidad/PANORAMIKA/recorridos/pruebas/cuarto-lagos/crudo/\" 2>/dev/null | wc -l)",
       "Bash(python -m http.server 8767 --bind 127.0.0.1)",
-      "Bash(powershell -NoProfile -Command 'Get-CimInstance Win32_Process -Filter \"Name='\\\\''python.exe'\\\\''\" | Where-Object { $_.CommandLine -like '\\\\''*http.server 87*'\\\\'' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }; '\\\\''ok'\\\\''')"
+      "Bash(powershell -NoProfile -Command 'Get-CimInstance Win32_Process -Filter \"Name='\\\\''python.exe'\\\\''\" | Where-Object { $_.CommandLine -like '\\\\''*http.server 87*'\\\\'' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }; '\\\\''ok'\\\\''')",
+      "PowerShell($gh = \"$env:LOCALAPPDATA\\\\Microsoft\\\\WinGet\\\\Packages\\\\GitHub.cli_Microsoft.Winget.Source_8wekyb3d8bbwe\\\\bin\\\\gh.exe\"; Start-Sleep 42; \\(& $gh api \"repos/OniSr/panoramika/pages/builds/latest\" | ConvertFrom-Json\\).status; \\(Invoke-WebRequest -UseBasicParsing \"https://onisr.github.io/panoramika/capturar/?z\" -TimeoutSec 20\\).Content -match 'v=6')",
+      "Bash(bash scripts/armar-esfera.sh C:/Users/danie/AppData/Local/Temp/claude/C--Users-danie-Downloads-tours360-mvp/1c3c7beb-eb89-47bd-9275-5b4a4ac52a9f/scratchpad/v6 C:/Users/danie/AppData/Local/Temp/claude/C--Users-danie-Downloads-tours360-mvp/1c3c7beb-eb89-47bd-9275-5b4a4ac52a9f/scratchpad/esfera-v6-parcial.webp)"
     ]
   }
 }

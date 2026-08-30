@@ -66,18 +66,29 @@ TRABAJO="$(mktemp -d)"
 trap 'rm -rf "$TRABAJO"' EXIT
 PTO="$TRABAJO/proyecto.pto"
 
-# ¿Las fotos traen distancia focal en el EXIF? Las del asistente de captura NO
-# (el canvas la borra), así que hay que decirle a Hugin el ángulo de visión.
-# iPhone (cámara principal, video) ≈ 63° horizontal en vertical. El dron sí trae
-# EXIF: entonces dejamos que Hugin lo calcule (FOV_CAMARA vacío).
-FOV_CAMARA="${FOV_CAMARA-63}"
-tiene_focal="$(python -c "from PIL import Image; e=Image.open(r'${FOTOS[0]}').getexif(); print(1 if e.get(37386) else 0)" 2>/dev/null || echo 0)"
+# Hugin necesita el angulo de vision horizontal de cada foto. Estrategia:
+#   1. Si el EXIF trae distancia focal  -> dejar que pto_gen lo calcule.
+#   2. Si la camara es un dron DJI (modelo "FC...") -> ~82 grados.
+#   3. Si no (iPhone: el asistente borra el EXIF) -> ~63 grados.
+# Se puede forzar con la variable de entorno FOV_CAMARA.
+DETECTA='
+from PIL import Image
+import sys
+e = Image.open(sys.argv[1]).getexif()
+m = str(e.get(272, "")).upper().strip()
+print("exif" if (e.get(37386) or e.get(41989)) else ("dron" if m.startswith("FC") else "iphone"))
+'
+lente="$(python -c "$DETECTA" "${FOTOS[0]}" 2>/dev/null || echo iphone)"
 
-echo "--- 1/6  Creando el proyecto (pto_gen)"
-if [ "$tiene_focal" = "1" ] || [ -z "$FOV_CAMARA" ]; then
+if [ -z "${FOV_CAMARA:-}" ]; then
+  if [ "$lente" = "dron" ]; then FOV_CAMARA=82; else FOV_CAMARA=63; fi
+fi
+
+echo "--- 1/6  Creando el proyecto (pto_gen)  [lente: $lente]"
+if [ "$lente" = "exif" ]; then
   pto_gen -o "$PTO" "${FOTOS[@]}"
 else
-  echo "    (sin EXIF de lente → usando FOV horizontal = ${FOV_CAMARA}°)"
+  echo "    (sin EXIF de lente: FOV horizontal = ${FOV_CAMARA} grados)"
   pto_gen --fov="$FOV_CAMARA" -o "$PTO" "${FOTOS[@]}"
 fi
 

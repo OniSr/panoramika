@@ -406,9 +406,15 @@ function terminar() {
   irA("fin");
 
   const hechas = fotos.filter(Boolean).length;
+  tandaActual = 0;
+  const totalTandas = Math.ceil(hechas / TANDA);
+  $("btnCompartir").textContent =
+    totalTandas > 1 ? `Compartir a Drive (tanda 1 de ${totalTandas})` : "Compartir a Drive";
+
   $("finResumen").textContent =
     `Tomaste ${hechas} de ${DIANAS.length} fotos. ` +
-    (hechas < DIANAS.length ? "Puedes repetir para completar las que falten." : "Cobertura completa.");
+    (hechas < DIANAS.length ? "Puedes repetir para completar las que falten." : "Cobertura completa.") +
+    (totalTandas > 1 ? ` Se comparten en ${totalTandas} tandas: toca el botón, elige Drive, y repite.` : "");
 
   const vw = video.videoWidth || 0;
   $("finCalidad").textContent = vw >= 2400
@@ -441,26 +447,55 @@ function archivos() {
     .filter(Boolean);
 }
 
+/* iOS falla al compartir 26 archivos de golpe (Drive rechaza el lote). Se manda
+   en TANDAS: cada toque del botón comparte la siguiente tanda. */
+const TANDA = 8;
+let tandaActual = 0;
+
 $("btnCompartir").addEventListener("click", async () => {
   const fs = archivos();
-  if (navigator.canShare && navigator.canShare({ files: fs })) {
-    try {
-      await navigator.share({ files: fs, title: "Fotos 360 Panorámika" });
-      return;
-    } catch { /* el usuario canceló */ }
+  const totalTandas = Math.ceil(fs.length / TANDA);
+  const btn = $("btnCompartir");
+
+  if (tandaActual >= totalTandas) {   // ya se mandaron todas → reiniciar contador
+    tandaActual = 0;
   }
-  alert('Tu navegador no permite compartir varias fotos a la vez. Usa "Descargar una por una".');
+
+  const lote = fs.slice(tandaActual * TANDA, (tandaActual + 1) * TANDA);
+
+  if (!(navigator.canShare && navigator.canShare({ files: lote }))) {
+    alert('Tu navegador no permite compartir fotos. Usa Safari en el iPhone, o el botón "Descargar".');
+    return;
+  }
+
+  try {
+    await navigator.share({ files: lote, title: `Fotos 360 (${tandaActual + 1}/${totalTandas})` });
+    tandaActual++;
+    if (tandaActual >= totalTandas) {
+      btn.textContent = "✓ Todas compartidas — repetir";
+    } else {
+      btn.textContent = `Compartir siguiente tanda (${tandaActual + 1} de ${totalTandas})`;
+    }
+  } catch (e) {
+    // Cancelar no es error; cualquier otra cosa sí.
+    if (e && e.name !== "AbortError") {
+      btn.textContent = `Reintentar tanda ${tandaActual + 1} de ${totalTandas}`;
+    }
+  }
 });
 
 $("btnDescargar").addEventListener("click", () => {
+  // En iOS baja de una en una y las guarda en "Descargas". Luego se suben a Drive.
   archivos().forEach((f, i) => {
     setTimeout(() => {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(f);
       a.download = f.name;
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(a.href);
-    }, i * 300); // separadas para que iOS no bloquee la ráfaga
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }, i * 500);
   });
 });
 
