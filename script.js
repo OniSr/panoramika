@@ -179,7 +179,28 @@ function mostrarIntro() {
    Carga diferida: Pannellum solo descarga la textura de la escena visible; las
    demás se piden al saltar a ellas. No precargamos todas de golpe.
    ========================================================================== */
+/** Dibuja el contenido de un marcador (hotspot) dentro del div que da Pannellum. */
+const FLECHA_TIPO = { destino: "→", salir: "←", propiedad: "" };
+function crearMarcador(div, h) {
+  div.classList.add("marcador");
+  const pastilla = document.createElement("span");
+  pastilla.className = "marcador__pastilla";
+  const flecha = FLECHA_TIPO[h.tipo] ?? "→";
+  const linea = document.createElement("span");
+  linea.className = "marcador__linea";
+  linea.textContent = (flecha ? flecha + "  " : "") + (h.texto || "Ir");
+  pastilla.appendChild(linea);
+  if (h.detalle) {
+    const d = document.createElement("span");
+    d.className = "marcador__detalle";
+    d.textContent = h.detalle;
+    pastilla.appendChild(d);
+  }
+  div.appendChild(pastilla);
+}
+
 function construirConfigPannellum() {
+  const idsValidos = new Set(proyecto.escenas.map((x) => x.id));
   const scenes = {};
   for (const e of proyecto.escenas) {
     scenes[e.id] = {
@@ -189,8 +210,15 @@ function construirConfigPannellum() {
       yaw: e.miradaInicial?.yaw ?? 0,
       pitch: e.miradaInicial?.pitch ?? 0,
       hotSpots: (e.hotspots || [])
-        .filter((h) => proyecto.escenas.some((x) => x.id === h.destino))
-        .map((h) => ({ pitch: h.pitch, yaw: h.yaw, type: "scene", text: h.texto, sceneId: h.destino })),
+        .filter((h) => idsValidos.has(h.destino))
+        .map((h) => ({
+          pitch: h.pitch,
+          yaw: h.yaw,
+          cssClass: "hs hs--" + (h.tipo || "destino"),
+          createTooltipFunc: crearMarcador,
+          createTooltipArgs: h,
+          clickHandlerFunc: () => { if (visor && visor.getScene() !== h.destino) visor.loadScene(h.destino); },
+        })),
     };
   }
   return {
@@ -199,11 +227,13 @@ function construirConfigPannellum() {
       sceneFadeDuration: 700,
       autoLoad: true,
       autoRotate: -2,
-      autoRotateInactivityDelay: 3500,
+      autoRotateInactivityDelay: 4000,
       compass: false,
-      showZoomCtrl: true,
+      showZoomCtrl: false,   // el zoom con pellizco/rueda sigue; quitamos los +/−
       keyboardZoom: true,
-      hfov: 110,
+      hfov: 100,
+      minHfov: 55,
+      maxHfov: 120,
     },
     scenes,
   };
@@ -230,28 +260,44 @@ function iniciarVisor() {
 
 /* ============================================================================
    PASO 7 · INTERFAZ DEL VISOR
+   ----------------------------------------------------------------------------
+   Navegación: (1) marcadores dentro de la escena (estilo Street View) y
+   (2) barra inferior SIEMPRE visible con todas las escenas. Nunca hace falta
+   recargar para cambiar de vista.
    ========================================================================== */
+const ICONO_ESCENA = { aerea: "◎", fachada: "⌂", exterior: "⌂" };
+
 function construirSelector() {
   $selector.innerHTML = "";
-  if (proyecto.escenas.length < 2) return; // con una sola toma no hace falta selector
-  for (const e of proyecto.escenas) {
+  // Siempre se construye, aunque haya una sola escena (así el control es
+  // predecible y se ve desde el principio).
+  proyecto.escenas.forEach((e, i) => {
     const btn = document.createElement("button");
-    btn.className = "selector-escenas__btn";
+    btn.className = "nav-escena";
     btn.type = "button";
-    btn.textContent = e.titulo || e.id;
     btn.dataset.escena = e.id;
+    const ico = ICONO_ESCENA[e.id] || String(i + 1);
+    btn.innerHTML =
+      `<span class="nav-escena__ico">${ico}</span>` +
+      `<span class="nav-escena__txt">${(e.titulo || e.id).replace(/</g, "&lt;")}</span>`;
     btn.addEventListener("click", () => {
       if (visor && visor.getScene() !== e.id) visor.loadScene(e.id);
     });
     $selector.appendChild(btn);
-  }
+  });
 }
 
 function alCambiarEscena(idEscena) {
   const e = proyecto.escenas.find((x) => x.id === idEscena);
-  $escenaActual.textContent = e ? (e.titulo || e.id) : "";
-  for (const btn of $selector.children)
-    btn.setAttribute("aria-current", String(btn.dataset.escena === idEscena));
+  const idx = proyecto.escenas.findIndex((x) => x.id === idEscena);
+  $escenaActual.textContent = e
+    ? `${idx + 1}/${proyecto.escenas.length} · ${e.titulo || e.id}`
+    : "";
+  for (const btn of $selector.children) {
+    const activa = btn.dataset.escena === idEscena;
+    btn.setAttribute("aria-current", String(activa));
+    if (activa) btn.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+  }
 }
 
 function gestionarPista() {

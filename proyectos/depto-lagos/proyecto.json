@@ -1,7 +1,7 @@
 {
   "nombre": "Departamento en renta — Los Lagos",
   "ubicacion": "Xalapa, Veracruz",
-  "descripcion": "Departamento amueblado en renta. Vista aérea 360° de la zona. La habitación y el resto de espacios se agregan en los próximos días. Arrastra para mirar en cualquier dirección.",
+  "descripcion": "Departamento amueblado en renta. Empieza con la vista aérea de la zona, entra a la fachada y recorre las habitaciones.",
   "portada": "panoramas/aerea-lagos.webp",
   "escenaInicial": "aerea",
   "escenas": [
@@ -9,8 +9,38 @@
       "id": "aerea",
       "titulo": "Vista aérea de la zona",
       "panorama": "panoramas/aerea-lagos.webp",
-      "miradaInicial": { "yaw": 20, "pitch": -12 },
-      "hotspots": []
+      "miradaInicial": { "yaw": 8, "pitch": -32 },
+      "hotspots": [
+        { "tipo": "propiedad", "yaw": 8, "pitch": -40, "destino": "fachada",
+          "texto": "Departamento en renta", "detalle": "Ver recorrido" }
+      ]
+    },
+    {
+      "id": "fachada",
+      "titulo": "Fachada",
+      "panorama": "panoramas/fachada.webp",
+      "miradaInicial": { "yaw": 0, "pitch": 0 },
+      "hotspots": [
+        { "tipo": "destino", "yaw": 0, "pitch": -3, "destino": "sala", "texto": "Entrar al departamento" },
+        { "tipo": "salir", "yaw": 180, "pitch": 8, "destino": "aerea", "texto": "Volver a la vista aérea" }
+      ]
+    },
+    {
+      "id": "sala",
+      "titulo": "Sala / Comedor",
+      "panorama": "panoramas/sala.webp",
+      "hotspots": [
+        { "tipo": "destino", "yaw": 90, "pitch": -3, "destino": "recamara", "texto": "Ir a la recámara" },
+        { "tipo": "salir", "yaw": -110, "pitch": -3, "destino": "fachada", "texto": "Salir a la fachada" }
+      ]
+    },
+    {
+      "id": "recamara",
+      "titulo": "Recámara principal",
+      "panorama": "panoramas/recamara.webp",
+      "hotspots": [
+        { "tipo": "destino", "yaw": -90, "pitch": -3, "destino": "sala", "texto": "Volver a la sala" }
+      ]
     }
   ]
 }

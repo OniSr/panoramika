@@ -105,25 +105,79 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 .btn-icono:hover { color: var(--tx-fuerte); border-color: var(--acento); }
 .btn-icono:focus-visible { outline: 2px solid var(--acento-claro); outline-offset: 2px; }
 
-/* --- 5. Selector de escenas --------------------------------------- */
+/* --- 5. Barra de navegación entre escenas (siempre visible) ------- */
 .selector-escenas {
-  position: fixed; left: 0; right: 0; bottom: calc(var(--safe-bottom) + var(--e-4)); z-index: 20;
+  position: fixed; left: 0; right: 0; bottom: calc(var(--safe-bottom) + var(--e-3)); z-index: 20;
   display: flex; gap: var(--e-2); padding: 0 var(--e-4);
   overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity;
 }
 .selector-escenas::-webkit-scrollbar { display: none; }
-.selector-escenas__btn {
+
+.nav-escena {
   scroll-snap-align: center; flex: 0 0 auto;
   display: inline-flex; align-items: center; gap: var(--e-2);
-  padding: var(--e-2) var(--e-4); min-height: 40px;
-  font-size: 0.82rem; font-weight: 550; color: var(--tx-medio);
+  padding: var(--e-2) var(--e-4) var(--e-2) var(--e-2); min-height: 44px;
+  font-size: 0.84rem; font-weight: 600; color: var(--tx-medio);
   background: var(--sup-panel); -webkit-backdrop-filter: var(--difuminado); backdrop-filter: var(--difuminado);
   border: 1px solid var(--sup-borde); border-radius: var(--radio-pill);
   transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
-.selector-escenas__btn:hover { color: var(--tx-fuerte); }
-.selector-escenas__btn[aria-current="true"] { color: var(--acento-tx); background: var(--acento); border-color: var(--acento); }
-.selector-escenas__btn:focus-visible { outline: 2px solid var(--acento-claro); outline-offset: 2px; }
+.nav-escena__ico {
+  display: grid; place-items: center;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.78rem; font-weight: 700;
+}
+.nav-escena:hover { color: var(--tx-fuerte); }
+.nav-escena[aria-current="true"] {
+  color: var(--acento-tx); background: var(--acento); border-color: var(--acento);
+}
+.nav-escena[aria-current="true"] .nav-escena__ico { background: rgba(0, 0, 0, 0.18); }
+.nav-escena:focus-visible { outline: 2px solid var(--acento-claro); outline-offset: 2px; }
+
+/* --- 5b. Marcadores dentro de la escena (hotspots) ---------------- */
+/* Pannellum posiciona el div (.pnlm-hotspot-base) con un transform propio:
+   NO le tocamos el transform. Solo anulamos su sprite y colgamos la pastilla,
+   que se ancla con su propio transform relativo al punto. */
+.pnlm-hotspot-base.hs { background: none; width: 0; height: 0; }
+
+.marcador__pastilla {
+  position: absolute; left: 0; top: 0;
+  transform: translate(-50%, -50%);   /* centrada en el punto */
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: var(--e-2) var(--e-4); min-height: 36px;
+  font-size: 0.8rem; font-weight: 650; line-height: 1.15; white-space: nowrap;
+  color: var(--tx-fuerte);
+  background: rgba(13, 15, 18, 0.74);
+  -webkit-backdrop-filter: var(--difuminado); backdrop-filter: var(--difuminado);
+  border: 1px solid var(--sup-borde);
+  border-radius: var(--radio-pill);
+  box-shadow: var(--sombra);
+  transition: transform 0.12s ease, background 0.15s;
+}
+.hs.pnlm-pointer:hover .marcador__pastilla { transform: translate(-50%, -50%) scale(1.06); }
+.marcador__linea { font-size: 0.82rem; }
+.marcador__detalle { font-size: 0.7rem; font-weight: 550; color: var(--tx-medio); }
+
+/* tipo "propiedad": marcador grande sobre el edificio, anclado por su punta */
+.hs--propiedad .marcador__pastilla {
+  transform: translate(-50%, calc(-100% - 8px));
+  color: var(--acento-tx); background: var(--acento); border-color: var(--acento);
+  animation: latido 2.4s ease-in-out infinite;
+}
+.hs--propiedad.pnlm-pointer:hover .marcador__pastilla { transform: translate(-50%, calc(-100% - 8px)) scale(1.05); }
+.hs--propiedad .marcador__detalle { color: rgba(28, 18, 6, 0.72); }
+.hs--propiedad .marcador__pastilla::after {   /* punta hacia el punto exacto */
+  content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 7px solid transparent; border-top-color: var(--acento);
+}
+@keyframes latido {
+  0%, 100% { box-shadow: 0 0 0 0 var(--acento-tinte), var(--sombra); }
+  50%      { box-shadow: 0 0 0 14px rgba(217, 154, 78, 0); }
+}
+
+/* tipo "salir": más discreto */
+.hs--salir .marcador__pastilla { background: rgba(13, 15, 18, 0.62); color: var(--tx-medio); font-weight: 600; }
 
 /* --- 6. Pantalla de bienvenida ---------------------------------- */
 .intro {
