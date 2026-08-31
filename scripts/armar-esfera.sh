@@ -7,8 +7,10 @@
 #
 # El dron y el iPhone entregan las tomas SUELTAS; este script las cose.
 #
-# Con el asistente de captura v9 son ~50 fotos por cuarto (16 por fila × 3 filas
-# + techo + piso), con paso de giro chico para que haya traslape de sobra.
+# Con el asistente de captura v11 son ~33 fotos por cuarto (16 por fila × 2 filas
+# a ±20° + 1 al techo), con paso de giro chico para que haya traslape de sobra.
+# El PISO / NADIR no se captura: queda vacío A PROPÓSITO y se tapa luego con el
+# logo (además, si hubo tripié, saldría en la foto). No es un error del armado.
 #
 # Requiere Hugin:  winget install --id Hugin.Hugin
 #
@@ -77,7 +79,7 @@ PTO="$TRABAJO/proyecto.pto"
 #
 # Nota: el 63 del iPhone es APROXIMADO. Se probo 50 vs 63 con las mismas fotos y
 # la esfera salio igual: el FOV exacto no es lo que decide. Lo que salva la
-# esfera es el TRASLAPE DENSO de la captura v9 (paso de giro de 22.5°); autooptimiser
+# esfera es el TRASLAPE DENSO de la captura v11 (paso de giro de 22.5°); autooptimiser
 # -a afina el FOV real a partir de los puntos de control de todas formas.
 DETECTA='
 from PIL import Image
@@ -113,10 +115,13 @@ echo "--- 4/6  Optimizando posiciones, nivelado y exposición (autooptimiser -a)
 autooptimiser -a -m -l -s -o "$PTO" "$PTO"
 
 echo "--- 5/6  Fijando salida equirectangular 360x180 (pano_modify)"
+# Se fuerza esfera completa 360x180. El casquete inferior (nadir, de ~−63° a −90°)
+# queda SIN fotos por diseño de la captura v11: saldrá vacío/negro y se tapa con
+# el logo. Es lo esperado, no un fallo.
 pano_modify --canvas=AUTO --crop=AUTO --projection=2 --fov=360x180 -o "$PTO" "$PTO"
 
 # Verificación defensiva: ¿cpfind conectó las fotos?
-# Con ~50 fotos y el traslape denso de v9 deberían salir CIENTOS de puntos de
+# Con ~33 fotos y el traslape denso de v11 deberían salir CIENTOS de puntos de
 # control. Menos de 40 casi siempre significa que algo salió mal en la captura.
 n_cp="$(grep -c '^c ' "$PTO" || true)"
 if [ "${n_cp:-0}" -lt 40 ]; then
@@ -142,4 +147,6 @@ python "$RAIZ/scripts/optimizar_panoramas.py" "$TRABAJO/panorama.tif" "$SALIDA"
 
 echo
 echo "LISTO -> $SALIDA"
-echo "Revísala en el visor. Si el nadir (abajo) sale negro, es normal: se puede tapar con un logo después."
+echo "El NADIR (abajo, ~27° de casquete) queda VACÍO por diseño: la captura v11 no"
+echo "toma piso. Se tapa con el logo — NO es un error. El resto de la esfera debe"
+echo "verse completo (horizonte + arriba + techo)."

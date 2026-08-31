@@ -44,37 +44,49 @@ son placeholders hasta tener fotos).
 
 ## Estado de cada frente
 
-### Asistente de captura — `capturar/` (v10, en vivo tras push)
+### Asistente de captura — `capturar/` (v11, en vivo tras push)
 - **Pantalla final (v9, commit 5221165)**: compartir a Drive desde el navegador
   iOS NUNCA fue fiable. Ahora **un solo `navigator.share` con todas las fotos** →
   "Guardar imágenes" al carrete → Daniel las sube a Drive desde la app Fotos (ese
   flujo sí funciona). Fuera las tandas de 8 y el bucle de descargas.
-- **Captura v10 (commit 4ec95df) — "paso denso"**: v6/v7/v8 fallaban todas igual.
-  Diagnóstico cerrado con la prueba real "Cuarto lagos 3" (26 fotos v8): entre
-  fotos consecutivas de una fila → **0 puntos de control** en Hugin (traslape
-  horizontal nulo). Re-armar con FOV 50 vs 63 no cambió nada → el FOV no era la
-  causa, el **paso de giro de 45° era demasiado grande**.
-  - v10: `PASO_YAW` 45 → **22.5** (16 disparos/fila, **50 en total**), filas
-    inclinadas ±33 → ±40, polos ±82 → ±72, tolerancias más flojas
-    (`TOL_YAW`/`TOL_PITCH` 10, `MS_PARA_DISPARAR` 500). Giro relativo de v8 intacto.
-  - Tips + `.recordatorio` anti-paralaje (girar sobre los pies, no mover brazos —
-    los "fantasmas" de la esfera vienen de mover la cámara de sitio).
+- **Diagnóstico del stitching (cerrado)**: v6/v7/v8 no cosían. Prueba real
+  "Cuarto lagos 3" (26 fotos v8) en Hugin: entre fotos consecutivas de una fila →
+  **0 puntos de control** (traslape horizontal nulo). Re-armar con FOV 50 vs 63 no
+  cambió nada → el FOV no era la causa; el **paso de giro de 45° era demasiado
+  grande**. Solución: paso chico (22.5°, 16 fotos/vuelta) = traslape denso, robusto
+  aunque el giroscopio yerre ±10°.
+- **v10 (commit 4ec95df)**: paso denso + 3 filas ±40/0 + 2 polos ±72 = 50 fotos.
+  Daniel lo probó con **tripié** y falló por 3 cosas: el teléfono se caía apuntando
+  a los polos, la alerta de verticalidad saltaba en falso al inclinar, y la diana
+  no apuntaba bien inclinado.
+- **v11 (este commit)** — "2 filas suaves + 1 techo", pensada para tripié:
+  - **2 filas a pitch ±20°** (teléfono casi vertical → estable, giroscopio fiable)
+    × 16 disparos + **1 foto al techo** (+72°). **33 fotos.** Sin piso: el nadir
+    (~27° de casquete inferior) va **vacío por diseño**, se tapa con el logo.
+  - **Bug verticalidad**: ya no usa `e.gamma` (se desquicia cerca de beta ±90);
+    ahora `acostado = |derZ| > sin45°`, con `derZ` = componente vertical del eje
+    "derecha" del teléfono (1ª columna de la matriz W3C). Estable a cualquier pitch.
+  - **Bug diana**: proyección lineal → **proyección gnomónica de verdad**
+    (`proyectarObjetivo()` en PASO 5): dirección objetivo → marco cámara vía
+    productos punto contra los 3 ejes → `sx/sy = (camDer|camArr)/camAde / tan(FOV/2)`.
+    Cae bien a cualquier inclinación.
+  - `FOV_GUIA_H/V` = 54°/87° (V derivado de la proporción retrato del canvas).
+  - Giro relativo de v8 y "paso denso" intactos. Brújula sigue descartada.
 - Fotos salen del `<canvas>` del video: **2160×4032, sin EXIF**.
-- **PENDIENTE: Daniel recaptura un cuarto con v10** y se re-arma la esfera. Si
-  aún sale con pocos puntos de control en las filas horizontales, el siguiente
-  paso NO es tocar parámetros: es **sembrar un `.pto` con las posiciones
-  yaw/pitch que el asistente ya conoce** (en vez de que `cpfind` adivine) — pero
-  eso choca con el flujo "guardar al carrete" (se pierden nombres/sidecar); habría
-  que resolver cómo pasar los ángulos junto a las fotos.
-- Cache-bust: subir `?v=N` en `index.html` (css y js) y en `<span class="version">`.
-  Va en **v10**.
+- **PENDIENTE: Daniel captura un cuarto con v11** (con tripié) → re-armar la esfera.
+  Si aún no cose bien las filas, el siguiente paso NO es tocar parámetros: es
+  **sembrar un `.pto` con las posiciones yaw/pitch que el asistente ya conoce**
+  (en vez de que `cpfind` adivine) — pero eso choca con "guardar al carrete" (se
+  pierden nombres/orden/sidecar); habría que resolver cómo pasar los ángulos.
+- Cache-bust: `?v=N` en `index.html` (css y js) + `<span class="version">`. Va en **v11**.
 
 ### Armado de esferas — `scripts/armar-esfera.sh` (funciona para dron; interior pendiente)
 - Detecta lente: dron (modelo `FC*`) → 82°, iPhone/canvas (sin EXIF) → 63°
   (aproximado, da igual 50-63). Salida equirectangular 2:1 → `optimizar_panoramas.py`.
 - El aéreo del dron de Los Lagos quedó **excelente** (5760×2880).
-- **Interior aún sin validar**: las capturas v6 y v8 no cosían (problema de
-  captura, no del script). Umbral de aviso de puntos de control subido a 40.
+- **Interior aún sin validar**: v6/v8 no cosían (problema de captura, no del
+  script). Umbral de aviso de puntos de control subido a 40. Con v11 el **nadir
+  va vacío por diseño** — el script ya no lo reporta como error.
 
 ### Visor — navegación tipo Street View (v en vivo)
 - Hotspots = marcadores con etiqueta (`tipo`: `propiedad` / `destino` / `salir`).
@@ -85,11 +97,12 @@ son placeholders hasta tener fotos).
 
 ## Próximas tareas (orden sugerido)
 
-1. **Daniel recaptura un cuarto con captura v10** (paso denso, 50 fotos) → re-armar
-   la esfera y ver si ahora cose. Cuarto con textura; girar sobre los pies.
-2. Reemplazar placeholders de `depto-lagos` por fotos reales (fachada + cuartos).
-3. Ajustar posición del marcador de la propiedad en la aérea.
-4. **Tapar el nadir** (hueco de abajo) con el logo — script o imagen.
+1. **Daniel captura un cuarto con captura v11** (tripié, 33 fotos: 2 filas ±20° +
+   techo) → re-armar la esfera y ver si ahora cosen las filas. Cuarto con textura.
+2. **Tapar el nadir con el logo** — ahora prioridad ALTA: v11 no fotografía el
+   piso, así que toda esfera interior nace con ~27° de hueco abajo. Script o imagen.
+3. Reemplazar placeholders de `depto-lagos` por fotos reales (fachada + cuartos).
+4. Ajustar posición del marcador de la propiedad en la aérea.
 5. **Página índice** que liste los recorridos (portafolio para brokers).
 6. Después (features tipo competencia "La Rosa"): pestaña PLANO 2D, selector de
    unidades/lotes (recuperar de `archivo-nextjs`), toggle amueblado/vacío,

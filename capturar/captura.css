@@ -166,19 +166,20 @@ strong { color: var(--tx-fuerte); font-weight: 650; }
   background: rgba(0,0,0,0.45); display: inline-block;
   padding: 6px 14px; border-radius: 999px; margin-bottom: 10px;
 }
-/* 50 tiras: más chicas que en v8 (eran 26) para que quepan en un iPhone;
-   con flex-wrap caen en 2 líneas como mucho y se sigue viendo la fila activa. */
+/* 33 tiras (v11): 16 + 16 de las dos filas + 1 del techo. A 7px + 2px de gap
+   caben en UNA línea en un iPhone (33×9 ≈ 297px) y se ve bien la fila activa. */
 .tiras { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; }
 .tira {
-  width: 6px; height: 4px; border-radius: 2px;
+  width: 7px; height: 4px; border-radius: 2px;
   background: rgba(255, 255, 255, 0.28);
 }
 .tira.--hecha { background: var(--ok); }
 .tira.--activa { background: var(--acento); }
 .tira.--separa { margin-left: 8px; }   /* separación entre filas / polos */
 
-/* Recordatorio anti-paralaje, siempre visible bajo las tiras. El "fantasma"
-   (objetos duplicados) de la esfera viene de mover la cámara entre fotos. */
+/* Recordatorio siempre visible bajo las tiras. Con tripié el paralaje (objetos
+   "fantasma" duplicados en la esfera) no aplica; a pulso viene de mover la
+   cámara de sitio en vez de girar sobre el eje. */
 .recordatorio {
   margin-top: 8px; font-size: 0.72rem; color: var(--tx-medio);
   opacity: 0.85; text-shadow: 0 1px 3px rgba(0,0,0,0.7);

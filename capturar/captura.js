@@ -1,6 +1,6 @@
 /* ============================================================================
    Asistente de captura 360° — Panorámika
-   JavaScript vanilla. Guía la toma de ~50 fotos para armar una esfera con Hugin.
+   JavaScript vanilla. Guía la toma de ~33 fotos para armar una esfera con Hugin.
 
    Orden de lectura:
      PASO 1 · Configuración (dianas, tolerancias, cámara)
@@ -16,52 +16,69 @@
 /* ============================================================================
    PASO 1 · CONFIGURACIÓN
    ============================================================================
-   La captura va por FILAS: primero el horizonte girando 360°, luego una fila
-   inclinada hacia arriba, otra hacia abajo, y al final techo y piso.
+   Captura v11 — "2 filas suaves + 1 techo", pensada para TRIPIÉ.
+   Se toman: 2 vueltas de 360° con el teléfono CASI DERECHO (una un poco hacia
+   arriba, otra un poco hacia abajo, a ±20°) y 1 sola foto al techo. NO se
+   captura el piso: el hueco de abajo (nadir) se tapa después con el logo (y si
+   hay tripié, saldría en la foto).
 
-   Clave del diseño (v9): "paso denso". El giro entre foto y foto es CHICO
-   (22.5° → 16 fotos por vuelta) en vez de grande. Así queda traslape horizontal
-   de sobra entre foto consecutiva AUNQUE el giroscopio se equivoque ±10°. No
-   dependemos de que el sensor sea exacto: dependemos de la densidad de fotos.
-   (v6/v7/v8 fallaban justo aquí: con paso de 45° dos fotos seguidas de la misma
-   fila no se traslapaban y Hugin no podía coser la fila → esfera con huecos.)
+   Por qué cambió (v10 → v11): v10 pedía 3 filas a ±40° y 2 polos a ±72°. Con
+   tripié Daniel reportó que el teléfono se caía apuntando arriba y que en esas
+   posturas el giroscopio se volvía poco fiable. Con tripié el PARALAJE ya no es
+   problema (la cámara no cambia de sitio), así que se puede cubrir la esfera con
+   menos fotos y sin inclinaciones extremas: filas a ±20° → aparato casi
+   vertical, estable en el tripié y giroscopio en su zona buena.
 
-   Además, como en v8, cada giro es RELATIVO a la foto anterior real (giras
-   PASO_YAW grados más), NO respecto a un "norte" fijo: la deriva lenta del
-   giroscopio no se acumula en huecos. La brújula (que falla en interiores por
-   los imanes) sigue descartada. */
+   Se conserva de v8/v10:
+   · "Paso denso": el giro entre foto y foto es CHICO (PASO_YAW = 22.5° → 16
+     fotos por vuelta). Así sobra traslape horizontal AUNQUE el giroscopio se
+     equivoque ±10°. No dependemos de que el sensor sea exacto, sino de la
+     densidad de fotos. (v6/v7/v8 fallaban con paso de 45°: dos fotos seguidas de
+     la misma fila no traslapaban y Hugin no cosía la fila.)
+   · "Giro relativo": cada objetivo de yaw = (yaw real de la foto anterior +
+     PASO_YAW), NO respecto a un "norte" fijo → la deriva lenta del giroscopio no
+     se acumula en huecos. La brújula (webkitCompassHeading) sigue descartada:
+     en interiores brinca por los imanes.
+
+   Cobertura vertical (FOV_GUIA_V ≈ 87°, ver más abajo el porqué):
+   · Cada fila "ve" ±43° alrededor de su centro de pitch.
+   · Fila +20°  cubre  −23°..+63°     ·  Fila −20°  cubre  −63°..+23°
+     → se solapan de −23° a +23°: banda ancha en el horizonte, sin zona muerta.
+   · Techo +72° cubre +29°..+90°  → solapa ~35° con la fila de arriba; cenit OK.
+   · Sin cubrir: de −63° a −90° (~27° de pitch) → ese casquete lo tapa el logo. */
 const PASO_YAW = 22.5;           // grados de giro entre foto y foto (16 por vuelta)
 const FILAS = [
-  { id: "horizonte", nombre: "el horizonte",        pitch:   0, disparos: 16 },
-  // Filas inclinadas a ±40 (antes ±33): con paso horizontal tan chico sobra
-  // traslape lateral, conviene estirar el vertical para cubrir más hacia los
-  // polos con solo 3 filas.
-  { id: "arriba",    nombre: "un poco hacia arriba", pitch:  40, disparos: 16 },
-  { id: "abajo",     nombre: "un poco hacia abajo",  pitch: -40, disparos: 16 },
+  { id: "arriba", nombre: "un poco hacia arriba", pitch:  20, disparos: 16 },
+  { id: "abajo",  nombre: "un poco hacia abajo",  pitch: -20, disparos: 16 },
 ];
 const POLOS = [
-  // Polos a ±72 (antes ±82): así el disco del polo traslapa mejor con la fila
-  // de ±40 y no queda un anillo sin cubrir.
-  { id: "techo", nombre: "al techo", pitch:  72 },
-  { id: "piso",  nombre: "al piso",  pitch: -72 },
+  // Solo el techo. Pitch +72 (no +90): el disco del cenit traslapa ~35° con la
+  // fila de +20° y no queda un anillo sin cubrir. Es la única foto "incómoda" y
+  // es una sola: en tripié se hace con cuidado.
+  { id: "techo", nombre: "al techo", pitch: 72 },
 ];
 
-/** Plan plano de disparos (50 = 16×3 + 2): cada uno sabe a qué fila/polo pertenece. */
+/** Plan plano de disparos (33 = 16×2 + 1): cada uno sabe a qué fila/polo pertenece. */
 const PLAN = [];
 FILAS.forEach((f) => { for (let i = 0; i < f.disparos; i++) PLAN.push({ tipo: "fila", fila: f, i }); });
 POLOS.forEach((p) => PLAN.push({ tipo: "polo", polo: p }));
-const TOTAL = PLAN.length;
+const TOTAL = PLAN.length;    // 33 — SIEMPRE derivado del PLAN, nunca un número suelto
 
-// Tolerancias un poco más flojas que en v8: con 50 fotos y traslape denso, el
-// stitch perdona imprecisión, y así capturar tantas fotos no desespera.
-const TOL_YAW = 10;           // margen horizontal para "alineado" (antes 8)
-const TOL_PITCH = 10;         // margen vertical (antes 9)
-const TOL_POLO = 16;          // techo/piso: solo importa el pitch
-const MS_PARA_DISPARAR = 500; // sostener la alineación este tiempo (antes 700): más ágil;
-                              // el traslape denso cubre la pérdida de precisión al disparar antes
-const FOV_GUIA_H = 64;        // grados horizontales que "caben" en la pantalla (antes 58):
-                              // con paso 22.5° la diana entrante cae más cómoda dentro del cuadro
-const FOV_GUIA_V = 74;        // grados verticales (teléfono vertical)
+// Tolerancias flojas: con traslape denso el stitch perdona imprecisión y así
+// capturar no desespera.
+const TOL_YAW = 10;           // margen horizontal para "alineado"
+const TOL_PITCH = 10;         // margen vertical
+const TOL_POLO = 16;          // techo: solo importa el pitch
+const MS_PARA_DISPARAR = 500; // sostener la alineación este tiempo antes de disparar
+
+// FOV de la cámara del iPhone, SOLO para proyectar la diana en la pantalla.
+// El <canvas> del vídeo es 2160×4032 (retrato). Tomamos ~54° horizontales y
+// derivamos el vertical de esa proporción retrato:
+//     tan(V/2) = (4032 / 2160) · tan(H/2)   →   V ≈ 87°
+// No necesita ser exactísimo: la diana se DIBUJA con esto, pero el disparo se
+// DECIDE con diferencias de ángulo (TOL_YAW / TOL_PITCH), no con píxeles.
+const FOV_GUIA_H = 54;
+const FOV_GUIA_V = 87;
 
 /* ============================================================================
    PASO 2 · DOM + NAVEGACIÓN
@@ -178,15 +195,24 @@ function textoError(e) { return e && e.message ? e.message : String(e); }
    PASO 4 · ORIENTACIÓN DEL TELÉFONO
    ----------------------------------------------------------------------------
    El evento deviceorientation da alpha/beta/gamma (giro del aparato). Con la
-   matriz de rotación del estándar W3C sacamos hacia dónde mira la cámara
-   TRASERA (vector (0,0,−1) del aparato, llevado al mundo) y de ahí yaw y pitch.
+   matriz de rotación del estándar W3C  R = Rz(alpha)·Rx(beta)·Ry(gamma)  sacamos
+   los TRES ejes del teléfono llevados al mundo (cada uno es una columna de R):
+     · "adelante" (mundoX/Y/Z) = a dónde mira la cámara trasera = −(3ª columna)
+     · "derecha"  (derX/Y/Z)   = eje +X del aparato = 1ª columna
+     · "arriba"   (arrX/Y/Z)   = eje +Y del aparato = 2ª columna
+   De "adelante" salen yaw y pitch. "derecha" y "arriba" se usan en el PASO 5
+   para proyectar la diana en perspectiva y para detectar si el teléfono está
+   rolado (acostado) de forma estable a cualquier inclinación.
 
    Se usa SOLO el giroscopio (alpha/beta/gamma). La brújula
    (webkitCompassHeading) se descartó: en interiores brinca por los imanes
    (monitor, bocinas…) y arruinaba la captura. El giroscopio se desvía despacio,
-   pero como en v8 cada giro es relativo al disparo anterior, no deja huecos.
+   pero como cada giro es relativo al disparo anterior (PASO 6), no deja huecos.
    ========================================================================== */
-let yawTel = 0, pitchTel = 0, rollTel = 0;
+let yawTel = 0, pitchTel = 0;
+let mundoX = 0, mundoY = 1, mundoZ = 0;   // "adelante": a dónde mira la cámara trasera, en el mundo
+let derX = 1, derY = 0, derZ = 0;         // "derecha" del teléfono, en el mundo
+let arrX = 0, arrY = 0, arrZ = 1;         // "arriba" del teléfono, en el mundo
 let ultimoDatoOrient = 0;      // timestamp del último evento válido
 let listenerOrientPuesto = false;
 
@@ -205,15 +231,24 @@ function escucharOrientacion() {
     const cB = Math.cos(b), sB = Math.sin(b);
     const cG = Math.cos(g), sG = Math.sin(g);
 
-    // Tercera columna de R = Rz(a)·Rx(b)·Ry(g)  →  eje Z del aparato en el mundo.
-    // La cámara trasera mira a −Z, así que negamos.
-    const mundoX = -(cA * sG + cG * sA * sB);
-    const mundoY = -(sA * sG - cA * cG * sB);
-    const mundoZ = -(cB * cG);
+    // 3ª columna de R = eje Z del aparato en el mundo. La cámara trasera mira a
+    // −Z, así que negamos.
+    mundoX = -(cA * sG + cG * sA * sB);
+    mundoY = -(sA * sG - cA * cG * sB);
+    mundoZ = -(cB * cG);
+
+    // 1ª columna de R = eje X del aparato ("derecha") en el mundo.
+    derX = cA * cG - sA * sB * sG;
+    derY = sA * cG + cA * sB * sG;
+    derZ = -(cB * sG);
+
+    // 2ª columna de R = eje Y del aparato ("arriba") en el mundo.
+    arrX = -(sA * cB);
+    arrY = cA * cB;
+    arrZ = sB;
 
     pitchTel = Math.asin(Math.max(-1, Math.min(1, mundoZ))) * 180 / Math.PI;
     yawTel = Math.atan2(mundoX, mundoY) * 180 / Math.PI;
-    rollTel = e.gamma;
   }, true);
 }
 
@@ -227,20 +262,69 @@ function difAngulo(a, b) {
 
 /* ============================================================================
    PASO 5 · PROYECCIÓN (dónde dibujar la diana)
+   ----------------------------------------------------------------------------
+   Proyección en PERSPECTIVA de verdad: la diana cae bien a CUALQUIER inclinación
+   del teléfono. (v10 usaba una proyección lineal que solo servía con el aparato
+   casi horizontal; al inclinarlo ±20-40° para las filas de arriba/abajo el yaw
+   y el pitch se mezclaban en pantalla y el círculo caía en el sitio equivocado.)
+
+   proyectarObjetivo(objYaw, objPitch):
+     1. Arma el vector unitario de la dirección objetivo, mismo convenio que
+        yawTel/pitchTel  (yaw = atan2(x, y),  pitch = asin(z)):
+          dirX = cos(pitch)·sin(yaw)
+          dirY = cos(pitch)·cos(yaw)
+          dirZ = sin(pitch)
+     2. Lo lleva al marco de la cámara con productos punto contra sus 3 ejes en
+        el mundo (adelante / derecha / arriba, del PASO 4):
+          camAde = dir·adelante   camDer = dir·derecha   camArr = dir·arriba
+     3. camAde ≤ 0  → el objetivo está DETRÁS: no hay diana, se pinta la flecha.
+     4. camAde > 0  → proyección gnomónica a fracción [-1, 1] de la semipantalla:
+          sx = (camDer / camAde) / tan(FOV_GUIA_H/2)
+          sy = (camArr / camAde) / tan(FOV_GUIA_V/2)
+        Pantalla:  x = w/2 + sx·w/2 ,  y = h/2 − sy·h/2
    ========================================================================== */
 const elDiana = $("diana");
 const elFlecha = $("flecha");
 const elMira = $("mira"); // referencia visual, no se mueve
 
-function pintarDiana(dyaw, dpitch, alineada, esPolo) {
+const RAD = Math.PI / 180;
+const TAN_MEDIO_H = Math.tan(FOV_GUIA_H / 2 * RAD);
+const TAN_MEDIO_V = Math.tan(FOV_GUIA_V / 2 * RAD);
+
+function proyectarObjetivo(objYaw, objPitch) {
+  const cp = Math.cos(objPitch * RAD), sp = Math.sin(objPitch * RAD);
+  const dirX = cp * Math.sin(objYaw * RAD);
+  const dirY = cp * Math.cos(objYaw * RAD);
+  const dirZ = sp;
+
+  const camAde = dirX * mundoX + dirY * mundoY + dirZ * mundoZ;
+  const camDer = dirX * derX   + dirY * derY   + dirZ * derZ;
+  const camArr = dirX * arrX   + dirY * arrY   + dirZ * arrZ;
+
+  const delante = camAde > 0.0001;
+  const sx = delante ? (camDer / camAde) / TAN_MEDIO_H : 0;
+  const sy = delante ? (camArr / camAde) / TAN_MEDIO_V : 0;
   const w = window.innerWidth, h = window.innerHeight;
-  // grados → fracción de pantalla
-  let x = w / 2 + (dyaw / FOV_GUIA_H) * w;
-  let y = h / 2 - (dpitch / FOV_GUIA_V) * h;
 
-  const dentro = x > 20 && x < w - 20 && y > 90 && y < h - 120;
+  return {
+    x: w / 2 + sx * w / 2,
+    y: h / 2 - sy * h / 2,
+    camAde, camDer, camArr,
+    detras: !delante,
+    // "dentro de cuadro": delante y sin salirse (el vertical un pelín más
+    // estricto que el horizontal para no quedar tapada por el HUD de arriba).
+    dentro: delante && Math.abs(sx) < 0.9 && Math.abs(sy) < 0.82,
+  };
+}
 
-  if (dentro || esPolo) {
+function pintarDiana(proy, alineada, forzarDentro) {
+  const w = window.innerWidth, h = window.innerHeight;
+
+  if (proy.dentro || forzarDentro) {
+    // Si forzamos (polo o 1ª foto de la fila) y la proyección se sale, la
+    // pegamos al borde: el usuario ve hacia dónde mover el teléfono.
+    const x = Math.max(24, Math.min(w - 24, proy.x));
+    const y = Math.max(96, Math.min(h - 130, proy.y));
     elDiana.hidden = false;
     elFlecha.hidden = true;
     elDiana.style.transform = `translate(${x - w / 2}px, ${y - h / 2}px)`;
@@ -249,7 +333,11 @@ function pintarDiana(dyaw, dpitch, alineada, esPolo) {
     // Fuera de cuadro: flecha apuntando hacia la diana.
     elDiana.hidden = true;
     elFlecha.hidden = false;
-    const ang = Math.atan2(y - h / 2, x - w / 2) * 180 / Math.PI + 90;
+    const ang = proy.detras
+      // Detrás: orienta por el signo de derecha/arriba en el marco de la cámara.
+      ? Math.atan2(-proy.camArr, proy.camDer) * 180 / Math.PI + 90
+      // Delante pero fuera de cuadro: orienta por la posición en pantalla.
+      : Math.atan2(proy.y - h / 2, proy.x - w / 2) * 180 / Math.PI + 90;
     elFlecha.style.transform = `rotate(${ang}deg) translateY(-70px)`;
   }
 }
@@ -369,31 +457,35 @@ function bucle(ahora) {
   const esPolo = p.tipo === "polo";
 
   // Cartel al cambiar de fila / entrar a un polo.
-  const grupoIdx = FILAS.length + (esPolo ? POLOS.indexOf(p.polo) : 0);
   const claveGrupo = esPolo ? "polo-" + p.polo.id : "fila-" + FILAS.indexOf(p.fila);
   if (claveGrupo !== String(filaAnunciada)) {
     filaAnunciada = claveGrupo;
     anuncioHasta = ahora + 1800;
   }
 
-  const acostado = Math.abs(rollTel) > 45;
+  // ¿Teléfono rolado (acostado)? Miramos la componente vertical del eje "derecha"
+  // del aparato (derZ): si pasa de sin(45°) ≈ 0.707, está muy inclinado de lado.
+  // Es estable a cualquier pitch — a diferencia de e.gamma, que se desquicia
+  // cerca del bloqueo de cardán (beta ≈ ±90°) y saltaba en falso al inclinar el
+  // teléfono para las filas de arriba/abajo. En el techo se ignora: apuntando
+  // casi vertical el "roll" pierde sentido, basta con acertar el pitch.
+  const acostado = !esPolo && Math.abs(derZ) > 0.7071;
 
-  // dpitch y (si aplica) dyaw
   const dpitch = objetivoPitch - pitchTel;
   const dyaw = objetivoYaw == null ? 0 : difAngulo(objetivoYaw, yawTel);
 
   const alineada = !acostado && (
-    esPolo || objetivoYaw == null
+    (esPolo || objetivoYaw == null)
       ? Math.abs(dpitch) < (esPolo ? TOL_POLO : TOL_PITCH)
       : Math.abs(dyaw) < TOL_YAW && Math.abs(dpitch) < TOL_PITCH
   );
 
-  pintarDiana(
-    objetivoYaw == null ? 0 : dyaw,
-    Math.max(-FOV_GUIA_V / 2, Math.min(FOV_GUIA_V / 2, dpitch)),
-    alineada,
-    esPolo || objetivoYaw == null
-  );
+  // Diana en perspectiva (PASO 5). Sin yaw objetivo (polo o 1ª foto de la fila)
+  // se proyecta con el yaw ACTUAL del teléfono → la diana queda centrada en
+  // horizontal y solo marca el error de pitch; "forzarDentro" evita que
+  // desaparezca aunque el pitch esté muy lejos.
+  const proy = proyectarObjetivo(objetivoYaw == null ? yawTel : objetivoYaw, objetivoPitch);
+  pintarDiana(proy, alineada, objetivoYaw == null);
 
   // Textos
   if (acostado) {
@@ -403,7 +495,7 @@ function bucle(ahora) {
     avG.innerHTML = esPolo
       ? `Ahora apunta <strong>${p.polo.nombre}</strong>`
       : (p.i === 0
-          ? `Fila ${FILAS.indexOf(p.fila) + 1} de 3 — nivela a <strong>${p.fila.nombre}</strong> y gira`
+          ? `Fila ${FILAS.indexOf(p.fila) + 1} de 2 — nivela a <strong>${p.fila.nombre}</strong> y gira`
           : "");
     if (!avG.innerHTML) avG.hidden = true;
   } else {
