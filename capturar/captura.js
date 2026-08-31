@@ -1,6 +1,6 @@
 /* ============================================================================
    Asistente de captura 360° — Panorámika
-   JavaScript vanilla. Guía la toma de ~36 fotos para armar una esfera con Hugin.
+   JavaScript vanilla. Guía la toma de ~32 fotos para armar una esfera con Hugin.
 
    Orden de lectura:
      PASO 1 · Configuración (dianas, tolerancias, cámara)
@@ -16,46 +16,44 @@
 /* ============================================================================
    PASO 1 · CONFIGURACIÓN
    ============================================================================
-   Captura v12 — "3 filas moderadas, sin polos", pensada para TRIPIÉ.
-   Se toman 3 vueltas de 360°: una al nivel del HORIZONTE (0°), una un poco hacia
-   ARRIBA (+30°) y una un poco hacia ABAJO (−30°). NO hay foto de techo ni de
-   piso: los cascos de arriba y abajo (~±20° de pitch) se tapan luego con el
-   logo (y en el piso saldría el tripié de todos modos).
+   Captura v13 — "2 filas a ±32°, sin polos", pensada para TRIPIÉ.
+   Se toman 2 vueltas de 360°: una un poco hacia ARRIBA (+32°) y una un poco
+   hacia ABAJO (−32°). NO hay foto de techo ni de piso: los cascos de arriba y
+   abajo (~±20° de pitch) se tapan luego con el logo (y en el piso saldría el
+   tripié de todos modos).
 
-   Por qué cambió (v11 → v12): v11 eran 2 filas a ±20° + 1 foto al techo. En
-   prueba real ("Cuarto lagos 4", 33 fotos) la esfera cosió y quedó derecha,
-   PERO: (a) la foto del techo nunca engancha (techo blanco liso, o agarra a
-   alguien) y (b) 2 filas a ±20° dejaban bandas negras de ~40° arriba y abajo —
-   demasiado para tapar con logo. v12: una fila MÁS (el horizonte) hace de ancla,
-   y las inclinadas suben a ±30° → cobertura hasta ~±65°, bandas de ~20°.
+   Por qué cambió (v12 → v13): v12 eran 3 filas a 0°/±30° con paso de 30°. En
+   prueba real ("V12", 36 fotos) la vuelta NO CERRÓ: 12 disparos a 30° taparon
+   solo ~220° de los 360° (el giroscopio se adelanta: cree que giraste 30° cuando
+   giraste ~18°). Con paso de 22.5° (16 por vuelta) la v11 SÍ cerró la vuelta
+   completa. v13 vuelve a 22.5°; para no subir tanto el número de fotos, se
+   quita la fila del horizonte y las 2 filas restantes suben a ±32° (cubren el
+   horizonte de sobra por traslape). 2×16 = 32 fotos.
 
    Se conserva de v8/v11:
-   · "Paso denso": el giro entre foto y foto es CHICO (PASO_YAW = 30° → 12 fotos
-     por vuelta). Sobra traslape horizontal AUNQUE el giroscopio se equivoque
-     ±10°. (v6/v7/v8 fallaban con paso de 45°: dos fotos seguidas de la misma
-     fila no traslapaban y Hugin no cosía la fila. 22.5° en v11 funcionó; 30° es
-     el término medio: menos fotos, traslape aún de sobra.)
+   · "Paso denso": el giro entre foto y foto es CHICO (PASO_YAW = 22.5° → 16
+     fotos por vuelta). Sobra traslape horizontal AUNQUE el giroscopio se
+     equivoque ±10°. (v6/v7/v8 fallaban con paso de 45°: dos fotos seguidas de la
+     misma fila no traslapaban. v12 con 30° traslapaba pero no cerraba la vuelta.)
    · "Giro relativo": cada objetivo de yaw = (yaw real de la foto anterior +
-     PASO_YAW), NO respecto a un "norte" fijo → la deriva lenta del giroscopio no
-     se acumula en huecos. La brújula (webkitCompassHeading) sigue descartada.
+     PASO_YAW), NO respecto a un "norte" fijo. La brújula sigue descartada.
 
    Cobertura vertical (FOV_GUIA_V ≈ 87°, cada fila "ve" ±43° de su centro):
-   · Fila 0°   cubre −43°..+43°   ·  Fila +30° cubre −13°..+73°   ·  Fila −30° cubre −73°..+13°
-     → se solapan de sobra en el horizonte; sin cubrir queda ~+73°..+90° y
-       ~−73°..−90° (±17° de casco en cada polo) → lo tapa el logo. */
-const PASO_YAW = 30;             // grados de giro entre foto y foto (12 por vuelta)
+   · Fila +32° cubre −11°..+75°   ·  Fila −32° cubre −75°..+11°
+     → se solapan de −11° a +11° (banda de 22° en el horizonte, sin zona muerta).
+     Sin cubrir queda ~+75°..+90° y ~−75°..−90° (±15° de casco) → lo tapa el logo. */
+const PASO_YAW = 22.5;           // grados de giro entre foto y foto (16 por vuelta)
 const FILAS = [
-  { id: "horizonte", nombre: "el horizonte",        pitch:   0, disparos: 12 },
-  { id: "arriba",    nombre: "un poco hacia arriba", pitch:  30, disparos: 12 },
-  { id: "abajo",     nombre: "un poco hacia abajo",  pitch: -30, disparos: 12 },
+  { id: "arriba", nombre: "un poco hacia arriba", pitch:  32, disparos: 16 },
+  { id: "abajo",  nombre: "un poco hacia abajo",  pitch: -32, disparos: 16 },
 ];
-const POLOS = [];   // v12: sin foto de techo ni piso (nunca enganchan; se tapan con logo)
+const POLOS = [];   // v13: sin foto de techo ni piso (nunca enganchan; se tapan con logo)
 
-/** Plan plano de disparos (36 = 12×3): cada uno sabe a qué fila pertenece. */
+/** Plan plano de disparos (32 = 16×2): cada uno sabe a qué fila pertenece. */
 const PLAN = [];
 FILAS.forEach((f) => { for (let i = 0; i < f.disparos; i++) PLAN.push({ tipo: "fila", fila: f, i }); });
 POLOS.forEach((p) => PLAN.push({ tipo: "polo", polo: p }));
-const TOTAL = PLAN.length;    // 36 — SIEMPRE derivado del PLAN, nunca un número suelto
+const TOTAL = PLAN.length;    // 32 — SIEMPRE derivado del PLAN, nunca un número suelto
 
 // Tolerancias flojas: con traslape denso el stitch perdona imprecisión y así
 // capturar no desespera.

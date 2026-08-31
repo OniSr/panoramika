@@ -44,7 +44,7 @@ son placeholders hasta tener fotos).
 
 ## Estado de cada frente
 
-### Asistente de captura — `capturar/` (v12, en vivo tras push)
+### Asistente de captura — `capturar/` (v13, en vivo tras push)
 - **Pantalla final (commit 5221165)**: compartir a Drive desde iOS NUNCA fue
   fiable. Ahora **un solo `navigator.share` con todas las fotos** → "Guardar
   imágenes" al carrete → Daniel las sube a Drive desde Fotos. Sin tandas.
