@@ -1,6 +1,6 @@
 /* ============================================================================
    Asistente de captura 360° — Panorámika
-   JavaScript vanilla. Guía la toma de ~26 fotos para armar una esfera con Hugin.
+   JavaScript vanilla. Guía la toma de ~50 fotos para armar una esfera con Hugin.
 
    Orden de lectura:
      PASO 1 · Configuración (dianas, tolerancias, cámara)
@@ -19,33 +19,49 @@
    La captura va por FILAS: primero el horizonte girando 360°, luego una fila
    inclinada hacia arriba, otra hacia abajo, y al final techo y piso.
 
-   Clave del diseño (v8): el giro entre foto y foto es RELATIVO a la foto
-   anterior (giras ~45° más), NO a un "norte" fijo. El giroscopio se desvía
-   despacio, pero como cada paso es relativo, esa desviación no deja huecos.
-   La brújula (que sí falla en interiores por los imanes) ya no se usa. */
-const PASO_YAW = 45;              // grados de giro entre foto y foto
+   Clave del diseño (v9): "paso denso". El giro entre foto y foto es CHICO
+   (22.5° → 16 fotos por vuelta) en vez de grande. Así queda traslape horizontal
+   de sobra entre foto consecutiva AUNQUE el giroscopio se equivoque ±10°. No
+   dependemos de que el sensor sea exacto: dependemos de la densidad de fotos.
+   (v6/v7/v8 fallaban justo aquí: con paso de 45° dos fotos seguidas de la misma
+   fila no se traslapaban y Hugin no podía coser la fila → esfera con huecos.)
+
+   Además, como en v8, cada giro es RELATIVO a la foto anterior real (giras
+   PASO_YAW grados más), NO respecto a un "norte" fijo: la deriva lenta del
+   giroscopio no se acumula en huecos. La brújula (que falla en interiores por
+   los imanes) sigue descartada. */
+const PASO_YAW = 22.5;           // grados de giro entre foto y foto (16 por vuelta)
 const FILAS = [
-  { id: "horizonte", nombre: "el horizonte",       pitch:   0, disparos: 8 },
-  { id: "arriba",    nombre: "un poco hacia arriba", pitch:  33, disparos: 8 },
-  { id: "abajo",     nombre: "un poco hacia abajo",  pitch: -33, disparos: 8 },
+  { id: "horizonte", nombre: "el horizonte",        pitch:   0, disparos: 16 },
+  // Filas inclinadas a ±40 (antes ±33): con paso horizontal tan chico sobra
+  // traslape lateral, conviene estirar el vertical para cubrir más hacia los
+  // polos con solo 3 filas.
+  { id: "arriba",    nombre: "un poco hacia arriba", pitch:  40, disparos: 16 },
+  { id: "abajo",     nombre: "un poco hacia abajo",  pitch: -40, disparos: 16 },
 ];
 const POLOS = [
-  { id: "techo", nombre: "al techo", pitch:  82 },
-  { id: "piso",  nombre: "al piso",  pitch: -82 },
+  // Polos a ±72 (antes ±82): así el disco del polo traslapa mejor con la fila
+  // de ±40 y no queda un anillo sin cubrir.
+  { id: "techo", nombre: "al techo", pitch:  72 },
+  { id: "piso",  nombre: "al piso",  pitch: -72 },
 ];
 
-/** Plan plano de disparos (26): cada uno sabe a qué fila/polo pertenece. */
+/** Plan plano de disparos (50 = 16×3 + 2): cada uno sabe a qué fila/polo pertenece. */
 const PLAN = [];
 FILAS.forEach((f) => { for (let i = 0; i < f.disparos; i++) PLAN.push({ tipo: "fila", fila: f, i }); });
 POLOS.forEach((p) => PLAN.push({ tipo: "polo", polo: p }));
 const TOTAL = PLAN.length;
 
-const TOL_YAW = 8;             // margen horizontal para "alineado"
-const TOL_PITCH = 9;           // margen vertical
-const TOL_POLO = 16;           // techo/piso: solo importa el pitch
-const MS_PARA_DISPARAR = 700;  // sostener la alineación este tiempo
-const FOV_GUIA_H = 58;         // grados horizontales que "caben" en la pantalla
-const FOV_GUIA_V = 74;         // grados verticales (teléfono vertical)
+// Tolerancias un poco más flojas que en v8: con 50 fotos y traslape denso, el
+// stitch perdona imprecisión, y así capturar tantas fotos no desespera.
+const TOL_YAW = 10;           // margen horizontal para "alineado" (antes 8)
+const TOL_PITCH = 10;         // margen vertical (antes 9)
+const TOL_POLO = 16;          // techo/piso: solo importa el pitch
+const MS_PARA_DISPARAR = 500; // sostener la alineación este tiempo (antes 700): más ágil;
+                              // el traslape denso cubre la pérdida de precisión al disparar antes
+const FOV_GUIA_H = 64;        // grados horizontales que "caben" en la pantalla (antes 58):
+                              // con paso 22.5° la diana entrante cae más cómoda dentro del cuadro
+const FOV_GUIA_V = 74;        // grados verticales (teléfono vertical)
 
 /* ============================================================================
    PASO 2 · DOM + NAVEGACIÓN
@@ -305,7 +321,7 @@ function entrarEnDisparo(i) {
       objetivoYaw = null;               // primera foto de la fila: donde apuntes
     } else {
       const prev = yawPorDisparo[i - 1];
-      objetivoYaw = (prev == null ? yawTel : prev) + PASO_YAW;  // +45° respecto a la anterior
+      objetivoYaw = (prev == null ? yawTel : prev) + PASO_YAW;  // +PASO_YAW respecto a la foto anterior real
     }
   }
 }
@@ -420,7 +436,7 @@ function capturarFoto(indice) {
   lienzo.width = vw;
   lienzo.height = vh;
   lienzo.getContext("2d").drawImage(video, 0, 0, vw, vh);
-  yawPorDisparo[indice] = yawTel;        // dónde estabas: base del +45° del siguiente
+  yawPorDisparo[indice] = yawTel;        // dónde estabas: base del giro (+PASO_YAW) del siguiente
   capturando = true;
 
   lienzo.toBlob((blob) => {

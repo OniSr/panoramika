@@ -7,6 +7,9 @@
 #
 # El dron y el iPhone entregan las tomas SUELTAS; este script las cose.
 #
+# Con el asistente de captura v9 son ~50 fotos por cuarto (16 por fila × 3 filas
+# + techo + piso), con paso de giro chico para que haya traslape de sobra.
+#
 # Requiere Hugin:  winget install --id Hugin.Hugin
 #
 # Uso:
@@ -69,8 +72,13 @@ PTO="$TRABAJO/proyecto.pto"
 # Hugin necesita el angulo de vision horizontal de cada foto. Estrategia:
 #   1. Si el EXIF trae distancia focal  -> dejar que pto_gen lo calcule.
 #   2. Si la camara es un dron DJI (modelo "FC...") -> ~82 grados.
-#   3. Si no (iPhone: el asistente borra el EXIF) -> ~63 grados.
+#   3. Si no (iPhone: el asistente saca las fotos del <canvas> sin EXIF) -> ~63 grados.
 # Se puede forzar con la variable de entorno FOV_CAMARA.
+#
+# Nota: el 63 del iPhone es APROXIMADO. Se probo 50 vs 63 con las mismas fotos y
+# la esfera salio igual: el FOV exacto no es lo que decide. Lo que salva la
+# esfera es el TRASLAPE DENSO de la captura v9 (paso de giro de 22.5°); autooptimiser
+# -a afina el FOV real a partir de los puntos de control de todas formas.
 DETECTA='
 from PIL import Image
 import sys
@@ -108,10 +116,16 @@ echo "--- 5/6  Fijando salida equirectangular 360x180 (pano_modify)"
 pano_modify --canvas=AUTO --crop=AUTO --projection=2 --fov=360x180 -o "$PTO" "$PTO"
 
 # Verificación defensiva: ¿cpfind conectó las fotos?
+# Con ~50 fotos y el traslape denso de v9 deberían salir CIENTOS de puntos de
+# control. Menos de 40 casi siempre significa que algo salió mal en la captura.
 n_cp="$(grep -c '^c ' "$PTO" || true)"
-if [ "${n_cp:-0}" -lt 8 ]; then
-  echo "AVISO: solo ${n_cp} puntos de control. Las fotos quizá no tienen suficiente" >&2
-  echo "       traslape o la escena tiene poca textura. La esfera puede salir mal." >&2
+if [ "${n_cp:-0}" -lt 40 ]; then
+  echo "AVISO: solo ${n_cp} puntos de control para ${#FOTOS[@]} fotos — son muy pocos." >&2
+  echo "       Causas típicas:" >&2
+  echo "        · las fotos no traslapan (se giró demasiado entre foto y foto, o" >&2
+  echo "          la cámara se movió de sitio en vez de girar sobre el eje)," >&2
+  echo "        · el cuarto tiene paredes lisas sin textura que Hugin pueda enganchar." >&2
+  echo "       La esfera va a salir con huecos o geometría rota. Conviene recapturar." >&2
 fi
 
 echo "--- 6/6  Renderizando y fusionando (nona + enblend)"
