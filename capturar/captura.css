@@ -88,6 +88,13 @@ strong { color: var(--tx-fuerte); font-weight: 650; }
 
 .nota { font-size: 0.85rem; color: var(--tx-medio); margin-top: 14px; }
 .nota.error { color: var(--error); }
+/* Aviso no bloqueante (p. ej. "no encontré el lente gran angular"): visible pero
+   sin frenar el flujo. Franja de acento a la izquierda para que llame la vista. */
+.nota.aviso {
+  color: var(--tx-fuerte);
+  border-left: 3px solid var(--acento);
+  padding-left: 10px;
+}
 
 /* Instrucción encima del botón "Guardar en el carrete" (pantalla final). */
 .fin-guia { font-size: 0.9rem; color: var(--tx-medio); margin: 4px 0; }

@@ -7,10 +7,11 @@
 #
 # El dron y el iPhone entregan las tomas SUELTAS; este script las cose.
 #
-# Con el asistente de captura v13 son ~32 fotos por cuarto (16 por fila × 2 filas
-# a ±32°), con paso de giro chico (22.5°) para que la vuelta cierre y haya
-# traslape de sobra. El TECHO y el PISO no se capturan: los cascos de arriba y
-# abajo quedan vacíos A PROPÓSITO y se tapan luego con el logo (scripts/tapar_polos.py).
+# Con el asistente de captura v14 son ~32 fotos por cuarto (16 por fila × 2 filas
+# a ±28°), tomadas con el LENTE GRAN ANGULAR del iPhone y con paso de giro chico
+# (22.5°) para que la vuelta cierre y haya traslape de sobra. El TECHO y el PISO
+# no se capturan: los cascos de arriba y abajo quedan vacíos A PROPÓSITO y se
+# tapan luego con el logo (scripts/tapar_polos.py).
 #
 # Requiere Hugin:  winget install --id Hugin.Hugin
 #
@@ -72,15 +73,17 @@ trap 'rm -rf "$TRABAJO"' EXIT
 PTO="$TRABAJO/proyecto.pto"
 
 # Hugin necesita el angulo de vision horizontal de cada foto. Estrategia:
-#   1. Si el EXIF trae distancia focal  -> dejar que pto_gen lo calcule.
-#   2. Si la camara es un dron DJI (modelo "FC...") -> ~82 grados.
-#   3. Si no (iPhone: el asistente saca las fotos del <canvas> sin EXIF) -> ~63 grados.
+#   1. Si el EXIF trae distancia focal                 -> pto_gen lo calcula solo.
+#   2. Patron del asistente v14 (LENTE GRAN ANGULAR)   -> ~95 grados.
+#   3. Dron DJI (modelo "FC...")                       -> ~82 grados.
+#   4. Otro sin EXIF (iPhone, lente normal)            -> ~63 grados.
 # Se puede forzar con la variable de entorno FOV_CAMARA.
+# El valor por defecto se FIJA MAS ABAJO, tras detectar si es el patron del
+# asistente (necesitamos saber eso para elegir 95 vs 63).
 #
-# Nota: el 63 del iPhone es APROXIMADO. Se probo 50 vs 63 con las mismas fotos y
-# la esfera salio igual: el FOV exacto no es lo que decide. Lo que salva la
-# esfera es el TRASLAPE DENSO de la captura (paso de giro chico) + el sembrado
-# de posiciones del "patrón asistente" (ver más abajo).
+# Nota: el FOV exacto NO es lo que decide. Lo que salva la esfera es el TRASLAPE
+# DENSO de la captura (paso de giro chico) + el sembrado de posiciones del
+# "patrón asistente" (ver más abajo). Con el gran angular el traslape es aun mayor.
 DETECTA='
 from PIL import Image
 import sys
@@ -90,21 +93,17 @@ print("exif" if (e.get(37386) or e.get(41989)) else ("dron" if m.startswith("FC"
 '
 lente="$(python -c "$DETECTA" "${FOTOS[0]}" 2>/dev/null || echo iphone)"
 
-if [ -z "${FOV_CAMARA:-}" ]; then
-  if [ "$lente" = "dron" ]; then FOV_CAMARA=82; else FOV_CAMARA=63; fi
-fi
-
 # ===========================================================================
 # ¿Es el patrón del asistente de captura?  (modo "sembrado" vs modo "ciego")
 # ---------------------------------------------------------------------------
-# El asistente `capturar/` v13 SIEMPRE entrega 32 fotos en un orden conocido
+# El asistente `capturar/` v14 SIEMPRE entrega 32 fotos en un orden conocido
 # (las fotos ordenadas por nombre = el orden de captura):
-#   fotos  1..16 (idx  0..15) -> fila "arriba", pitch +32°, giro +22.5°/foto
+#   fotos  1..16 (idx  0..15) -> fila "arriba", pitch +28°, giro +22.5°/foto
 #                                 -> yaw = idx * 22.5
-#   fotos 17..32 (idx 16..31) -> fila "abajo",  pitch -32°, mismo giro
+#   fotos 17..32 (idx 16..31) -> fila "abajo",  pitch -28°, mismo giro
 #                                 -> yaw = (idx - 16) * 22.5
 #   (parámetros = capturar/captura.js PASO 1: PASO_YAW, FILAS[*].pitch/disparos)
-#   v13 NO tiene foto de techo ni de piso.
+#   v14 NO tiene foto de techo ni de piso, y captura con el LENTE GRAN ANGULAR.
 #
 # Si reconocemos ese patrón SEMBRAMOS esas posiciones (yaw/pitch/roll) en el
 # .pto ANTES de buscar puntos de control, en vez de que cpfind las adivine.
@@ -119,12 +118,12 @@ fi
 # Forzar a mano con la variable de entorno PATRON:
 #   PATRON=ciego      -> modo viejo aunque haya 32 fotos
 #   PATRON=asistente  -> sembrado aunque no haya exactamente 32
-#   (PATRON=v11 / v12 / v13 son alias de "asistente")
+#   (PATRON=v11 / v12 / v13 / v14 son alias de "asistente")
 # ===========================================================================
 PATRON_AST=0
 case "${PATRON:-}" in
-  ciego)                   PATRON_AST=0 ;;
-  asistente|v11|v12|v13)   PATRON_AST=1 ;;
+  ciego)                       PATRON_AST=0 ;;
+  asistente|v11|v12|v13|v14)   PATRON_AST=1 ;;
   *)
     # Autodetección: 32 fotos + sin EXIF de lente (= salieron del <canvas>).
     if [ "${#FOTOS[@]}" -eq 32 ] && [ "$lente" != "dron" ] && [ "$lente" != "exif" ]; then
@@ -135,15 +134,29 @@ esac
 
 # Parámetros del patrón — DEBEN coincidir con capturar/captura.js PASO 1.
 AST_PASO_YAW=22.5        # PASO_YAW
-AST_PITCH_ARRIBA=32      # FILAS[0].pitch
-AST_PITCH_ABAJO=-32      # FILAS[1].pitch
+AST_PITCH_ARRIBA=28      # FILAS[0].pitch   (v14: ±28 con lente gran angular)
+AST_PITCH_ABAJO=-28      # FILAS[1].pitch
 AST_POR_FILA=16          # FILAS[*].disparos
 
 if [ "$PATRON_AST" -eq 1 ]; then
   echo "--- Patrón del asistente detectado: siembro las posiciones de las ${#FOTOS[@]} fotos"
-  echo "    (16 arriba a +${AST_PITCH_ARRIBA}° · 16 abajo a ${AST_PITCH_ABAJO}° · paso ${AST_PASO_YAW}°)"
+  echo "    (16 arriba a +${AST_PITCH_ARRIBA}° · 16 abajo a ${AST_PITCH_ABAJO}° · paso ${AST_PASO_YAW}° · lente gran angular)"
 else
   echo "--- Modo ciego: cpfind adivina las posiciones (dron / EXIF / captura no estándar)"
+fi
+
+# --- FOV por defecto (ahora sí sabemos si es el patrón del asistente) --------
+if [ -z "${FOV_CAMARA:-}" ]; then
+  if [ "$PATRON_AST" -eq 1 ]; then
+    # Patrón asistente v14 = LENTE GRAN ANGULAR del iPhone en retrato. Su FOV
+    # horizontal ronda ~95° (ESTIMADO; afínalo con FOV_CAMARA=NN si el cosido
+    # sale "ojo de pez" o al revés, comprimido). El lente normal era ~63°.
+    FOV_CAMARA=95
+  elif [ "$lente" = "dron" ]; then
+    FOV_CAMARA=82
+  else
+    FOV_CAMARA=63    # iPhone lente normal / captura no estándar sin EXIF
+  fi
 fi
 
 echo "--- 1/6  Creando el proyecto (pto_gen)  [lente: $lente]"
@@ -164,7 +177,7 @@ if [ "$PATRON_AST" -eq 1 ]; then
   SEMBRADO="$(python - "${#FOTOS[@]}" <<'PY'
 import sys
 n = int(sys.argv[1])
-PASO, P_ARRIBA, P_ABAJO = 22.5, 32, -32
+PASO, P_ARRIBA, P_ABAJO = 22.5, 28, -28   # v14: paso 22.5°, filas a ±28° (gran angular)
 por_fila = max(1, round(n / 2))    # ~16; se adapta si el conteo no es 32 exacto
 partes = []
 for i in range(n):
@@ -198,17 +211,27 @@ if [ "$PATRON_AST" -eq 1 ]; then
   # SOLO la orientación (yaw, pitch, roll) de cada foto, MENOS la foto 0 (anclada
   # como referencia, para que el conjunto no gire en bloque).
   #
-  # NO se optimiza el FOV (`v`) ni la distorsión (`b`,`c`), y NO se usa
-  # `autooptimiser -a`: en pruebas reales, en cuanto se libera el FOV el
-  # optimizador encuentra una solución degenerada (FOV enorme) y la esfera sale
-  # como una tira delgada (RMS ~70-85, lienzo de 16000 px). Con solo y,p,r el
-  # resultado es estable y predecible (RMS ~16).
+  # NUNCA se optimiza el FOV (`v`) ni se usa `autooptimiser -a`: en pruebas
+  # reales, en cuanto se libera el FOV el optimizador encuentra una solución
+  # degenerada (FOV enorme) y la esfera sale como una tira delgada (RMS ~70-85,
+  # lienzo de 16000 px). Con solo y,p,r el resultado es estable y predecible
+  # (RMS ~16).
   #   -n = optimiza solo las variables marcadas por pto_var --opt
   #   -m = iguala la exposición   ·   -s = elige el tamaño de lienzo
   # El error residual (~16) es sobre todo paralaje de captura a mano/tripié en un
   # cuarto chico; se reduce en la captura (girar sobre el eje), no aquí.
   # Una foto sin puntos de control (una pared muy lisa) no se puede mover → se
   # queda en su posición sembrada. Es lo que queremos.
+  #
+  # PROBAR (v14, lente gran angular): el ultra-wide tiene DISTORSIÓN DE BARRIL
+  # fuerte. Con el traslape enorme de este lente PROBABLEMENTE convenga liberar
+  # también la distorsión radial `b` (parámetro compartido: mismo lente en todas
+  # las fotos). Todavía NO se ha probado en real. Si el cosido sale con las
+  # líneas rectas curvadas, cambia las 2 líneas de abajo por:
+  #     pto_var --opt "y,p,r,b,!y0,!p0,!r0" -o "$PTO" "$PTO"
+  #     autooptimiser -n -m -s -o "$PTO" "$PTO"
+  # y compara. (Con el lente normal esto desestabilizaba; con el gran angular y
+  # su traslape debería converger.) NUNCA añadir `v` ni usar `-a`.
   pto_var --opt "y,p,r,!y0,!p0,!r0" -o "$PTO" "$PTO"
   autooptimiser -n -m -s -o "$PTO" "$PTO"
 else
@@ -220,9 +243,9 @@ else
 fi
 
 echo "--- 5/6  Fijando salida equirectangular 360x180 (pano_modify)"
-# Se fuerza esfera completa 360x180. Los cascos de arriba (~+73°..+90°) y de
-# abajo (nadir, ~−73°..−90°) quedan SIN fotos por diseño de la captura v12
-# (2 filas a ±32°, sin polos): saldrán vacíos/negros y se tapan con el logo.
+# Se fuerza esfera completa 360x180. Los cascos de arriba (~+83°..+90°) y de
+# abajo (nadir, ~−83°..−90°) quedan SIN fotos por diseño de la captura v14
+# (2 filas a ±28°, sin polos): saldrán vacíos/negros y se tapan con el logo.
 # Es lo esperado, no un fallo.
 pano_modify --canvas=AUTO --crop=AUTO --projection=2 --fov=360x180 -o "$PTO" "$PTO"
 
@@ -265,8 +288,8 @@ python "$RAIZ/scripts/optimizar_panoramas.py" "$TRABAJO/panorama.tif" "$SALIDA"
 
 echo
 echo "LISTO -> $SALIDA"
-echo "Los CASCOS de arriba y de abajo (~±15° en cada polo) quedan VACÍOS por diseño:"
-echo "la captura v13 son 2 filas a ±32°, sin fotos de techo ni piso. Taparlos con:"
+echo "Los CASCOS de arriba y de abajo (~±7-12° en cada polo) quedan VACÍOS por diseño:"
+echo "la captura v14 son 2 filas a ±28° (lente gran angular), sin techo ni piso. Taparlos con:"
 echo "  python scripts/tapar_polos.py \"$SALIDA\" <salida-final.webp>"
 echo "La franja del horizonte debe verse completa y SIN CUÑA NEGRA (si hay cuña, la"
 echo "vuelta no cerró: gira más despacio y da la vuelta completa)."

@@ -16,38 +16,55 @@
 /* ============================================================================
    PASO 1 · CONFIGURACIÓN
    ============================================================================
-   Captura v13 — "2 filas a ±32°, sin polos", pensada para TRIPIÉ.
-   Se toman 2 vueltas de 360°: una un poco hacia ARRIBA (+32°) y una un poco
-   hacia ABAJO (−32°). NO hay foto de techo ni de piso: los cascos de arriba y
-   abajo (~±20° de pitch) se tapan luego con el logo (y en el piso saldría el
-   tripié de todos modos).
+   Captura v14 — "2 filas a ±28°, LENTE GRAN ANGULAR, sin polos". Para TRIPIÉ.
 
-   Por qué cambió (v12 → v13): v12 eran 3 filas a 0°/±30° con paso de 30°. En
-   prueba real ("V12", 36 fotos) la vuelta NO CERRÓ: 12 disparos a 30° taparon
-   solo ~220° de los 360° (el giroscopio se adelanta: cree que giraste 30° cuando
-   giraste ~18°). Con paso de 22.5° (16 por vuelta) la v11 SÍ cerró la vuelta
-   completa. v13 vuelve a 22.5°; para no subir tanto el número de fotos, se
-   quita la fila del horizonte y las 2 filas restantes suben a ±32° (cubren el
-   horizonte de sobra por traslape). 2×16 = 32 fotos.
+   Novedad v14: la app captura con el LENTE GRAN ANGULAR del iPhone (ultra-wide /
+   0.5x), NO con el normal (ver PASO 3). El gran angular "ve" ~95-106° por foto
+   (el normal ~55-63°). Eso da:
+     · traslape enorme entre fotos → Hugin encuentra MUCHÍSIMOS más puntos de
+       control → el paralaje de un cuarto chico perdona mucho más,
+     · casi cobertura de polo a polo con solo 2 filas,
+     · menos sensible a que el giroscopio no sea exacto.
+   Lo que el gran angular NO cambia: el NÚMERO de fotos. Las apps tipo Teleport /
+   Polycam hacen 16 porque usan ARKit (pose sin deriva); la web no tiene eso, así
+   que seguimos con ~32 fotos y paso de 22.5° para que la vuelta CIERRE.
 
-   Se conserva de v8/v11:
+   Se siguen tomando 2 vueltas de 360°: una un poco hacia ARRIBA (+28°) y una un
+   poco hacia ABAJO (−28°). NO hay foto de techo ni de piso: los cascos (~±7-12°
+   de pitch) se tapan luego con el logo (scripts/tapar_polos.py).
+
+   Por qué ±28 y no ±32 (v13): con el gran angular SOBRA cobertura vertical, así
+   que se bajan las filas a ±28° — más cómodo de sostener en el tripié y aun así
+   el horizonte queda cubierto de sobra por traslape. Si al leer el diagnóstico
+   de consola (PASO 3) el FOV real sale más chico de lo esperado, subir a ±30/±32;
+   si sale más grande, ±25 vale.
+
+   Historia previa (cada versión arregló algo real):
+   · v8  giroscopio puro (matriz W3C); brújula descartada (imanes en interiores).
+   · v11 2 filas ±20 + techo, paso 22.5° → cosió y quedó derecha, pero 40° de
+     banda negra arriba/abajo y la foto de techo nunca enganchaba.
+   · v12 3 filas 0/±30 paso 30° → la vuelta NO cerró: 12 disparos a 30° taparon
+     solo ~220° (el giroscopio se adelanta con pasos grandes).
+   · v13 2 filas ±32 paso 22.5° con el lente NORMAL.
+   · v14 igual estructura que v13 pero LENTE GRAN ANGULAR y filas a ±28°.
+
+   Se conserva de v8/v11/v13:
    · "Paso denso": el giro entre foto y foto es CHICO (PASO_YAW = 22.5° → 16
-     fotos por vuelta). Sobra traslape horizontal AUNQUE el giroscopio se
-     equivoque ±10°. (v6/v7/v8 fallaban con paso de 45°: dos fotos seguidas de la
-     misma fila no traslapaban. v12 con 30° traslapaba pero no cerraba la vuelta.)
+     fotos por vuelta). Sobra traslape AUNQUE el giroscopio se equivoque ±10°.
+     Pasos más grandes → el giroscopio se adelanta → vuelta incompleta. NO subir.
    · "Giro relativo": cada objetivo de yaw = (yaw real de la foto anterior +
      PASO_YAW), NO respecto a un "norte" fijo. La brújula sigue descartada.
 
-   Cobertura vertical (FOV_GUIA_V ≈ 87°, cada fila "ve" ±43° de su centro):
-   · Fila +32° cubre −11°..+75°   ·  Fila −32° cubre −75°..+11°
-     → se solapan de −11° a +11° (banda de 22° en el horizonte, sin zona muerta).
-     Sin cubrir queda ~+75°..+90° y ~−75°..−90° (±15° de casco) → lo tapa el logo. */
-const PASO_YAW = 22.5;           // grados de giro entre foto y foto (16 por vuelta)
+   Cobertura vertical (FOV_GUIA_V ≈ 110°, cada fila "ve" ±55° de su centro):
+   · Fila +28° cubre −27°..+83°   ·  Fila −28° cubre −83°..+27°
+     → se solapan de −27° a +27° (banda de 54° en el horizonte, sin zona muerta).
+     Sin cubrir queda ~±83°..±90° (±7° de casco en cada polo) → lo tapa el logo. */
+const PASO_YAW = 22.5;           // grados de giro entre foto y foto (16 por vuelta) — NO subir
 const FILAS = [
-  { id: "arriba", nombre: "un poco hacia arriba", pitch:  32, disparos: 16 },
-  { id: "abajo",  nombre: "un poco hacia abajo",  pitch: -32, disparos: 16 },
+  { id: "arriba", nombre: "un poco hacia arriba", pitch:  28, disparos: 16 },
+  { id: "abajo",  nombre: "un poco hacia abajo",  pitch: -28, disparos: 16 },
 ];
-const POLOS = [];   // v13: sin foto de techo ni piso (nunca enganchan; se tapan con logo)
+const POLOS = [];   // v14: sin foto de techo ni piso (nunca enganchan; se tapan con logo)
 
 /** Plan plano de disparos (32 = 16×2): cada uno sabe a qué fila pertenece. */
 const PLAN = [];
@@ -59,17 +76,18 @@ const TOTAL = PLAN.length;    // 32 — SIEMPRE derivado del PLAN, nunca un núm
 // capturar no desespera.
 const TOL_YAW = 10;           // margen horizontal para "alineado"
 const TOL_PITCH = 10;         // margen vertical
-const TOL_POLO = 16;          // (sin uso en v12: no hay polos; se deja por si vuelven)
+const TOL_POLO = 16;          // (sin uso en v14: no hay polos; se deja por si vuelven)
 const MS_PARA_DISPARAR = 500; // sostener la alineación este tiempo antes de disparar
 
-// FOV de la cámara del iPhone, SOLO para proyectar la diana en la pantalla.
-// El <canvas> del vídeo es 2160×4032 (retrato). Tomamos ~54° horizontales y
-// derivamos el vertical de esa proporción retrato:
-//     tan(V/2) = (4032 / 2160) · tan(H/2)   →   V ≈ 87°
-// No necesita ser exactísimo: la diana se DIBUJA con esto, pero el disparo se
-// DECIDE con diferencias de ángulo (TOL_YAW / TOL_PITCH), no con píxeles.
-const FOV_GUIA_H = 54;
-const FOV_GUIA_V = 87;
+// FOV de la cámara, SOLO para proyectar la diana en la pantalla. El disparo NO
+// se decide con esto: se decide con diferencias de ángulo (TOL_YAW / TOL_PITCH).
+// v14 usa el LENTE GRAN ANGULAR (PASO 3): en retrato su FOV horizontal ronda
+// ~90° y el vertical se deriva de la proporción retrato del <canvas> (2160×4032):
+//     tan(V/2) = (4032 / 2160) · tan(H/2)   →   V ≈ 124°, lo capamos a 110°
+// Ambos son ESTIMADOS de partida; se afinan leyendo el diagnóstico de consola
+// del PASO 3 ("[Panoramika] lente: … · video: …x… · settings: …").
+const FOV_GUIA_H = 90;
+const FOV_GUIA_V = 110;
 
 /* ============================================================================
    PASO 2 · DOM + NAVEGACIÓN
@@ -93,6 +111,7 @@ function irA(nombre) {
 const fotos = new Array(TOTAL).fill(null);  // Blob por disparo
 const historial = [];                       // índices en orden de captura (para "rehacer")
 let streamCamara = null;
+let usandoGranAngular = false;  // ¿tocó el lente gran angular (0.5x)? — lo consulta el diagnóstico del PASO 3
 let orientacionOK = false;  // llegan datos de los sensores
 let bucleActivo = false;
 let alineadaDesde = 0;      // timestamp desde que el objetivo está alineado
@@ -154,10 +173,25 @@ $("btnPermMovimiento").addEventListener("click", async () => {
   }, 1300);
 });
 
+/* Variantes de etiqueta con las que iOS/Android nombran el lente gran angular,
+   según idioma del sistema. La etiqueta SOLO está disponible DESPUÉS de conceder
+   el primer permiso de cámara (antes viene vacía). */
+const ETIQUETAS_GRAN_ANGULAR = [
+  "ultra wide", "ultra-wide", "ultrawide",
+  "gran angular", "ultra gran angular",
+  "0.5", "ultra-ancha", "ultra ancha",
+];
+
 $("btnPermCamara").addEventListener("click", async () => {
   $("errorPermisos").hidden = true;
+  ocultarAvisoLente();
+
+  // 1 · Primer permiso de cámara. Pedimos la trasera. Este stream es TEMPORAL:
+  //     sirve para (a) tener permiso y (b) que enumerateDevices revele las
+  //     ETIQUETAS de los lentes. Solo se cierra si logramos abrir el gran angular.
+  let streamTemporal = null;
   try {
-    streamCamara = await navigator.mediaDevices.getUserMedia({
+    streamTemporal = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: { ideal: "environment" },
         width: { ideal: 4096 },
@@ -165,12 +199,77 @@ $("btnPermCamara").addEventListener("click", async () => {
       },
       audio: false,
     });
-    video.srcObject = streamCamara;
-    await video.play().catch(() => {});
   } catch (e) {
     mostrarAyuda();
     return falloPermisos("No se pudo abrir la cámara: " + textoError(e));
   }
+
+  // 2 · Intentar CAMBIAR al lente GRAN ANGULAR (ultra-wide / 0.5x). iOS 16.3+
+  //     deja pedirlo por deviceId desde una web. Da mucho más traslape entre
+  //     fotos → Hugin cose mejor un cuarto chico. Si algo falla aquí, seguimos
+  //     con el lente por defecto (degradación elegante) y avisamos sin bloquear.
+  try {
+    const dispositivos = await navigator.mediaDevices.enumerateDevices();
+    const camaras = dispositivos.filter((d) => d.kind === "videoinput");
+    const norm = (s) => (s || "").toLowerCase();
+    const coincide = (d) => ETIQUETAS_GRAN_ANGULAR.some((v) => norm(d.label).includes(v));
+
+    // Prioridad 1: etiqueta que además contenga "ultra" (descarta cosas como
+    // "Back Dual Wide Camera" / "Back Triple Camera", que NO son el ultra-wide
+    // puro). Prioridad 2: cualquier variante ("gran angular", "0.5", …).
+    const granAngular =
+      camaras.find((d) => norm(d.label).includes("ultra") && coincide(d)) ||
+      camaras.find(coincide);
+
+    if (granAngular) {
+      const nuevo = await navigator.mediaDevices.getUserMedia({
+        video: {
+          deviceId: { exact: granAngular.deviceId },
+          width: { ideal: 4096 },
+          height: { ideal: 2160 },
+        },
+        audio: false,
+      });
+      // Solo ahora que el nuevo stream abrió, soltamos el temporal.
+      streamTemporal.getTracks().forEach((t) => t.stop());
+      streamCamara = nuevo;
+      usandoGranAngular = true;
+    } else {
+      streamCamara = streamTemporal;
+      mostrarAvisoLente(
+        "No encontré el lente gran angular; usando el normal. " +
+        "La esfera puede necesitar más fotos o salir con más costura."
+      );
+    }
+  } catch (e) {
+    // enumerateDevices o el segundo getUserMedia fallaron: el temporal sigue
+    // vivo (nunca lo cerramos en esta rama), así que la app continúa igual.
+    console.warn("[Panoramika] no se pudo seleccionar el lente gran angular:", e);
+    streamCamara = streamTemporal;
+    mostrarAvisoLente(
+      "No pude cambiar al lente gran angular; usando el normal. " +
+      "La esfera puede necesitar más fotos o salir con más costura."
+    );
+  }
+
+  // 3 · Conectar el stream elegido al <video> de fondo.
+  video.srcObject = streamCamara;
+  await video.play().catch(() => {});
+
+  // 4 · Diagnóstico en consola: qué lente y qué resolución tocaron de verdad.
+  //     Sirve para calibrar FOV_GUIA_* (PASO 1) y FOV_CAMARA (armar-esfera.sh).
+  const logDiag = () => {
+    const track = streamCamara && streamCamara.getVideoTracks()[0];
+    console.log(
+      "[Panoramika] lente:", track ? track.label : "?",
+      "· video:", video.videoWidth + "x" + video.videoHeight,
+      "· settings:", track ? JSON.stringify(track.getSettings()) : "?",
+      "· granAngular:", usandoGranAngular
+    );
+  };
+  if (video.videoWidth) logDiag();
+  else video.addEventListener("loadedmetadata", logDiag, { once: true });
+
   irA("tips");
 });
 
@@ -178,6 +277,16 @@ function falloPermisos(msg) {
   const el = $("errorPermisos");
   el.textContent = msg;
   el.hidden = false;
+}
+function mostrarAvisoLente(msg) {
+  const el = $("avisoLente");
+  if (!el) return;
+  el.textContent = msg;
+  el.hidden = false;
+}
+function ocultarAvisoLente() {
+  const el = $("avisoLente");
+  if (el) el.hidden = true;
 }
 function mostrarAyuda() { $("ayudaPermisos").hidden = false; }
 function textoError(e) { return e && e.message ? e.message : String(e); }

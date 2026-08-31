@@ -7,7 +7,7 @@
   <title>Asistente de captura · Panorámika</title>
   <meta name="theme-color" content="#0d0f12" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="captura.css?v=13" />
+  <link rel="stylesheet" href="captura.css?v=14" />
 </head>
 
 <body>
@@ -18,7 +18,7 @@
   <!-- ================= PANTALLA 1 · BIENVENIDA ================= -->
   <section class="pantalla pantalla--intro" id="pantallaIntro">
     <div class="tarjeta">
-      <div class="marca"><span class="marca__punto"></span> Panorámika <span class="version">v13</span></div>
+      <div class="marca"><span class="marca__punto"></span> Panorámika <span class="version">v14</span></div>
       <h1>Asistente de captura 360°</h1>
       <p>Te guía para tomar las fotos de una toma esférica. Necesitas:</p>
       <ul>
@@ -53,6 +53,13 @@
   <section class="pantalla pantalla--tips" id="pantallaTips" hidden>
     <div class="tarjeta">
       <h2>Antes de empezar</h2>
+
+      <p class="nota">
+        Esta app usa el <strong>lente gran angular</strong> del iPhone
+        automáticamente: por eso la imagen se ve "más abierta" de lo normal. Es lo
+        correcto — da más traslape entre fotos y la esfera cose mejor.
+      </p>
+      <p class="nota aviso" id="avisoLente" hidden></p>
 
       <label class="campo">
         ¿Qué estás capturando?
@@ -133,6 +140,6 @@
     </div>
   </section>
 
-  <script src="captura.js?v=13"></script>
+  <script src="captura.js?v=14"></script>
 </body>
 </html>

@@ -44,44 +44,48 @@ son placeholders hasta tener fotos).
 
 ## Estado de cada frente
 
-### Asistente de captura — `capturar/` (v13, en vivo tras push)
+### Asistente de captura — `capturar/` (v14, en vivo tras push)
 - **Pantalla final (commit 5221165)**: compartir a Drive desde iOS NUNCA fue
   fiable. Ahora **un solo `navigator.share` con todas las fotos** → "Guardar
   imágenes" al carrete → Daniel las sube a Drive desde Fotos. Sin tandas.
-- **Diagnóstico del stitching (cerrado)**: v6/v7/v8 no cosían — con paso de giro
-  de 45° dos fotos seguidas de una fila tenían **0 puntos de control** (traslape
-  horizontal nulo). El FOV no era la causa (probado 50 vs 63, igual). Solución:
-  **paso de giro chico** = traslape denso, robusto aunque el giroscopio yerre ±10°.
-- **v11 (probado real, "Cuarto lagos 4", 33 fotos)**: 2 filas ±20° + 1 techo, paso
-  22.5°. Arregló 2 bugs que traía v10: verticalidad (`acostado = |derZ| > sin45°`,
-  el eje "derecha" del teléfono; ya no usa `e.gamma` que se desquicia en beta ±90)
-  y la diana (**proyección gnomónica** `proyectarObjetivo()` en PASO 5, cae bien a
-  cualquier inclinación). Con el sembrado del script **la esfera cosió y quedó
-  derecha**, PERO: la foto de techo nunca engancha y 2 filas a ±20° dejaban bandas
-  negras de ~40°.
-- **v12 (este commit)** — "3 filas moderadas, sin polos":
-  - **3 filas: horizonte 0°, arriba +30°, abajo −30°**, `PASO_YAW = 30°` (12
-    disparos/fila) → **36 fotos.** `POLOS = []` (sin techo ni piso).
-  - La fila del horizonte hace de ancla; ±30° no hace caer el teléfono (±40 sí).
-    Cobertura ~±65° → cascos de ~±17° arriba y abajo → se tapan con logo.
-  - Resto igual: roll robusto, diana gnomónica, `FOV_GUIA` 54/87, giro relativo,
-    paso denso, sin brújula.
-- Fotos salen del `<canvas>` del video: **2160×4032, sin EXIF**.
-- **PENDIENTE: Daniel captura un cuarto con v12** (36 fotos, tripié) → re-armar.
-- Cache-bust: `?v=N` en `index.html` (css y js) + `<span class="version">`. Va en **v12**.
+- **Diagnóstico del stitching (cerrado)**: v6/v7/v8 no cosían — paso de giro 45°
+  dejaba **0 puntos de control** entre fotos seguidas. Solución: **paso chico**.
+  v12 (paso 30°) NO cerraba la vuelta: 12 disparos taparon ~220° (el giroscopio
+  de iOS se adelanta con pasos grandes). **22.5° es el único paso probado que
+  cierra la vuelta** (v11 lo hizo). NO subirlo.
+- **Bugs ya resueltos (v11)**: verticalidad (`acostado = |derZ| > sin45°`, no
+  `e.gamma`); diana (**proyección gnomónica** `proyectarObjetivo()`, PASO 5).
+- **Piezas que NO se tocan**: matriz W3C con 3 ejes en `escucharOrientacion()`,
+  giro relativo (`objetivoYaw = yaw real anterior + PASO_YAW`), 2 botones de
+  permiso + `requestPermission()` síncrono, brújula descartada.
+- **v14 (este commit) — LENTE GRAN ANGULAR**: copia de Teleport/Polycam. En
+  `#btnPermCamara`: `getUserMedia` temporal → `enumerateDevices` → busca el lente
+  ultra-wide por **etiqueta** (`ETIQUETAS_GRAN_ANGULAR`, prioriza las que digan
+  "ultra") → reabre con `deviceId:{exact}`. Si falla, sigue con el normal y
+  muestra `#avisoLente` (no bloqueante). `console.log("[Panoramika] lente:…")` en
+  `loadedmetadata` para **calibrar el FOV real**.
+  - Geometría: **2 filas a pitch ±28°**, 16 disparos, paso 22.5° = **32 fotos**.
+    `POLOS = []`. `FOV_GUIA_H/V` = 90/110 (estimado gran angular retrato).
+  - El gran angular NO baja el conteo (las apps hacen 16 con ARKit, que la web no
+    tiene) — mejora traslape/robustez del cosido y achica los cascos a ~±7-12°.
+- Fotos del `<canvas>` del video: **2160×4032, sin EXIF**.
+- **PENDIENTE: Daniel captura con v14** → leer el `console.log` del lente para
+  confirmar que tocó el gran angular y ajustar `FOV_GUIA_*` + `FOV_CAMARA` si el
+  FOV real difiere de 90/110/95.
+- Cache-bust: `?v=14` en `index.html` (css y js) + `<span class="version">`.
 
 ### Armado de esferas — `scripts/armar-esfera.sh`
 - Modo **CIEGO** (dron / fotos con EXIF): `pto_gen → cpfind --multirow → cpclean →
-  autooptimiser -a -m -l -s`. El aéreo del dron de Los Lagos cose **excelente**
-  (5760×2880) así — NO se toca.
-- Modo **"patrón asistente"** (autodetecta 36 fotos sin EXIF; forzar con
-  `PATRON=asistente` / `PATRON=ciego`): **siembra** yaw/pitch de cada foto
-  (12 a 0°, 12 a +30°, 12 a −30°; yaw = pos×30°) con `pto_var --set` antes de
-  `cpfind --prealigned`, y optimiza **solo yaw/pitch/roll** (`pto_var --opt` +
-  `autooptimiser -n`). **NUNCA** `-a` ni liberar el FOV (`v`): degeneran la esfera
-  (sin sembrar `-a` la rola ~90°; con FOV libre sale una tira delgada).
-- **Interior probado con v11** (33 fotos): esfera derecha y legible, error residual
-  ~16 px (paralaje del cuarto chico). Falta probar el patrón v12 con 36 fotos.
+  autooptimiser -a -m -l -s`. El aéreo del dron cose **excelente** así — NO tocar.
+- Modo **"patrón asistente"** (autodetecta 32 fotos sin EXIF; `PATRON=asistente` /
+  `PATRON=ciego` / `PATRON=v14`): **siembra** yaw/pitch de cada foto (16 a +28°,
+  16 a −28°; yaw = pos×22.5°) con `pto_var --set` antes de `cpfind --prealigned`;
+  `FOV_CAMARA=95` (gran angular, afinar con la var de entorno); optimiza **solo
+  yaw/pitch/roll** (`pto_var --opt` + `autooptimiser -n`). **NUNCA** `-a` ni
+  liberar `v` (degeneran la esfera). Comentario "PROBAR (v14)": liberar `b`
+  (distorsión de barril) si el gran angular deja costura en los bordes.
+- **Probado con v11** (lente normal, 33 fotos): esfera derecha y legible, error
+  ~16 px (paralaje del cuarto chico). Falta probar el patrón v14 (gran angular).
 
 ### Visor — navegación tipo Street View (v en vivo)
 - Hotspots = marcadores con etiqueta (`tipo`: `propiedad` / `destino` / `salir`).
@@ -92,10 +96,13 @@ son placeholders hasta tener fotos).
 
 ## Próximas tareas (orden sugerido)
 
-1. **Daniel captura un cuarto con captura v11** (tripié, 33 fotos: 2 filas ±20° +
-   techo) → re-armar la esfera y ver si ahora cosen las filas. Cuarto con textura.
-2. **Tapar el nadir con el logo** — ahora prioridad ALTA: v11 no fotografía el
-   piso, así que toda esfera interior nace con ~27° de hueco abajo. Script o imagen.
+1. **Daniel captura un cuarto con captura v14** (tripié, ~32 fotos, LENTE GRAN
+   ANGULAR) → leer el `console.log` del lente, re-armar con `armar-esfera.sh`,
+   ver si el gran angular mejora el cosido. Si el lente no se pudo seleccionar,
+   revisar `FOV_CAMARA`/`FOV_GUIA_*`.
+2. **Tapar los cascos con el logo** — `scripts/tapar_polos.py` YA existe y funciona
+   (nadir = disco de marca, cenit = relleno de color). Ajustar `--nadir-grados` /
+   `--cenit-grados` al tamaño real de los cascos de v14 (~±10°).
 3. Reemplazar placeholders de `depto-lagos` por fotos reales (fachada + cuartos).
 4. Ajustar posición del marcador de la propiedad en la aérea.
 5. **Página índice** que liste los recorridos (portafolio para brokers).
