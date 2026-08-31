@@ -44,23 +44,37 @@ son placeholders hasta tener fotos).
 
 ## Estado de cada frente
 
-### Asistente de captura — `capturar/` (v8, en vivo)
-- **v8**: solo giroscopio (la brújula fallaba en interiores por imanes → v6 solo
-  cubrió ~40%). Captura por filas: horizonte 360° → arriba → abajo → techo → piso.
-  Giro **relativo** (+45° respecto a la foto anterior real) → la deriva del
-  giroscopio no deja huecos.
+### Asistente de captura — `capturar/` (v10, en vivo tras push)
+- **Pantalla final (v9, commit 5221165)**: compartir a Drive desde el navegador
+  iOS NUNCA fue fiable. Ahora **un solo `navigator.share` con todas las fotos** →
+  "Guardar imágenes" al carrete → Daniel las sube a Drive desde la app Fotos (ese
+  flujo sí funciona). Fuera las tandas de 8 y el bucle de descargas.
+- **Captura v10 (commit 4ec95df) — "paso denso"**: v6/v7/v8 fallaban todas igual.
+  Diagnóstico cerrado con la prueba real "Cuarto lagos 3" (26 fotos v8): entre
+  fotos consecutivas de una fila → **0 puntos de control** en Hugin (traslape
+  horizontal nulo). Re-armar con FOV 50 vs 63 no cambió nada → el FOV no era la
+  causa, el **paso de giro de 45° era demasiado grande**.
+  - v10: `PASO_YAW` 45 → **22.5** (16 disparos/fila, **50 en total**), filas
+    inclinadas ±33 → ±40, polos ±82 → ±72, tolerancias más flojas
+    (`TOL_YAW`/`TOL_PITCH` 10, `MS_PARA_DISPARAR` 500). Giro relativo de v8 intacto.
+  - Tips + `.recordatorio` anti-paralaje (girar sobre los pies, no mover brazos —
+    los "fantasmas" de la esfera vienen de mover la cámara de sitio).
 - Fotos salen del `<canvas>` del video: **2160×4032, sin EXIF**.
-- **PENDIENTE: probar v8 en el iPhone de Daniel** (mañana / cuando pueda). Cualquier
-  cuarto con textura sirve para calibrar. Si la esfera sale bien cubierta, v8 quedó;
-  si no, ajustar `TOL_YAW`/`TOL_PITCH`/`PASO_YAW`/`FOV_GUIA_*` en PASO 1.
-- Cache-bust: subir el número en `?v=N` de `index.html` (css y js) y en la etiqueta
-  visible `<span class="version">`.
+- **PENDIENTE: Daniel recaptura un cuarto con v10** y se re-arma la esfera. Si
+  aún sale con pocos puntos de control en las filas horizontales, el siguiente
+  paso NO es tocar parámetros: es **sembrar un `.pto` con las posiciones
+  yaw/pitch que el asistente ya conoce** (en vez de que `cpfind` adivine) — pero
+  eso choca con el flujo "guardar al carrete" (se pierden nombres/sidecar); habría
+  que resolver cómo pasar los ángulos junto a las fotos.
+- Cache-bust: subir `?v=N` en `index.html` (css y js) y en `<span class="version">`.
+  Va en **v10**.
 
-### Armado de esferas — `scripts/armar-esfera.sh` (funciona)
-- Probado con 26 fotos iPhone y 35 del dron. Detecta lente: dron (modelo `FC*`) → 82°,
-  iPhone → 63°. Salida equirectangular 2:1 → `optimizar_panoramas.py`.
-- El aéreo del dron de Los Lagos quedó **excelente** (5760×2880). El interior con
-  fotos v6 salió mal (cobertura, era problema de captura, no del script).
+### Armado de esferas — `scripts/armar-esfera.sh` (funciona para dron; interior pendiente)
+- Detecta lente: dron (modelo `FC*`) → 82°, iPhone/canvas (sin EXIF) → 63°
+  (aproximado, da igual 50-63). Salida equirectangular 2:1 → `optimizar_panoramas.py`.
+- El aéreo del dron de Los Lagos quedó **excelente** (5760×2880).
+- **Interior aún sin validar**: las capturas v6 y v8 no cosían (problema de
+  captura, no del script). Umbral de aviso de puntos de control subido a 40.
 
 ### Visor — navegación tipo Street View (v en vivo)
 - Hotspots = marcadores con etiqueta (`tipo`: `propiedad` / `destino` / `salir`).
@@ -71,7 +85,8 @@ son placeholders hasta tener fotos).
 
 ## Próximas tareas (orden sugerido)
 
-1. **Daniel prueba captura v8** en el iPhone → calibrar.
+1. **Daniel recaptura un cuarto con captura v10** (paso denso, 50 fotos) → re-armar
+   la esfera y ver si ahora cose. Cuarto con textura; girar sobre los pies.
 2. Reemplazar placeholders de `depto-lagos` por fotos reales (fachada + cuartos).
 3. Ajustar posición del marcador de la propiedad en la aérea.
 4. **Tapar el nadir** (hueco de abajo) con el logo — script o imagen.
