@@ -86,14 +86,13 @@ Daniel produzca cada recorrido.
 ## 4. Qué implica para el producto (roadmap)
 
 **Primero: terminar bien la plataforma base** (lo que Daniel pidió).
-- [ ] Captura interior que funcione (asistente v8: giroscopio, no brújula — la
-      brújula falla en interiores).
-- [ ] Evaluar cámara 360 dedicada (ej. Insta360 / SkyRover X1): elimina el
-      stitching y la deriva de una. ~$3,000–7,000 MXN. Sube calidad y velocidad
-      de golpe. **Probablemente vale la pena antes de escalar.**
+- [ ] Captura interior que cosa limpio (asistente v11: giroscopio + paso denso +
+      2 filas suaves, pensado para tripié). Aún sin validar con fotos reales.
+- [ ] Cámara 360 dedicada: **descartada por ahora, sin capital.** Seguir con
+      celular + tripié. Reconsiderar cuando haya ingresos.
+- [ ] Tapar el nadir con el logo — prioridad alta: v11 no fotografía el piso.
 - [ ] Flujo completo de un recorrido real publicado (depto-lagos como piloto).
 - [ ] Página índice que liste los recorridos (para enseñar portafolio).
-- [ ] Nadir con logo (tapar el hueco de abajo).
 
 **Después: acercarse a la liga de "La Rosa"** (lo que da ticket alto):
 - [ ] Pestaña **PLANO 2D** por escena (subir la imagen del plano, marcar dónde
@@ -110,9 +109,77 @@ Daniel produzca cada recorrido.
 
 ---
 
-## 5. Frase para tener clara
+## 5. ¿Y si el mercado no es Xalapa? — Segmentos por quién paga
+
+> Idea de Daniel (ago 2026): en México estos servicios "no se valoran", pero el
+> mismo recorrido 360 vale distinto según **quién lo compra y si puede o no visitar
+> la propiedad en persona**. El valor lo pone el comprador que decide *sin pisar
+> el lugar*.
+
+**Principio:** cobrar donde el tour es *imprescindible*, no donde es *un lujo*.
+
+### Segmento A — Departamentos en renta de Xalapa  *(local, viable YA, recurrente)*
+- **Por qué sí:** Xalapa vive de la Universidad Veracruzana. Mucho inquilino es
+  **estudiante o profesionista de otro estado** que renta sin poder ir a ver.
+  Ahí el tour SÍ es imprescindible, aunque el ticket sea chico.
+- Las rentas **rotan** (cada 6-12 meses) → necesidad recurrente, no un pago único.
+  Un casero con 5-10 unidades = cliente que vuelve.
+- Es la versión Xalapa de "el comprador no puede visitar". El piloto `depto-lagos`
+  ya es exactamente esto.
+- **Precio:** producción más baja ($1,500-3,000 MXN) + alojamiento mensual mientras
+  esté anunciado. Volumen + recurrencia compensan el ticket.
+
+### Segmento B — Hoteles boutique / hostales / aparthoteles  *(el de mejor pitch)*
+- **Por qué sí:** ROI medible y que les duele hoy — *cada reserva directa que
+  genere el tour te ahorra 15-20% de comisión de Booking/Expedia*. Tienen
+  presupuesto de marketing. Necesidad global, no solo mexicana.
+- **Contra Matterport:** ellos cobran hardware caro + mensualidad en USD.
+  Panorámika = "suficientemente bueno" a una fracción, operado por alguien que
+  entiende el espacio.
+- Empezar por aquí para venta fuera de Xalapa: el argumento es número, no gusto.
+
+### Segmento C — Inmobiliarias en zonas de expats de México  *(escala en USD)*
+- Mérida, Tulum, Playa del Carmen, San Miguel de Allende, Puerto Vallarta, Valle
+  de Guadalupe, Lago de Chapala, Oaxaca, Ensenada.
+- **Clave:** no es "vender al extranjero", es vender a **agentes mexicanos cuyo
+  cliente es extranjero**. Mismo idioma, mismo país, misma factura, cero fricción
+  transfronteriza — pero el agente cobra comisión en dólares y **ya valora** el
+  tour porque su comprador está en Toronto o Chicago.
+- Más competencia que Xalapa; algunos ya tienen proveedor. Entrar con el aéreo
+  (que ya quedó excelente) como gancho.
+
+### Lo que NO funciona
+- **Venta fría a extranjeros individuales.** Cold outbound a personas casi no
+  convierte. A negocios (hoteles, agencias, desarrolladores) con pitch de ROU sí.
+
+### Realidades antes de lanzarse
+1. **El producto tiene que funcionar.** Hoy lo único fiable es el **aéreo con
+   dron**. El interior aún no cose limpio (ver `ESTADO.md`). No se vende afuera lo
+   que no se produce con seguridad.
+2. **Xalapa = laboratorio, no mercado.** 2-3 recorridos locales (baratos o gratis)
+   para clavar el flujo de producción y tener portafolio presentable.
+3. **Viáticos: sí, pero después.** Nadie te vuela a Oaxaca sin casos que enseñar.
+   Lo normal desde el principio: cotizar un hotel de la costa con el viaje incluido
+   en el precio, una vez que haya 2-3 casos sólidos.
+4. Falta resolver: inglés (o socio), cobro transfronterizo (Wise/Stripe/PayPal),
+   señales de confianza (reseñas, clientes previos).
+
+### El diferenciador real de Daniel
+No es "un chavo con dron": es **estudiante de arquitectura**. Entiende cómo se
+representa y se recorre un espacio. En un pitch a un hotelero o un desarrollador,
+eso pesa — es criterio de composición, no solo de equipo.
+
+### Qué cambia en el modelo de capas (sección 3)
+- La **Capa 4 (licencia internacional)** deja de ser "algún día": los segmentos B
+  y C son el puente para llegar ahí con caja y portafolio.
+- Se suma un enfoque **remoto-first, precio en USD** para B y C, con viaje
+  facturado al cliente.
+
+---
+
+## 6. Frase para tener clara
 
 > No competimos con las plataformas de preventa. Hacemos que **cualquier
-> propiedad que ya existe en Xalapa** tenga un recorrido 360 profesional, hecho
-> por nosotros, en dos días, por un precio local — y esa base escala licenciando
-> el modelo a otros que hagan lo mismo en su ciudad.
+> propiedad que ya existe** tenga un recorrido 360 profesional, hecho por
+> nosotros, rápido y a precio justo — empezando por rentas de Xalapa y hoteles
+> boutique, con el modelo listo para licenciarse a otras ciudades.
