@@ -441,21 +441,32 @@ function capturarFoto(indice) {
 
 /* ============================================================================
    PASO 7 · PANTALLA FINAL
+   ----------------------------------------------------------------------------
+   Objetivo: meter las N fotos capturadas al CARRETE del iPhone de un tirón, con
+   UN solo navigator.share({ files: [...todas...] }). En iOS la hoja de compartir
+   ofrece "Guardar N imágenes" → un toque y todas caen a Fotos. De ahí el usuario
+   las sube a Google Drive él mismo.
+
+   Por qué así: compartir archivos DIRECTO a Drive desde navigator.share() en iOS
+   nunca fue fiable, y trocear en "tandas" obligaba a repetir el gesto 4 veces y
+   abrir 4 hojas de compartir. Guardar al carrete es un único gesto y no falla;
+   desde Fotos, subir a Drive ya funciona sin problema.
    ========================================================================== */
 function terminar() {
   bucleActivo = false;
   irA("fin");
 
   const hechas = fotos.filter(Boolean).length;
-  tandaActual = 0;
-  const totalTandas = Math.ceil(hechas / TANDA);
-  $("btnCompartir").textContent =
-    totalTandas > 1 ? `Compartir a Drive (tanda 1 de ${totalTandas})` : "Compartir a Drive";
+  const completa = hechas >= TOTAL;
+
+  ocultarErrorFin();
+  $("btnCompartir").textContent = `Guardar las ${hechas} fotos en el carrete`;
 
   $("finResumen").textContent =
     `Tomaste ${hechas} de ${TOTAL} fotos. ` +
-    (hechas < TOTAL ? "Puedes repetir para completar las que falten." : "Cobertura completa.") +
-    (totalTandas > 1 ? ` Se comparten en ${totalTandas} tandas: toca el botón, elige Drive, y repite.` : "");
+    (completa
+      ? "Cobertura completa."
+      : "Puedes repetir para completar las que falten.");
 
   const vw = video.videoWidth || 0;
   $("finCalidad").textContent = vw >= 2400
@@ -475,7 +486,8 @@ function terminar() {
 }
 
 function archivos() {
-  // Nombre: <toma>_AAMMDD_NN.jpg  → fácil de identificar y de ordenar.
+  // Nombre: <toma>_AAMMDD_NN.jpg. Al guardar en Fotos el nombre se pierde, pero
+  // iOS conserva el orden por hora de captura, así que da igual.
   const d = new Date();
   const fecha = d.getFullYear().toString().slice(2) +
     String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0");
@@ -488,56 +500,57 @@ function archivos() {
     .filter(Boolean);
 }
 
-/* iOS falla al compartir 26 archivos de golpe (Drive rechaza el lote). Se manda
-   en TANDAS: cada toque del botón comparte la siguiente tanda. */
-const TANDA = 8;
-let tandaActual = 0;
+/* Mensaje de error bajo los botones. Nada de alert() para el flujo normal:
+   solo texto en el DOM (#finError). */
+function mostrarErrorFin(msg) {
+  const el = $("finError");
+  el.textContent = msg;
+  el.hidden = false;
+}
+function ocultarErrorFin() {
+  $("finError").hidden = true;
+}
 
-$("btnCompartir").addEventListener("click", async () => {
+const MSG_FALLO_COMPARTIR =
+  "No se pudo. Usa Safari (no Chrome ni la vista dentro de otra app) y vuelve a intentar.";
+
+/* Un ÚNICO navigator.share con TODAS las fotos. Lo usan los dos botones de la
+   pantalla final; la única diferencia es el texto de éxito que dejan puesto. */
+async function compartirTodas(btn, textoExito) {
+  ocultarErrorFin();
   const fs = archivos();
-  const totalTandas = Math.ceil(fs.length / TANDA);
-  const btn = $("btnCompartir");
+  if (!fs.length) return;
 
-  if (tandaActual >= totalTandas) {   // ya se mandaron todas → reiniciar contador
-    tandaActual = 0;
-  }
-
-  const lote = fs.slice(tandaActual * TANDA, (tandaActual + 1) * TANDA);
-
-  if (!(navigator.canShare && navigator.canShare({ files: lote }))) {
-    alert('Tu navegador no permite compartir fotos. Usa Safari en el iPhone, o el botón "Descargar".');
+  // Si el navegador no puede compartir estos archivos, avisar y no seguir.
+  if (!(navigator.canShare && navigator.canShare({ files: fs }))) {
+    mostrarErrorFin(MSG_FALLO_COMPARTIR);
     return;
   }
 
+  const textoPrevio = btn.textContent;
   try {
-    await navigator.share({ files: lote, title: `Fotos 360 (${tandaActual + 1}/${totalTandas})` });
-    tandaActual++;
-    if (tandaActual >= totalTandas) {
-      btn.textContent = "✓ Todas compartidas — repetir";
-    } else {
-      btn.textContent = `Compartir siguiente tanda (${tandaActual + 1} de ${totalTandas})`;
-    }
+    await navigator.share({ files: fs });
+    btn.textContent = textoExito;
   } catch (e) {
-    // Cancelar no es error; cualquier otra cosa sí.
-    if (e && e.name !== "AbortError") {
-      btn.textContent = `Reintentar tanda ${tandaActual + 1} de ${totalTandas}`;
+    // Cancelar la hoja de compartir NO es error: dejar el botón como estaba.
+    if (e && e.name === "AbortError") {
+      btn.textContent = textoPrevio;
+      return;
     }
+    console.warn("[Panoramika]", e);
+    mostrarErrorFin(MSG_FALLO_COMPARTIR);
   }
+}
+
+/* Botón principal: guardar las fotos al carrete (Fotos). */
+$("btnCompartir").addEventListener("click", () => {
+  compartirTodas($("btnCompartir"), "✓ Enviadas a Fotos — repetir si hace falta");
 });
 
+/* Botón secundario chico: misma acción, pensado para mandarlas a Archivos u
+   otra app sin mencionar Drive. */
 $("btnDescargar").addEventListener("click", () => {
-  // En iOS baja de una en una y las guarda en "Descargas". Luego se suben a Drive.
-  archivos().forEach((f, i) => {
-    setTimeout(() => {
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(f);
-      a.download = f.name;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    }, i * 500);
-  });
+  compartirTodas($("btnDescargar"), "✓ Compartidas — repetir si hace falta");
 });
 
 $("btnOtra").addEventListener("click", () => location.reload());

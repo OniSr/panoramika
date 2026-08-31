@@ -7,7 +7,7 @@
   <title>Asistente de captura · Panorámika</title>
   <meta name="theme-color" content="#0d0f12" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="captura.css?v=8" />
+  <link rel="stylesheet" href="captura.css?v=9" />
 </head>
 
 <body>
@@ -18,7 +18,7 @@
   <!-- ================= PANTALLA 1 · BIENVENIDA ================= -->
   <section class="pantalla pantalla--intro" id="pantallaIntro">
     <div class="tarjeta">
-      <div class="marca"><span class="marca__punto"></span> Panorámika <span class="version">v8</span></div>
+      <div class="marca"><span class="marca__punto"></span> Panorámika <span class="version">v9</span></div>
       <h1>Asistente de captura 360°</h1>
       <p>Te guía para tomar las fotos de una toma esférica. Necesitas:</p>
       <ul>
@@ -109,8 +109,15 @@
       <p id="finResumen"></p>
       <p class="nota" id="finCalidad"></p>
       <div class="galeria" id="galeria"></div>
-      <button class="btn" id="btnCompartir">Compartir / Guardar las fotos</button>
-      <button class="btn btn--fantasma" id="btnDescargar">Descargar una por una</button>
+
+      <p class="fin-guia">
+        Toca el botón y en el menú elige <strong>Guardar imágenes</strong>.
+        Luego abre Google Drive y súbelas desde Fotos.
+      </p>
+      <button class="btn" id="btnCompartir">Guardar las fotos en el carrete</button>
+      <button class="btn btn--fantasma btn--chico" id="btnDescargar">Compartir…</button>
+      <p class="nota error" id="finError" hidden></p>
+
       <button class="btn btn--fantasma" id="btnOtra">Hacer otra toma</button>
       <p class="nota">
         Sube las fotos a la carpeta del proyecto en Drive y avísame para armar la esfera.
@@ -118,6 +125,6 @@
     </div>
   </section>
 
-  <script src="captura.js?v=8"></script>
+  <script src="captura.js?v=9"></script>
 </body>
 </html>
