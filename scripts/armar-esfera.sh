@@ -7,10 +7,10 @@
 #
 # El dron y el iPhone entregan las tomas SUELTAS; este script las cose.
 #
-# Con el asistente de captura v11 son ~33 fotos por cuarto (16 por fila × 2 filas
-# a ±20° + 1 al techo), con paso de giro chico para que haya traslape de sobra.
-# El PISO / NADIR no se captura: queda vacío A PROPÓSITO y se tapa luego con el
-# logo (además, si hubo tripié, saldría en la foto). No es un error del armado.
+# Con el asistente de captura v12 son ~36 fotos por cuarto (12 por fila × 3 filas
+# a 0° y ±30°), con paso de giro chico (30°) para que haya traslape de sobra.
+# El TECHO y el PISO no se capturan: los cascos de arriba y abajo quedan vacíos
+# A PROPÓSITO y se tapan luego con el logo. No es un error del armado.
 #
 # Requiere Hugin:  winget install --id Hugin.Hugin
 #
@@ -79,8 +79,8 @@ PTO="$TRABAJO/proyecto.pto"
 #
 # Nota: el 63 del iPhone es APROXIMADO. Se probo 50 vs 63 con las mismas fotos y
 # la esfera salio igual: el FOV exacto no es lo que decide. Lo que salva la
-# esfera es el TRASLAPE DENSO de la captura v11 (paso de giro de 22.5°); autooptimiser
-# -a afina el FOV real a partir de los puntos de control de todas formas.
+# esfera es el TRASLAPE DENSO de la captura (paso de giro chico) + el sembrado
+# de posiciones del "patrón asistente" (ver más abajo).
 DETECTA='
 from PIL import Image
 import sys
@@ -95,55 +95,56 @@ if [ -z "${FOV_CAMARA:-}" ]; then
 fi
 
 # ===========================================================================
-# ¿Es el patrón de captura v11?  (modo "sembrado" vs modo "ciego")
+# ¿Es el patrón del asistente de captura?  (modo "sembrado" vs modo "ciego")
 # ---------------------------------------------------------------------------
-# El asistente `capturar/` v11 SIEMPRE entrega 33 fotos en un orden conocido
+# El asistente `capturar/` v12 SIEMPRE entrega 36 fotos en un orden conocido
 # (las fotos ordenadas por nombre = el orden de captura):
-#   fotos  1..16 (idx 0..15)  -> fila "arriba", pitch +20°, giro +22.5°/foto
-#                                 -> yaw = idx * 22.5
-#   fotos 17..32 (idx 16..31) -> fila "abajo",  pitch -20°, mismo giro
-#                                 -> yaw = (idx - 16) * 22.5
-#   foto  33     (idx 32)     -> techo (cenit), pitch +72°, yaw indiferente (0)
-#   (parámetros = capturar/captura.js PASO 1: PASO_YAW, FILAS[*].pitch/disparos, POLOS)
+#   fotos  1..12 (idx  0..11) -> fila "horizonte", pitch   0°, giro +30°/foto
+#                                 -> yaw = idx * 30
+#   fotos 13..24 (idx 12..23) -> fila "arriba",    pitch +30°, mismo giro
+#                                 -> yaw = (idx - 12) * 30
+#   fotos 25..36 (idx 24..35) -> fila "abajo",     pitch -30°, mismo giro
+#                                 -> yaw = (idx - 24) * 30
+#   (parámetros = capturar/captura.js PASO 1: PASO_YAW, FILAS[*].pitch/disparos)
+#   v12 NO tiene foto de techo ni de piso.
 #
 # Si reconocemos ese patrón SEMBRAMOS esas posiciones (yaw/pitch/roll) en el
 # .pto ANTES de buscar puntos de control, en vez de que cpfind las adivine.
-# Eso corrige dos fallos vistos en pruebas reales de interior:
-#   (a) `autooptimiser -a` auto-nivelaba adivinando y rolaba la esfera entera
-#       ~90° en cuartos chicos sin horizonte claro;
-#   (b) la foto del techo (blanca, lisa, 0 puntos de control) quedaba suelta
-#       y dejaba un hueco arriba.
+# Corrige el fallo visto en pruebas reales de interior: sin sembrar,
+# `autooptimiser -a` auto-nivela adivinando y rola la esfera entera ~90° en
+# cuartos chicos sin horizonte claro.
 #
-# El modo CIEGO (dron, fotos con EXIF, o cualquier cosa que no sean 33 fotos
+# El modo CIEGO (dron, fotos con EXIF, o cualquier cosa que no sean 36 fotos
 # de canvas) se queda EXACTAMENTE igual que antes: el aéreo del dron cose
 # perfecto así y no se toca.
 #
 # Forzar a mano con la variable de entorno PATRON:
-#   PATRON=ciego  -> modo viejo aunque haya 33 fotos
-#   PATRON=v11    -> sembrado aunque no haya exactamente 33
+#   PATRON=ciego      -> modo viejo aunque haya 36 fotos
+#   PATRON=asistente  -> sembrado aunque no haya exactamente 36
+#   (PATRON=v11 y PATRON=v12 son alias de "asistente")
 # ===========================================================================
-PATRON_V11=0
+PATRON_AST=0
 case "${PATRON:-}" in
-  ciego) PATRON_V11=0 ;;
-  v11)   PATRON_V11=1 ;;
+  ciego)               PATRON_AST=0 ;;
+  asistente|v11|v12)   PATRON_AST=1 ;;
   *)
-    # Autodetección: 33 fotos + sin EXIF de lente (= salieron del <canvas>).
-    if [ "${#FOTOS[@]}" -eq 33 ] && [ "$lente" != "dron" ] && [ "$lente" != "exif" ]; then
-      PATRON_V11=1
+    # Autodetección: 36 fotos + sin EXIF de lente (= salieron del <canvas>).
+    if [ "${#FOTOS[@]}" -eq 36 ] && [ "$lente" != "dron" ] && [ "$lente" != "exif" ]; then
+      PATRON_AST=1
     fi
     ;;
 esac
 
-# Parámetros del patrón v11 — DEBEN coincidir con capturar/captura.js PASO 1.
-V11_PASO_YAW=22.5       # PASO_YAW
-V11_PITCH_ARRIBA=20     # FILAS[0].pitch
-V11_PITCH_ABAJO=-20     # FILAS[1].pitch
-V11_PITCH_TECHO=72      # POLOS -> techo.pitch
-V11_POR_FILA=16         # FILAS[*].disparos
+# Parámetros del patrón — DEBEN coincidir con capturar/captura.js PASO 1.
+AST_PASO_YAW=30           # PASO_YAW
+AST_PITCH_HORIZONTE=0     # FILAS[0].pitch
+AST_PITCH_ARRIBA=30       # FILAS[1].pitch
+AST_PITCH_ABAJO=-30       # FILAS[2].pitch
+AST_POR_FILA=12           # FILAS[*].disparos
 
-if [ "$PATRON_V11" -eq 1 ]; then
-  echo "--- Patrón v11 detectado: siembro las posiciones de las 33 fotos"
-  echo "    (16 arriba a +${V11_PITCH_ARRIBA}° · 16 abajo a ${V11_PITCH_ABAJO}° · 1 al techo +${V11_PITCH_TECHO}° · paso ${V11_PASO_YAW}°)"
+if [ "$PATRON_AST" -eq 1 ]; then
+  echo "--- Patrón del asistente detectado: siembro las posiciones de las ${#FOTOS[@]} fotos"
+  echo "    (12 horizonte a ${AST_PITCH_HORIZONTE}° · 12 arriba a +${AST_PITCH_ARRIBA}° · 12 abajo a ${AST_PITCH_ABAJO}° · paso ${AST_PASO_YAW}°)"
 else
   echo "--- Modo ciego: cpfind adivina las posiciones (dron / EXIF / captura no estándar)"
 fi
@@ -156,25 +157,26 @@ else
   pto_gen --fov="$FOV_CAMARA" -o "$PTO" "${FOTOS[@]}"
 fi
 
-# --- 1b/6  (solo v11) Sembrar yaw/pitch/roll de cada foto ----------------
+# --- 1b/6  (solo patrón asistente) Sembrar yaw/pitch/roll de cada foto ----
 # Generamos la cadena "y0=..,p0=..,r0=0,y1=.." con Python (más legible que
 # armarla en shell) y la aplicamos con `pto_var --set`. El bucle es tolerante
-# a que sobren o falten fotos: idx<16 -> fila arriba, idx<32 -> fila abajo,
-# resto -> techo. Así, si Daniel toma 32 o 34, no se rompe (ver informe).
-if [ "$PATRON_V11" -eq 1 ]; then
+# a que sobren o falten fotos: se reparten en 3 tercios (horizonte / arriba /
+# abajo). Así, si Daniel toma 35 o 37, no se rompe.
+if [ "$PATRON_AST" -eq 1 ]; then
   echo "--- 1b/6  Sembrando posiciones de las fotos (pto_var --set)"
   SEMBRADO="$(python - "${#FOTOS[@]}" <<'PY'
 import sys
 n = int(sys.argv[1])
-PASO, P_ARRIBA, P_ABAJO, P_TECHO, POR_FILA = 22.5, 20, -20, 72, 16
+PASO, P_HORIZONTE, P_ARRIBA, P_ABAJO = 30, 0, 30, -30
+por_fila = max(1, round(n / 3))    # ~12; se adapta si el conteo no es 36 exacto
 partes = []
 for i in range(n):
-    if i < POR_FILA:                 # fila de arriba
-        yaw, pitch = (i * PASO) % 360, P_ARRIBA
-    elif i < 2 * POR_FILA:           # fila de abajo
-        yaw, pitch = ((i - POR_FILA) * PASO) % 360, P_ABAJO
-    else:                            # techo (y cualquier foto de más)
-        yaw, pitch = 0, P_TECHO
+    if i < por_fila:                       # fila horizonte
+        yaw, pitch = (i * PASO) % 360, P_HORIZONTE
+    elif i < 2 * por_fila:                 # fila arriba
+        yaw, pitch = ((i - por_fila) * PASO) % 360, P_ARRIBA
+    else:                                  # fila abajo (y cualquier foto de más)
+        yaw, pitch = ((i - 2 * por_fila) * PASO) % 360, P_ABAJO
     partes.append("y{0}={1:g},p{0}={2:g},r{0}=0".format(i, yaw, pitch))
 print(",".join(partes))
 PY
@@ -183,7 +185,7 @@ PY
 fi
 
 echo "--- 2/6  Buscando puntos de control (cpfind)"
-if [ "$PATRON_V11" -eq 1 ]; then
+if [ "$PATRON_AST" -eq 1 ]; then
   # --prealigned: cpfind solo compara los pares de fotos que el sembrado dice
   # que se traslapan. Más rápido y con muchos menos emparejamientos falsos que
   # --multirow (que compara a ciegas y en un cuarto repetitivo se confunde).
@@ -195,11 +197,11 @@ fi
 echo "--- 3/6  Limpiando puntos de control malos (cpclean)"
 cpclean -o "$PTO" "$PTO"
 
-if [ "$PATRON_V11" -eq 1 ]; then
-  echo "--- 4/6  Ajuste fino de posiciones + exposición (v11: solo yaw/pitch/roll)"
-  # En v11 las posiciones YA vienen sembradas (paso 1b) y son razonables.
-  # Optimizamos SOLO la orientación (yaw, pitch, roll) de cada foto, MENOS la
-  # foto 0 (anclada como referencia, para que el conjunto no gire en bloque).
+if [ "$PATRON_AST" -eq 1 ]; then
+  echo "--- 4/6  Ajuste fino de posiciones + exposición (asistente: solo yaw/pitch/roll)"
+  # Las posiciones YA vienen sembradas (paso 1b) y son razonables. Optimizamos
+  # SOLO la orientación (yaw, pitch, roll) de cada foto, MENOS la foto 0 (anclada
+  # como referencia, para que el conjunto no gire en bloque).
   #
   # NO se optimiza el FOV (`v`) ni la distorsión (`b`,`c`), y NO se usa
   # `autooptimiser -a`: en pruebas reales, en cuanto se libera el FOV el
@@ -210,8 +212,8 @@ if [ "$PATRON_V11" -eq 1 ]; then
   #   -m = iguala la exposición   ·   -s = elige el tamaño de lienzo
   # El error residual (~16) es sobre todo paralaje de captura a mano/tripié en un
   # cuarto chico; se reduce en la captura (girar sobre el eje), no aquí.
-  # Una foto sin puntos de control (el techo blanco) no se puede mover → se queda
-  # en su posición sembrada. Es lo que queremos.
+  # Una foto sin puntos de control (una pared muy lisa) no se puede mover → se
+  # queda en su posición sembrada. Es lo que queremos.
   pto_var --opt "y,p,r,!y0,!p0,!r0" -o "$PTO" "$PTO"
   autooptimiser -n -m -s -o "$PTO" "$PTO"
 else
@@ -223,20 +225,21 @@ else
 fi
 
 echo "--- 5/6  Fijando salida equirectangular 360x180 (pano_modify)"
-# Se fuerza esfera completa 360x180. El casquete inferior (nadir, de ~−63° a −90°)
-# queda SIN fotos por diseño de la captura v11: saldrá vacío/negro y se tapa con
-# el logo. Es lo esperado, no un fallo.
+# Se fuerza esfera completa 360x180. Los cascos de arriba (~+73°..+90°) y de
+# abajo (nadir, ~−73°..−90°) quedan SIN fotos por diseño de la captura v12
+# (3 filas a 0°/±30°, sin polos): saldrán vacíos/negros y se tapan con el logo.
+# Es lo esperado, no un fallo.
 pano_modify --canvas=AUTO --crop=AUTO --projection=2 --fov=360x180 -o "$PTO" "$PTO"
 
 # Verificación defensiva: ¿cpfind conectó las fotos?
-# Con ~33 fotos y el traslape denso de v11 deberían salir VARIOS CIENTOS de
-# puntos de control; en modo ciego el listón es más bajo.
+# Con ~36 fotos y el traslape denso del asistente deberían salir VARIOS CIENTOS
+# de puntos de control; en modo ciego el listón es más bajo.
 n_cp="$(grep -c '^c ' "$PTO" || true)"
 : "${n_cp:=0}"
-if [ "$PATRON_V11" -eq 1 ]; then UMBRAL_CP=120; else UMBRAL_CP=40; fi
+if [ "$PATRON_AST" -eq 1 ]; then UMBRAL_CP=120; else UMBRAL_CP=40; fi
 if [ "$n_cp" -lt "$UMBRAL_CP" ]; then
   echo "AVISO: solo ${n_cp} puntos de control para ${#FOTOS[@]} fotos (esperaba >= ${UMBRAL_CP})." >&2
-  if [ "$PATRON_V11" -eq 1 ]; then
+  if [ "$PATRON_AST" -eq 1 ]; then
     echo "       Las posiciones sembradas evitan una esfera rota, pero con tan pocos" >&2
     echo "       puntos de control casi seguro pasó algo en la captura:" >&2
     echo "        · te MOVISTE de sitio entre fotos (paralaje) en vez de girar sobre" >&2
@@ -250,21 +253,6 @@ if [ "$n_cp" -lt "$UMBRAL_CP" ]; then
     echo "          la cámara se movió de sitio en vez de girar sobre el eje)," >&2
     echo "        · el cuarto tiene paredes lisas sin textura que Hugin pueda enganchar." >&2
     echo "       La esfera va a salir con huecos o geometría rota. Conviene recapturar." >&2
-  fi
-fi
-
-# Verificación defensiva (solo v11): ¿la foto del techo quedó sin enganchar?
-# El techo suele ser blanco y liso -> 0 puntos de control con cualquier otra foto.
-# NO es un fallo: gracias al sembrado (pitch +72°) se coloca igual. Solo avisamos.
-if [ "$PATRON_V11" -eq 1 ] && [ "${#FOTOS[@]}" -ge 33 ]; then
-  idx_techo=$(( ${#FOTOS[@]} - 1 ))
-  n_cp_techo="$(grep -Ec "^c .* [nN]${idx_techo} " "$PTO" || true)"
-  : "${n_cp_techo:=0}"
-  if [ "$n_cp_techo" -eq 0 ]; then
-    echo "NOTA: la foto del techo (#$(( idx_techo + 1 ))) no logró puntos de control" >&2
-    echo "      (techo blanco y liso — es lo normal). Se coloca en su posición" >&2
-    echo "      SEMBRADA (pitch +${V11_PITCH_TECHO}°). Puede quedar un pelín girada;" >&2
-    echo "      en un techo plano no se nota. NO es un error." >&2
   fi
 fi
 
@@ -282,6 +270,6 @@ python "$RAIZ/scripts/optimizar_panoramas.py" "$TRABAJO/panorama.tif" "$SALIDA"
 
 echo
 echo "LISTO -> $SALIDA"
-echo "El NADIR (abajo, ~27° de casquete) queda VACÍO por diseño: la captura v11 no"
-echo "toma piso. Se tapa con el logo — NO es un error. El resto de la esfera debe"
-echo "verse completo (horizonte + arriba + techo)."
+echo "Los CASCOS de arriba y de abajo (~±17° en cada polo) quedan VACÍOS por diseño:"
+echo "la captura v12 son 3 filas a 0°/±30°, sin fotos de techo ni piso. Se tapan con"
+echo "el logo — NO es un error. La franja del horizonte debe verse completa y sin saltos."

@@ -44,49 +44,44 @@ son placeholders hasta tener fotos).
 
 ## Estado de cada frente
 
-### Asistente de captura — `capturar/` (v11, en vivo tras push)
-- **Pantalla final (v9, commit 5221165)**: compartir a Drive desde el navegador
-  iOS NUNCA fue fiable. Ahora **un solo `navigator.share` con todas las fotos** →
-  "Guardar imágenes" al carrete → Daniel las sube a Drive desde la app Fotos (ese
-  flujo sí funciona). Fuera las tandas de 8 y el bucle de descargas.
-- **Diagnóstico del stitching (cerrado)**: v6/v7/v8 no cosían. Prueba real
-  "Cuarto lagos 3" (26 fotos v8) en Hugin: entre fotos consecutivas de una fila →
-  **0 puntos de control** (traslape horizontal nulo). Re-armar con FOV 50 vs 63 no
-  cambió nada → el FOV no era la causa; el **paso de giro de 45° era demasiado
-  grande**. Solución: paso chico (22.5°, 16 fotos/vuelta) = traslape denso, robusto
-  aunque el giroscopio yerre ±10°.
-- **v10 (commit 4ec95df)**: paso denso + 3 filas ±40/0 + 2 polos ±72 = 50 fotos.
-  Daniel lo probó con **tripié** y falló por 3 cosas: el teléfono se caía apuntando
-  a los polos, la alerta de verticalidad saltaba en falso al inclinar, y la diana
-  no apuntaba bien inclinado.
-- **v11 (este commit)** — "2 filas suaves + 1 techo", pensada para tripié:
-  - **2 filas a pitch ±20°** (teléfono casi vertical → estable, giroscopio fiable)
-    × 16 disparos + **1 foto al techo** (+72°). **33 fotos.** Sin piso: el nadir
-    (~27° de casquete inferior) va **vacío por diseño**, se tapa con el logo.
-  - **Bug verticalidad**: ya no usa `e.gamma` (se desquicia cerca de beta ±90);
-    ahora `acostado = |derZ| > sin45°`, con `derZ` = componente vertical del eje
-    "derecha" del teléfono (1ª columna de la matriz W3C). Estable a cualquier pitch.
-  - **Bug diana**: proyección lineal → **proyección gnomónica de verdad**
-    (`proyectarObjetivo()` en PASO 5): dirección objetivo → marco cámara vía
-    productos punto contra los 3 ejes → `sx/sy = (camDer|camArr)/camAde / tan(FOV/2)`.
-    Cae bien a cualquier inclinación.
-  - `FOV_GUIA_H/V` = 54°/87° (V derivado de la proporción retrato del canvas).
-  - Giro relativo de v8 y "paso denso" intactos. Brújula sigue descartada.
+### Asistente de captura — `capturar/` (v12, en vivo tras push)
+- **Pantalla final (commit 5221165)**: compartir a Drive desde iOS NUNCA fue
+  fiable. Ahora **un solo `navigator.share` con todas las fotos** → "Guardar
+  imágenes" al carrete → Daniel las sube a Drive desde Fotos. Sin tandas.
+- **Diagnóstico del stitching (cerrado)**: v6/v7/v8 no cosían — con paso de giro
+  de 45° dos fotos seguidas de una fila tenían **0 puntos de control** (traslape
+  horizontal nulo). El FOV no era la causa (probado 50 vs 63, igual). Solución:
+  **paso de giro chico** = traslape denso, robusto aunque el giroscopio yerre ±10°.
+- **v11 (probado real, "Cuarto lagos 4", 33 fotos)**: 2 filas ±20° + 1 techo, paso
+  22.5°. Arregló 2 bugs que traía v10: verticalidad (`acostado = |derZ| > sin45°`,
+  el eje "derecha" del teléfono; ya no usa `e.gamma` que se desquicia en beta ±90)
+  y la diana (**proyección gnomónica** `proyectarObjetivo()` en PASO 5, cae bien a
+  cualquier inclinación). Con el sembrado del script **la esfera cosió y quedó
+  derecha**, PERO: la foto de techo nunca engancha y 2 filas a ±20° dejaban bandas
+  negras de ~40°.
+- **v12 (este commit)** — "3 filas moderadas, sin polos":
+  - **3 filas: horizonte 0°, arriba +30°, abajo −30°**, `PASO_YAW = 30°` (12
+    disparos/fila) → **36 fotos.** `POLOS = []` (sin techo ni piso).
+  - La fila del horizonte hace de ancla; ±30° no hace caer el teléfono (±40 sí).
+    Cobertura ~±65° → cascos de ~±17° arriba y abajo → se tapan con logo.
+  - Resto igual: roll robusto, diana gnomónica, `FOV_GUIA` 54/87, giro relativo,
+    paso denso, sin brújula.
 - Fotos salen del `<canvas>` del video: **2160×4032, sin EXIF**.
-- **PENDIENTE: Daniel captura un cuarto con v11** (con tripié) → re-armar la esfera.
-  Si aún no cose bien las filas, el siguiente paso NO es tocar parámetros: es
-  **sembrar un `.pto` con las posiciones yaw/pitch que el asistente ya conoce**
-  (en vez de que `cpfind` adivine) — pero eso choca con "guardar al carrete" (se
-  pierden nombres/orden/sidecar); habría que resolver cómo pasar los ángulos.
-- Cache-bust: `?v=N` en `index.html` (css y js) + `<span class="version">`. Va en **v11**.
+- **PENDIENTE: Daniel captura un cuarto con v12** (36 fotos, tripié) → re-armar.
+- Cache-bust: `?v=N` en `index.html` (css y js) + `<span class="version">`. Va en **v12**.
 
-### Armado de esferas — `scripts/armar-esfera.sh` (funciona para dron; interior pendiente)
-- Detecta lente: dron (modelo `FC*`) → 82°, iPhone/canvas (sin EXIF) → 63°
-  (aproximado, da igual 50-63). Salida equirectangular 2:1 → `optimizar_panoramas.py`.
-- El aéreo del dron de Los Lagos quedó **excelente** (5760×2880).
-- **Interior aún sin validar**: v6/v8 no cosían (problema de captura, no del
-  script). Umbral de aviso de puntos de control subido a 40. Con v11 el **nadir
-  va vacío por diseño** — el script ya no lo reporta como error.
+### Armado de esferas — `scripts/armar-esfera.sh`
+- Modo **CIEGO** (dron / fotos con EXIF): `pto_gen → cpfind --multirow → cpclean →
+  autooptimiser -a -m -l -s`. El aéreo del dron de Los Lagos cose **excelente**
+  (5760×2880) así — NO se toca.
+- Modo **"patrón asistente"** (autodetecta 36 fotos sin EXIF; forzar con
+  `PATRON=asistente` / `PATRON=ciego`): **siembra** yaw/pitch de cada foto
+  (12 a 0°, 12 a +30°, 12 a −30°; yaw = pos×30°) con `pto_var --set` antes de
+  `cpfind --prealigned`, y optimiza **solo yaw/pitch/roll** (`pto_var --opt` +
+  `autooptimiser -n`). **NUNCA** `-a` ni liberar el FOV (`v`): degeneran la esfera
+  (sin sembrar `-a` la rola ~90°; con FOV libre sale una tira delgada).
+- **Interior probado con v11** (33 fotos): esfera derecha y legible, error residual
+  ~16 px (paralaje del cuarto chico). Falta probar el patrón v12 con 36 fotos.
 
 ### Visor — navegación tipo Street View (v en vivo)
 - Hotspots = marcadores con etiqueta (`tipo`: `propiedad` / `destino` / `salir`).

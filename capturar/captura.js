@@ -1,6 +1,6 @@
 /* ============================================================================
    Asistente de captura 360° — Panorámika
-   JavaScript vanilla. Guía la toma de ~33 fotos para armar una esfera con Hugin.
+   JavaScript vanilla. Guía la toma de ~36 fotos para armar una esfera con Hugin.
 
    Orden de lectura:
      PASO 1 · Configuración (dianas, tolerancias, cámara)
@@ -16,59 +16,52 @@
 /* ============================================================================
    PASO 1 · CONFIGURACIÓN
    ============================================================================
-   Captura v11 — "2 filas suaves + 1 techo", pensada para TRIPIÉ.
-   Se toman: 2 vueltas de 360° con el teléfono CASI DERECHO (una un poco hacia
-   arriba, otra un poco hacia abajo, a ±20°) y 1 sola foto al techo. NO se
-   captura el piso: el hueco de abajo (nadir) se tapa después con el logo (y si
-   hay tripié, saldría en la foto).
+   Captura v12 — "3 filas moderadas, sin polos", pensada para TRIPIÉ.
+   Se toman 3 vueltas de 360°: una al nivel del HORIZONTE (0°), una un poco hacia
+   ARRIBA (+30°) y una un poco hacia ABAJO (−30°). NO hay foto de techo ni de
+   piso: los cascos de arriba y abajo (~±20° de pitch) se tapan luego con el
+   logo (y en el piso saldría el tripié de todos modos).
 
-   Por qué cambió (v10 → v11): v10 pedía 3 filas a ±40° y 2 polos a ±72°. Con
-   tripié Daniel reportó que el teléfono se caía apuntando arriba y que en esas
-   posturas el giroscopio se volvía poco fiable. Con tripié el PARALAJE ya no es
-   problema (la cámara no cambia de sitio), así que se puede cubrir la esfera con
-   menos fotos y sin inclinaciones extremas: filas a ±20° → aparato casi
-   vertical, estable en el tripié y giroscopio en su zona buena.
+   Por qué cambió (v11 → v12): v11 eran 2 filas a ±20° + 1 foto al techo. En
+   prueba real ("Cuarto lagos 4", 33 fotos) la esfera cosió y quedó derecha,
+   PERO: (a) la foto del techo nunca engancha (techo blanco liso, o agarra a
+   alguien) y (b) 2 filas a ±20° dejaban bandas negras de ~40° arriba y abajo —
+   demasiado para tapar con logo. v12: una fila MÁS (el horizonte) hace de ancla,
+   y las inclinadas suben a ±30° → cobertura hasta ~±65°, bandas de ~20°.
 
-   Se conserva de v8/v10:
-   · "Paso denso": el giro entre foto y foto es CHICO (PASO_YAW = 22.5° → 16
-     fotos por vuelta). Así sobra traslape horizontal AUNQUE el giroscopio se
-     equivoque ±10°. No dependemos de que el sensor sea exacto, sino de la
-     densidad de fotos. (v6/v7/v8 fallaban con paso de 45°: dos fotos seguidas de
-     la misma fila no traslapaban y Hugin no cosía la fila.)
+   Se conserva de v8/v11:
+   · "Paso denso": el giro entre foto y foto es CHICO (PASO_YAW = 30° → 12 fotos
+     por vuelta). Sobra traslape horizontal AUNQUE el giroscopio se equivoque
+     ±10°. (v6/v7/v8 fallaban con paso de 45°: dos fotos seguidas de la misma
+     fila no traslapaban y Hugin no cosía la fila. 22.5° en v11 funcionó; 30° es
+     el término medio: menos fotos, traslape aún de sobra.)
    · "Giro relativo": cada objetivo de yaw = (yaw real de la foto anterior +
      PASO_YAW), NO respecto a un "norte" fijo → la deriva lenta del giroscopio no
-     se acumula en huecos. La brújula (webkitCompassHeading) sigue descartada:
-     en interiores brinca por los imanes.
+     se acumula en huecos. La brújula (webkitCompassHeading) sigue descartada.
 
-   Cobertura vertical (FOV_GUIA_V ≈ 87°, ver más abajo el porqué):
-   · Cada fila "ve" ±43° alrededor de su centro de pitch.
-   · Fila +20°  cubre  −23°..+63°     ·  Fila −20°  cubre  −63°..+23°
-     → se solapan de −23° a +23°: banda ancha en el horizonte, sin zona muerta.
-   · Techo +72° cubre +29°..+90°  → solapa ~35° con la fila de arriba; cenit OK.
-   · Sin cubrir: de −63° a −90° (~27° de pitch) → ese casquete lo tapa el logo. */
-const PASO_YAW = 22.5;           // grados de giro entre foto y foto (16 por vuelta)
+   Cobertura vertical (FOV_GUIA_V ≈ 87°, cada fila "ve" ±43° de su centro):
+   · Fila 0°   cubre −43°..+43°   ·  Fila +30° cubre −13°..+73°   ·  Fila −30° cubre −73°..+13°
+     → se solapan de sobra en el horizonte; sin cubrir queda ~+73°..+90° y
+       ~−73°..−90° (±17° de casco en cada polo) → lo tapa el logo. */
+const PASO_YAW = 30;             // grados de giro entre foto y foto (12 por vuelta)
 const FILAS = [
-  { id: "arriba", nombre: "un poco hacia arriba", pitch:  20, disparos: 16 },
-  { id: "abajo",  nombre: "un poco hacia abajo",  pitch: -20, disparos: 16 },
+  { id: "horizonte", nombre: "el horizonte",        pitch:   0, disparos: 12 },
+  { id: "arriba",    nombre: "un poco hacia arriba", pitch:  30, disparos: 12 },
+  { id: "abajo",     nombre: "un poco hacia abajo",  pitch: -30, disparos: 12 },
 ];
-const POLOS = [
-  // Solo el techo. Pitch +72 (no +90): el disco del cenit traslapa ~35° con la
-  // fila de +20° y no queda un anillo sin cubrir. Es la única foto "incómoda" y
-  // es una sola: en tripié se hace con cuidado.
-  { id: "techo", nombre: "al techo", pitch: 72 },
-];
+const POLOS = [];   // v12: sin foto de techo ni piso (nunca enganchan; se tapan con logo)
 
-/** Plan plano de disparos (33 = 16×2 + 1): cada uno sabe a qué fila/polo pertenece. */
+/** Plan plano de disparos (36 = 12×3): cada uno sabe a qué fila pertenece. */
 const PLAN = [];
 FILAS.forEach((f) => { for (let i = 0; i < f.disparos; i++) PLAN.push({ tipo: "fila", fila: f, i }); });
 POLOS.forEach((p) => PLAN.push({ tipo: "polo", polo: p }));
-const TOTAL = PLAN.length;    // 33 — SIEMPRE derivado del PLAN, nunca un número suelto
+const TOTAL = PLAN.length;    // 36 — SIEMPRE derivado del PLAN, nunca un número suelto
 
 // Tolerancias flojas: con traslape denso el stitch perdona imprecisión y así
 // capturar no desespera.
 const TOL_YAW = 10;           // margen horizontal para "alineado"
 const TOL_PITCH = 10;         // margen vertical
-const TOL_POLO = 16;          // techo: solo importa el pitch
+const TOL_POLO = 16;          // (sin uso en v12: no hay polos; se deja por si vuelven)
 const MS_PARA_DISPARAR = 500; // sostener la alineación este tiempo antes de disparar
 
 // FOV de la cámara del iPhone, SOLO para proyectar la diana en la pantalla.
@@ -495,7 +488,7 @@ function bucle(ahora) {
     avG.innerHTML = esPolo
       ? `Ahora apunta <strong>${p.polo.nombre}</strong>`
       : (p.i === 0
-          ? `Fila ${FILAS.indexOf(p.fila) + 1} de 2 — nivela a <strong>${p.fila.nombre}</strong> y gira`
+          ? `Fila ${FILAS.indexOf(p.fila) + 1} de ${FILAS.length} — nivela a <strong>${p.fila.nombre}</strong> y gira`
           : "");
     if (!avG.innerHTML) avG.hidden = true;
   } else {

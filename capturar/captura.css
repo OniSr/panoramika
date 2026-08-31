@@ -166,8 +166,8 @@ strong { color: var(--tx-fuerte); font-weight: 650; }
   background: rgba(0,0,0,0.45); display: inline-block;
   padding: 6px 14px; border-radius: 999px; margin-bottom: 10px;
 }
-/* 33 tiras (v11): 16 + 16 de las dos filas + 1 del techo. A 7px + 2px de gap
-   caben en UNA línea en un iPhone (33×9 ≈ 297px) y se ve bien la fila activa. */
+/* 36 tiras (v12): 12 + 12 + 12 de las tres filas. A 7px + 2px de gap
+   caben en UNA línea en un iPhone (36×9 ≈ 324px) y se ve bien la fila activa. */
 .tiras { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; }
 .tira {
   width: 7px; height: 4px; border-radius: 2px;

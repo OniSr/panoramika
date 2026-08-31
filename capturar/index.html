@@ -7,7 +7,7 @@
   <title>Asistente de captura · Panorámika</title>
   <meta name="theme-color" content="#0d0f12" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="captura.css?v=11" />
+  <link rel="stylesheet" href="captura.css?v=12" />
 </head>
 
 <body>
@@ -18,13 +18,13 @@
   <!-- ================= PANTALLA 1 · BIENVENIDA ================= -->
   <section class="pantalla pantalla--intro" id="pantallaIntro">
     <div class="tarjeta">
-      <div class="marca"><span class="marca__punto"></span> Panorámika <span class="version">v11</span></div>
+      <div class="marca"><span class="marca__punto"></span> Panorámika <span class="version">v12</span></div>
       <h1>Asistente de captura 360°</h1>
       <p>Te guía para tomar las fotos de una toma esférica. Necesitas:</p>
       <ul>
         <li>Un <strong>tripié</strong> en el punto exacto del recorrido (o, a pulso, girar sobre tu propio eje sin caminar)</li>
         <li>Buena luz</li>
-        <li>Unos 5 minutos: son ~33 fotos</li>
+        <li>Unos 5 minutos: son ~36 fotos</li>
       </ul>
       <button class="btn" id="btnEmpezar">Empezar</button>
       <p class="nota" id="notaEscritorio" hidden>
@@ -67,10 +67,11 @@
           del recorrido y afloja <strong>solo el giro horizontal</strong> (que
           suba/baje quede firme). A pulso: teléfono vertical pegado al pecho y
           <strong>gira sobre tus pies</strong>, sin mover los brazos ni caminar.</li>
-        <li>Son <strong>2 vueltas</strong> de 360°: una con el teléfono un poco
-          inclinado <strong>hacia arriba</strong> y otra un poco <strong>hacia
-          abajo</strong> (unos 20°), y al final <strong>1 foto al techo</strong>.
-          En total unas <strong>33 fotos</strong>; ve a tu ritmo, sin pausas largas.</li>
+        <li>Son <strong>3 vueltas</strong> de 360°: una al <strong>nivel del
+          horizonte</strong>, otra con el teléfono un poco <strong>hacia
+          arriba</strong> y otra un poco <strong>hacia abajo</strong> (unos 30°).
+          Sin foto de techo ni piso. En total unas <strong>36 fotos</strong>;
+          ve a tu ritmo, sin pausas largas.</li>
         <li>Sigue el <strong>círculo</strong> girando <strong>despacio a la
           derecha</strong>. Cuando entre en la mira y vibre, la foto se toma sola.</li>
         <li>Si una pared está <strong>lisa y sin nada</strong>, encuadra una
@@ -90,7 +91,7 @@
     <div class="flecha" id="flecha" hidden></div>
 
     <header class="hud-top">
-      <span class="progreso" id="progreso">0 / 33</span>
+      <span class="progreso" id="progreso">0 / 36</span>
       <div class="hud-acciones">
         <button class="hud-btn" id="btnRehacer" aria-label="Rehacer última toma" disabled>↩</button>
         <button class="hud-btn" id="btnReiniciar" aria-label="Reiniciar todo">↻</button>
@@ -130,6 +131,6 @@
     </div>
   </section>
 
-  <script src="captura.js?v=11"></script>
+  <script src="captura.js?v=12"></script>
 </body>
 </html>
