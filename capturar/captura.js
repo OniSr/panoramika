@@ -553,6 +553,57 @@ function actualizarProgreso() {
   });
 }
 
+/* ----------------------------------------------------------------------------
+   Indicador de nivel (burbuja)  —  UI PURA Y ADITIVA
+   ----------------------------------------------------------------------------
+   Reutiliza `derZ` del PASO 4 (componente Z del eje "derecha" del teléfono en el
+   mundo = cuánto está ROLADO). Con el teléfono vertical y a plomo, derZ ≈ 0.
+   NO se recalcula nada ni se añade otro listener: solo se lee el valor que ya
+   existe y se traduce a un ángulo para mover la burbuja.
+
+     rollGrados = asin(derZ) en grados
+
+   SIGNO: si al inclinar el teléfono hacia un lado la burbuja se va para el lado
+   contrario, cambia `derZ` por `-derZ` en la línea marcada más abajo (y borra
+   esta nota tras verificarlo en el navegador de Daniel).
+   ---------------------------------------------------------------------------- */
+const elNivel = $("nivel");
+const elNivelBurbuja = $("nivelBurbuja");
+const elNivelTexto = $("nivelTexto");
+
+const NIVEL_TOPE_GRADOS = 15;   // ±15° → extremos de la barra (satura fuera de eso)
+const NIVEL_MEDIO_PX = 100;     // medio recorrido de la burbuja en px (≈ mitad de la barra del CSS)
+const NIVEL_VERDE_GRADOS = 2;   // |roll| ≤ 2° = "a plomo" (verde y discreto)
+
+/** Deja el indicador neutro cuando todavía no hay lectura del giroscopio. */
+function nivelNeutro() {
+  if (!elNivel) return;
+  elNivel.classList.remove("--fuera");
+  elNivel.style.opacity = "0";
+  if (elNivelBurbuja) elNivelBurbuja.style.transform = "translate(-50%, -50%)";
+  if (elNivelTexto) elNivelTexto.hidden = true;
+}
+
+/** Mueve la burbuja y cambia el color según el roll actual (derZ). */
+function actualizarNivel() {
+  if (!elNivel || !elNivelBurbuja) return;
+
+  const z = derZ;   // ← si la burbuja sale invertida, pon aquí  -derZ
+  if (!Number.isFinite(z)) { nivelNeutro(); return; }   // sin dato válido: nunca NaN en pantalla
+
+  const rollGrados = Math.asin(Math.max(-1, Math.min(1, z))) * 180 / Math.PI;
+
+  // Fracción −1..1 del recorrido, saturada a ±NIVEL_TOPE_GRADOS.
+  const frac = Math.max(-1, Math.min(1, rollGrados / NIVEL_TOPE_GRADOS));
+  elNivelBurbuja.style.transform =
+    `translate(-50%, -50%) translateX(${(frac * NIVEL_MEDIO_PX).toFixed(1)}px)`;
+
+  const aPlomo = Math.abs(rollGrados) <= NIVEL_VERDE_GRADOS;
+  elNivel.classList.toggle("--fuera", !aPlomo);
+  elNivel.style.opacity = aPlomo ? "0.5" : "1";   // discreto derecho, notorio torcido
+  if (elNivelTexto) elNivelTexto.hidden = aPlomo;
+}
+
 function bucle(ahora) {
   if (!bucleActivo) return;
 
@@ -560,6 +611,7 @@ function bucle(ahora) {
 
   // Sin datos de orientación no hay guía posible.
   if (!orientacionOK || ahora - ultimoDatoOrient > 2000) {
+    nivelNeutro();
     avG.hidden = false;
     avG.innerHTML =
       "No llega la <strong>orientación</strong> del teléfono.<br>" +
@@ -601,6 +653,9 @@ function bucle(ahora) {
   // desaparezca aunque el pitch esté muy lejos.
   const proy = proyectarObjetivo(objetivoYaw == null ? yawTel : objetivoYaw, objetivoPitch);
   pintarDiana(proy, alineada, objetivoYaw == null);
+
+  // Indicador de nivel: se refresca en el mismo frame que la diana.
+  actualizarNivel();
 
   // Textos
   if (acostado) {

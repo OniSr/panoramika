@@ -7,7 +7,7 @@
   <title>Asistente de captura · Panorámika</title>
   <meta name="theme-color" content="#0d0f12" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="captura.css?v=15" />
+  <link rel="stylesheet" href="captura.css?v=16" />
 </head>
 
 <body>
@@ -18,7 +18,7 @@
   <!-- ================= PANTALLA 1 · BIENVENIDA ================= -->
   <section class="pantalla pantalla--intro" id="pantallaIntro">
     <div class="tarjeta">
-      <div class="marca"><span class="marca__punto"></span> Panorámika <span class="version">v15</span></div>
+      <div class="marca"><span class="marca__punto"></span> Panorámika <span class="version">v16</span></div>
       <h1>Asistente de captura 360°</h1>
       <p>Te guía para tomar las fotos de una toma esférica. Necesitas:</p>
       <ul>
@@ -108,6 +108,16 @@
       </div>
     </header>
 
+    <!-- Indicador de nivel (burbuja): avisa en tiempo real si el teléfono está
+         rolado (torcido de lado). UI pura; el dato sale de derZ (captura.js PASO 4). -->
+    <div class="nivel" id="nivel" aria-hidden="true">
+      <div class="nivel__barra">
+        <span class="nivel__zona"></span>
+        <span class="nivel__burbuja" id="nivelBurbuja"></span>
+      </div>
+      <span class="nivel__texto" id="nivelTexto" hidden>Endereza el teléfono</span>
+    </div>
+
     <div class="hud-bottom">
       <p class="instruccion" id="instruccion">Alinea el círculo con la mira</p>
       <div class="tiras" id="tiras"></div>
@@ -141,6 +151,6 @@
     </div>
   </section>
 
-  <script src="captura.js?v=15"></script>
+  <script src="captura.js?v=16"></script>
 </body>
 </html>
