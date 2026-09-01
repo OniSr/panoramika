@@ -62,6 +62,51 @@ def _fuente(px):
     return ImageFont.load_default()
 
 
+def _texto_en_arco(img, texto, cx, cy, radio, px_fuente, color):
+    """Escribe `texto` curvado sobre una circunferencia (radio `radio`, centro
+    cx,cy), centrado abajo y siguiendo la forma del disco. Cada letra se rota
+    para quedar tangente al arco. Así, al envolver el disco en la esfera
+    (paso 3), el texto sigue el círculo del piso en vez de estirarse recto.
+
+    El disco se envuelve con yaw=0 hacia ABAJO de esta imagen (+y), así que el
+    centro del texto va en ángulo 90° (abajo) → queda al frente del piso."""
+    if not texto:
+        return
+    f = _fuente(px_fuente)
+    # Ancho angular de cada letra ≈ ancho en px / radio.
+    anchos = []
+    for ch in texto:
+        b = f.getbbox(ch)
+        anchos.append(max(px_fuente * 0.28, b[2] - b[0]))
+    sep = px_fuente * 0.28                       # aire entre letras
+    total = sum(anchos) + sep * (len(texto) - 1)
+    ang_total = total / radio                    # radianes que ocupa la palabra
+    ang_centro = math.pi / 2                     # 90° = abajo del disco
+    # El texto se lee de izquierda a derecha; en el arco de ABAJO eso es en
+    # sentido HORARIO decreciente de ángulo desde el borde izquierdo.
+    # Se recorre de IZQUIERDA a DERECHA: la izquierda del arco de abajo está en
+    # ángulos > 90°, así que empezamos alto y bajamos el ángulo por cada letra.
+    ang = ang_centro + ang_total / 2
+    for ch, w in zip(texto, anchos):
+        paso = (w / 2) / radio
+        ang -= paso
+        x = cx + radio * math.cos(ang)
+        y = cy + radio * math.sin(ang)
+        cajon = int(px_fuente * 1.8)
+        letra = Image.new("RGBA", (cajon, cajon), (0, 0, 0, 0))
+        ld = ImageDraw.Draw(letra)
+        lb = ld.textbbox((0, 0), ch, font=f)
+        ld.text(((cajon - (lb[2] - lb[0])) / 2 - lb[0],
+                 (cajon - (lb[3] - lb[1])) / 2 - lb[1]), ch, font=f, fill=color + (255,))
+        # Tangente al arco: en el fondo del disco (ang=90°) la letra va derecha
+        # (giro 0); hacia los lados se inclina siguiendo la curva. PIL rota en
+        # sentido antihorario con ángulo positivo.
+        giro = 90.0 - math.degrees(ang)
+        letra = letra.rotate(giro, resample=Image.BICUBIC, expand=True)
+        img.alpha_composite(letra, (int(x - letra.width / 2), int(y - letra.height / 2)))
+        ang -= paso + sep / radio
+
+
 def disco_marca(lado, texto):
     """Devuelve una imagen RGBA cuadrada (lado x lado) con la marca centrada,
     fondo transparente fuera del círculo."""
@@ -74,9 +119,9 @@ def disco_marca(lado, texto):
     d.ellipse([c - r, c - r, c + r, c + r], fill=FONDO + (255,))
 
     # --- Glifo: globo (círculo + elipse + meridiano), como el favicon -------
-    g = r * 0.42                        # radio del globo
-    gy = c - r * 0.18                   # el globo va un poco arriba del centro
-    lw = max(2, int(lado * 0.010))
+    g = r * 0.40                        # radio del globo
+    gy = c - r * 0.05                   # casi centrado (el texto va en el arco)
+    lw = max(2, int(lado * 0.011))
     d.ellipse([c - g, gy - g, c + g, gy + g], outline=ACENTO + (255,), width=lw)
     d.ellipse([c - g * 0.42, gy - g, c + g * 0.42, gy + g],
               outline=ACENTO + (180,), width=max(1, lw - 1))
@@ -84,28 +129,27 @@ def disco_marca(lado, texto):
     d.ellipse([c - g * 0.13, gy - g * 0.13, c + g * 0.13, gy + g * 0.13],
               fill=ACENTO + (255,))
 
-    # --- Texto bajo el glifo ----------------------------------------------
-    if texto:
-        f = _fuente(int(r * 0.24))
-        tb = d.textbbox((0, 0), texto, font=f)
-        tw, th = tb[2] - tb[0], tb[3] - tb[1]
-        d.text((c - tw / 2 - tb[0], gy + g + r * 0.16 - tb[1]),
-               texto, font=f, fill=TX_FUERTE + (255,))
+    # --- Texto CURVADO siguiendo el borde del disco ----------------------
+    _texto_en_arco(img, texto, c, c, r * 0.78, int(r * 0.20), TX_FUERTE)
 
     # Aro fino en el borde del disco, para separarlo de la foto.
     d.ellipse([c - r, c - r, c + r, c + r],
-              outline=ACENTO + (90,), width=max(1, lw - 1))
+              outline=ACENTO + (110,), width=max(1, lw - 1))
     return img
 
 
 # ==========================================================================
 # 2 · Color de relleno para el CENIT
 # ==========================================================================
-def color_borde_cenit(equi, filas):
-    """Promedio de las primeras `filas` de la equirectangular (el techo)."""
-    tira = equi.crop((0, 0, equi.width, max(1, filas))).convert("RGB")
-    chico = tira.resize((1, 1), Image.BOX)
-    return chico.getpixel((0, 0))
+def color_borde_cenit(equi, grados_relleno):
+    """Color promedio del techo REAL, muestreado en una franja JUSTO por debajo
+    de la zona que vamos a rellenar (si muestreáramos las primeras filas
+    tomaríamos el hueco negro del cenit y el relleno saldría negro)."""
+    H = equi.height
+    y0 = int(H * grados_relleno / 180.0)         # fin de la zona de relleno
+    y1 = min(H, y0 + max(4, int(H * 0.03)))      # + una franja fina de techo real
+    tira = equi.crop((0, max(0, y0), equi.width, y1)).convert("RGB")
+    return tira.resize((1, 1), Image.BOX).getpixel((0, 0))
 
 
 # ==========================================================================
@@ -248,7 +292,7 @@ def main(argv):
 
     # --- CENIT: relleno de color ---------------------------------------
     if cenit_grados > 0:
-        col = color_borde_cenit(equi, max(2, int(H * 0.02)))
+        col = color_borde_cenit(equi, cenit_grados)
         equi = rellenar_polo_color(equi, col, cenit_grados, pluma, arriba=True)
         print(f"Cenit tapado: relleno liso RGB{col}, {cenit_grados:g}° de pitch")
 

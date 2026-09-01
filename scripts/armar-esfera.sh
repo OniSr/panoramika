@@ -228,6 +228,11 @@ if [ "$PATRON_AST" -eq 1 ]; then
   # sembrada — es lo que queremos.
   pto_var --opt "y,p,r,b,!y0,!p0,!r0" -o "$PTO" "$PTO"
   autooptimiser -n -m -s -o "$PTO" "$PTO"
+  # Nota: NO se usa `pano_modify --straighten` aquí. Se probó y EMPEORÓ: al
+  # rotar la esfera arrastra el techo (mal cubierto por el gran angular en el
+  # borde superior de cada foto) hacia el centro, donde se ve peor. La
+  # inclinación del cuarto se corrige mejor en la captura (tomar el teléfono
+  # derecho) que forzando una rotación global aquí.
 else
   echo "--- 4/6  Optimizando posiciones, nivelado y exposición (autooptimiser -a)"
   # El modo -a alinea posiciones y ajusta el FOV a partir de los puntos de control.
