@@ -84,8 +84,14 @@ son placeholders hasta tener fotos).
   yaw/pitch/roll** (`pto_var --opt` + `autooptimiser -n`). **NUNCA** `-a` ni
   liberar `v` (degeneran la esfera). Comentario "PROBAR (v14)": liberar `b`
   (distorsión de barril) si el gran angular deja costura en los bordes.
-- **Probado con v11** (lente normal, 33 fotos): esfera derecha y legible, error
-  ~16 px (paralaje del cuarto chico). Falta probar el patrón v14 (gran angular).
+- **v14 PROBADO Y FUNCIONA** (captura "V14", 32 fotos gran angular): la vuelta
+  cerró (360° completo, sin cuña) y la esfera llena vertical. **Clave: liberar
+  `b`** (distorsión de barril) en el optimizador — sin eso el gran angular deja
+  paredes/piso ondulados (RMS ~50); con `b` queda derecha y legible. Sigue
+  prohibido `v` y `-a`. Resultado navegable: `index.html?proyecto=prueba-v14`.
+- `scripts/tapar_polos.py` (nuevo): tapa nadir (disco de marca) + cenit (relleno).
+  El texto del disco del nadir todavía se ve algo tosco (envuelto/espejado) —
+  mejorable pero funcional.
 
 ### Visor — navegación tipo Street View (v en vivo)
 - Hotspots = marcadores con etiqueta (`tipo`: `propiedad` / `destino` / `salir`).
