@@ -44,7 +44,16 @@ son placeholders hasta tener fotos).
 
 ## Estado de cada frente
 
-### Asistente de captura — `capturar/` (v15, en vivo tras push)
+### Asistente de captura — `capturar/` (v16, en vivo tras push)
+- **v16 (commit f3f7653) — INDICADOR DE NIVEL**: barra tipo burbuja bajo el
+  contador en la pantalla de captura. Reusa `derZ` (PASO 4), sin listener nuevo:
+  `rollGrados = asin(derZ)`. Verde y discreta a plomo (|roll| ≤ 2°), ámbar +
+  "Endereza el teléfono" al inclinarse. **UI pura y aditiva** — no toca `FILAS`,
+  `PASO_YAW`, `escucharOrientacion()`, permisos, disparo ni compartir.
+  - **PENDIENTE verificar en iPhone**: que la burbuja caiga al lado CORRECTO al
+    inclinar. Si sale invertida → negar `derZ` en la línea marcada de
+    `actualizarNivel()` (`capturar/captura.js`, comentario lo indica).
+  - Cache-bust `?v=16`.
 - **v15 (commit 7f5b518) — 3 FILAS 0/+40/−40**: en v14 (2 filas ±28°) los
   objetos CERCANOS al horizonte (escritorio con monitor) se PARTÍAN — el pitch 0°
   caía en la costura entre filas y el paralaje rompía el blend. Fix estilo
@@ -118,10 +127,11 @@ son placeholders hasta tener fotos).
   [--cenit-grados N] [--texto "..."]`. **Por defecto SIN texto** (solo el glifo):
   el texto curvado sale espejado por la proyección polar — `_texto_en_arco` está
   a medias, hay que afinarlo MIRÁNDOLO en el visor (no a ciegas).
-- **Flujo de producción v14 completo**:
-  1. Capturar con `capturar/` v14 (gran angular, tripié, 32 fotos)
-  2. `bash scripts/armar-esfera.sh <carpeta> <esfera.webp>` (detecta el patrón solo)
-  3. `python scripts/tapar_polos.py <esfera.webp> <final.webp> --nadir-grados 22 --cenit-grados 24`
+- **Flujo de producción v15/v16 completo**:
+  1. Capturar con `capturar/` (gran angular, tripié al centro, 48 fotos)
+  2. `bash scripts/armar-esfera.sh <carpeta> <esfera.webp>` (detecta 48 → 3 filas)
+  3. `python scripts/tapar_polos.py <esfera.webp> <final.webp> --nadir-grados 26 --cenit-grados 36`
+     (`--cenit-color R,G,B` si el techo sale de un color raro)
   4. `python scripts/optimizar_panoramas.py` si hace falta re-comprimir, mover a
      `proyectos/<slug>/panoramas/`, editar `proyecto.json`, commit+push.
 - **OJO**: `scripts/generar_og.py` SOBREESCRIBE `assets/og-imagen.jpg` (la imagen
@@ -136,12 +146,12 @@ son placeholders hasta tener fotos).
 
 ## Próximas tareas (orden sugerido)
 
-1. **Daniel: captura v15 del cuarto** (48 fotos, teléfono derecho) + la COCINA.
-   Armar ambas (`armar-esfera.sh` detecta el patrón solo) y verificar que el
-   escritorio ya NO se rompe.
-2. **Indicador de nivel** en `capturar/` (barra tipo burbuja, verde a ±2°, reusa
-   `derZ` que ya se calcula — UI pura). Daniel lo pidió; pendiente de hacer.
-3. Afinar el texto curvado del nadir en `tapar_polos.py` mirándolo en el visor
+1. **Daniel: mapear el DEPA con v16** (captura de cada cuarto, 48 fotos, tripié
+   AL CENTRO lejos de muebles pegados a la pared). De paso, verificar el signo
+   de la burbuja del indicador de nivel. Subir a Drive, armar con
+   `armar-esfera.sh` (detecta el patrón solo) + `tapar_polos.py`, publicar
+   recorrido multi-escena con hotspots.
+2. Afinar el texto curvado del nadir en `tapar_polos.py` mirándolo en el visor
    (baja prioridad — el glifo solo ya se ve bien).
 3. Reemplazar placeholders de `depto-lagos` por fotos reales (fachada + cuartos).
 4. Ajustar posición del marcador de la propiedad en la aérea.
