@@ -286,6 +286,10 @@ def main(argv):
     if nadir_grados > 0:
         lado = int(H * nadir_grados / 180.0) * 2 + 2
         disco = disco_marca(lado, texto)
+        # El envoltorio polar del nadir proyecta el disco "visto desde detrás"
+        # (al mirar el piso desde dentro de la esfera). Se espeja en horizontal
+        # para que el texto y el glifo se lean bien en el visor.
+        disco = disco.transpose(Image.FLIP_LEFT_RIGHT)
         equi = envolver_polo(equi, disco, nadir_grados, pluma, arriba=False)
         print(f"Nadir tapado: disco de marca, {nadir_grados:g}° de pitch"
               + (f', texto "{texto}"' if texto else ", sin texto"))
