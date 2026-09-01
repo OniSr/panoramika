@@ -44,16 +44,16 @@ son placeholders hasta tener fotos).
 
 ## Estado de cada frente
 
-### Asistente de captura — `capturar/` (v16, en vivo tras push)
+### Asistente de captura — `capturar/` (v17, en vivo tras push)
+- **v17 (commit 01fe1ea)**: `MS_PARA_DISPARAR` 500→900 ms — Daniel veía fotos
+  algo borrosas; sostener la alineación más tiempo deja que el teléfono se
+  asiente antes de capturar. Cache-bust `?v=17`.
 - **v16 (commit f3f7653) — INDICADOR DE NIVEL**: barra tipo burbuja bajo el
   contador en la pantalla de captura. Reusa `derZ` (PASO 4), sin listener nuevo:
   `rollGrados = asin(derZ)`. Verde y discreta a plomo (|roll| ≤ 2°), ámbar +
   "Endereza el teléfono" al inclinarse. **UI pura y aditiva** — no toca `FILAS`,
-  `PASO_YAW`, `escucharOrientacion()`, permisos, disparo ni compartir.
-  - **PENDIENTE verificar en iPhone**: que la burbuja caiga al lado CORRECTO al
-    inclinar. Si sale invertida → negar `derZ` en la línea marcada de
-    `actualizarNivel()` (`capturar/captura.js`, comentario lo indica).
-  - Cache-bust `?v=16`.
+  `PASO_YAW`, `escucharOrientacion()`, permisos, disparo ni compartir. **Signo de
+  la burbuja verificado en el iPhone de Daniel** (cae al lado correcto).
 - **v15 (commit 7f5b518) — 3 FILAS 0/+40/−40**: en v14 (2 filas ±28°) los
   objetos CERCANOS al horizonte (escritorio con monitor) se PARTÍAN — el pitch 0°
   caía en la costura entre filas y el paralaje rompía el blend. Fix estilo
@@ -68,8 +68,12 @@ son placeholders hasta tener fotos).
   no lo arregla el software. Ligera inclinación (falta el indicador de nivel +
   pulso de Daniel). Algo de fantasma bajo el escritorio (había alguien en la
   cama que se movió entre pasadas).
-- **PENDIENTE**: capturar la COCINA con v15 (poner el tripié LEJOS de muebles
-  pegados a la pared) y ver si aguanta un espacio distinto.
+- **COCINA PROBADA (captura "V15 cocina", 48 fotos → `?proyecto=prueba-v15-cocina`)**:
+  **calidad de demo, MEJOR que el cuarto.** Tripié al centro = menos objetos
+  pegados a la cámara = menos warp. Horizonte coherente (tarja, estufa, alacena,
+  barra), cascos limpios, la vuelta cierra. Algo de blur de movimiento en un par
+  de pasadas y leve curvatura del piso — presentable a un broker. **Confirma que
+  el flujo v15 aguanta fuera del cuarto de prueba.**
 - **Pantalla final (commit 5221165)**: compartir a Drive desde iOS NUNCA fue
   fiable. Ahora **un solo `navigator.share` con todas las fotos** → "Guardar
   imágenes" al carrete → Daniel las sube a Drive desde Fotos. Sin tandas.
