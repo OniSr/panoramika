@@ -52,8 +52,15 @@ son placeholders hasta tener fotos).
   el horizonte y los muebles de una pasada, sin costura; +40°/−40° solo rellenan
   techo y piso (donde el paralaje molesta menos). **16 disparos/fila × 3 = 48
   fotos.** Paso 22.5° sin tocar. `?v=15`.
-- **PENDIENTE (Daniel prueba)**: capturar el cuarto con v15 (48 fotos) + la
-  COCINA, armar ambas y juzgar si el escritorio ya no se rompe.
+- **v15 PROBADO (captura "15" de Daniel, 48 fotos → `?proyecto=prueba-v15`)**:
+  el **escritorio con el monitor YA NO se parte** — la fila de nivel arregló la
+  costura. La vuelta cierra, cobertura vertical llena. Sigue habiendo warp en
+  objetos MUY cercanos (el closet pegado a la cámara se dobla) — paralaje puro,
+  no lo arregla el software. Ligera inclinación (falta el indicador de nivel +
+  pulso de Daniel). Algo de fantasma bajo el escritorio (había alguien en la
+  cama que se movió entre pasadas).
+- **PENDIENTE**: capturar la COCINA con v15 (poner el tripié LEJOS de muebles
+  pegados a la pared) y ver si aguanta un espacio distinto.
 - **Pantalla final (commit 5221165)**: compartir a Drive desde iOS NUNCA fue
   fiable. Ahora **un solo `navigator.share` con todas las fotos** → "Guardar
   imágenes" al carrete → Daniel las sube a Drive desde Fotos. Sin tandas.
@@ -103,7 +110,10 @@ son placeholders hasta tener fotos).
   NO usar `pano_modify --straighten` (se probó, EMPEORA: arrastra el techo mal
   cubierto al centro).
 - **`scripts/tapar_polos.py`** (nuevo): tapa nadir (disco con glifo de marca) +
-  cenit (relleno con el color del techo real, muestreado por debajo del hueco).
+  cenit (relleno con el color del techo real: promedia solo el **tercio más
+  brillante** de la franja de muestreo, porque las sombras de las costuras
+  infladas del techo ensuciaban el promedio simple). `--cenit-color R,G,B` fuerza
+  el color a mano.
   Uso: `python scripts/tapar_polos.py <esfera.webp> <final.webp> [--nadir-grados N]
   [--cenit-grados N] [--texto "..."]`. **Por defecto SIN texto** (solo el glifo):
   el texto curvado sale espejado por la proyección polar — `_texto_en_arco` está
