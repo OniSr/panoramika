@@ -68,12 +68,16 @@ son placeholders hasta tener fotos).
   no lo arregla el software. Ligera inclinación (falta el indicador de nivel +
   pulso de Daniel). Algo de fantasma bajo el escritorio (había alguien en la
   cama que se movió entre pasadas).
-- **COCINA PROBADA (captura "V15 cocina", 48 fotos → `?proyecto=prueba-v15-cocina`)**:
-  **calidad de demo, MEJOR que el cuarto.** Tripié al centro = menos objetos
-  pegados a la cámara = menos warp. Horizonte coherente (tarja, estufa, alacena,
-  barra), cascos limpios, la vuelta cierra. Algo de blur de movimiento en un par
-  de pasadas y leve curvatura del piso — presentable a un broker. **Confirma que
-  el flujo v15 aguanta fuera del cuarto de prueba.**
+- **COCINA v17 PROBADA (`?proyecto=prueba-v15-cocina`, 40 fotos SOBRE la barra)**:
+  **la mejor esfera interior hasta ahora.** Poner el tripié POR ENCIMA de la barra
+  arregló la esquina del mueble/escritorio/paso a la sala que en v15 se "comía"
+  (la barra tapaba esa dirección). Monitor entero, alacena y paso legibles, la
+  vuelta cierra. El asistente perdió 8 disparos (de 48) y no importó — ver abajo.
+- **SALA v17 (`?proyecto=prueba-v17-sala`, 48 fotos)**: el cosido ARMA (sembrado +
+  fallback de costuras simples), geometría sana, PERO el cuarto está lleno de
+  cajas de mudanza → **no es imagen vendible**. Sirve para validar el pipeline.
+  Re-tomar cuando esté despejado; en paredes grandes y lisas colgar algo (cuadro,
+  planta) para que Hugin tenga puntos que enganchar.
 - **Pantalla final (commit 5221165)**: compartir a Drive desde iOS NUNCA fue
   fiable. Ahora **un solo `navigator.share` con todas las fotos** → "Guardar
   imágenes" al carrete → Daniel las sube a Drive desde Fotos. Sin tandas.
@@ -111,11 +115,16 @@ son placeholders hasta tener fotos).
 ### Armado de esferas — `scripts/armar-esfera.sh`
 - Modo **CIEGO** (dron / fotos con EXIF): `pto_gen → cpfind --multirow → cpclean →
   autooptimiser -a -m -l -s`. El aéreo del dron cose **excelente** así — NO tocar.
-- Modo **"patrón asistente"** (autodetecta **32 O 48** fotos sin EXIF;
+- Modo **"patrón asistente"** (autodetecta **30–50** fotos sin EXIF;
   `PATRON=asistente` / `PATRON=ciego` / `PATRON=v15`): **siembra** yaw/pitch de
-  cada foto con `pto_var --set` antes de `cpfind --prealigned`. El nº de filas
-  sale del conteo: **48 → 3 filas 0/+40/−40 (v15)**, 32 → 2 filas ±28 (v14).
-  yaw = pos_en_fila × 22.5°.
+  cada foto con `pto_var --set` antes de `cpfind --prealigned`.
+  - **La posición sale del NÚMERO del nombre** (`IMG_2468`…), no del orden: si el
+    asistente pierde disparos, los huecos se respetan y las demás fotos quedan en
+    su yaw/pitch real. Cae a orden secuencial si los nombres no traen número.
+  - nº de filas = (posición_máxima // 16) + 1 → **3 → 0/+40/−40 (v15)**, 2 → ±28
+    (v14). yaw = columna × 22.5°.
+  - **enblend con fallback**: si aborta con "degenerate mask geometry" (paredes
+    lisas), reintenta con `--primary-seam-generator=nearest` (costuras simples).
   `FOV_CAMARA=95` (gran angular, afinar con la var de entorno); optimiza
   `y,p,r,b` (`pto_var --opt` + `autooptimiser -n`). **NUNCA** `-a` ni liberar `v`
   (degeneran la esfera). **`b` (distorsión de barril) es clave** para el gran
@@ -159,9 +168,11 @@ son placeholders hasta tener fotos).
    donde luzca, video para el flujo y los espacios chicos). Documentar una
    **segunda propiedad de respaldo**. Captura 360: tripié MÁS ALTO que barras/
    muebles y al centro; espacios en "L" o largos → 2 puntos + hotspot.
-   - Re-tomar la COCINA: en `prueba-v15-cocina` se "comió" la esquina del mueble/
-     escritorio/paso a la sala (la barra tapó esa dirección + pared blanca lisa
-     sin puntos de control → Hugin descartó esas fotos).
+   - **Cocina v17 ✅** (sobre la barra, la esquina ya aparece).
+   - **Sala: re-tomar despejada** (ahora está llena de cajas); colgar algo en las
+     paredes grandes lisas.
+   - Cuidar el **video del exterior** (23 s, 1080p, recibido) para la escena
+     "video" del recorrido.
 2. **FITACH — escena tipo "video"** en el visor: embeber YouTube/Vimeo sin listar
    en una escena, misma página de marca que los 360. No toca el motor Pannellum.
 3. **FITACH — página índice / portafolio** que liste los recorridos (carta de
