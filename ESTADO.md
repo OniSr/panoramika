@@ -2,7 +2,7 @@
 
 > Punto de traspaso entre sesiones. Una sesión nueva lee **esto + CLAUDE.md +
 > ESTRATEGIA.md** y ya puede continuar sin releer el chat. Se actualiza al cerrar
-> cada sesión o antes de compactar contexto. Última actualización: **2026-08-30**.
+> cada sesión o antes de compactar contexto. Última actualización: **2026-08-31**.
 
 ## Qué es
 
@@ -69,10 +69,15 @@ son placeholders hasta tener fotos).
   - El gran angular NO baja el conteo (las apps hacen 16 con ARKit, que la web no
     tiene) — mejora traslape/robustez del cosido y achica los cascos a ~±7-12°.
 - Fotos del `<canvas>` del video: **2160×4032, sin EXIF**.
-- **PENDIENTE: Daniel captura con v14** → leer el `console.log` del lente para
-  confirmar que tocó el gran angular y ajustar `FOV_GUIA_*` + `FOV_CAMARA` si el
-  FOV real difiere de 90/110/95.
+- **v14 PROBADO — el gran angular SÍ funciona** (captura "V14" de Daniel, 32 fotos):
+  agarró el ultra-wide, la vuelta cerró (360° completo, sin cuña), cobertura
+  vertical llena. Es la mejor esfera interior de toda la saga. Navegable:
+  `?proyecto=prueba-v14`.
+- **PENDIENTE (Daniel dijo)**: 1 captura más en el cuarto tomando el teléfono
+  DERECHO (la esfera salía algo inclinada), luego probar la COCINA.
 - Cache-bust: `?v=14` en `index.html` (css y js) + `<span class="version">`.
+- **v15 pendiente**: indicador de nivel (barra tipo burbuja, verde a ±2°) —
+  reusa `derZ` que ya se calcula, es UI pura, no rompe nada. Daniel lo pidió.
 
 ### Armado de esferas — `scripts/armar-esfera.sh`
 - Modo **CIEGO** (dron / fotos con EXIF): `pto_gen → cpfind --multirow → cpclean →
@@ -84,14 +89,24 @@ son placeholders hasta tener fotos).
   yaw/pitch/roll** (`pto_var --opt` + `autooptimiser -n`). **NUNCA** `-a` ni
   liberar `v` (degeneran la esfera). Comentario "PROBAR (v14)": liberar `b`
   (distorsión de barril) si el gran angular deja costura en los bordes.
-- **v14 PROBADO Y FUNCIONA** (captura "V14", 32 fotos gran angular): la vuelta
-  cerró (360° completo, sin cuña) y la esfera llena vertical. **Clave: liberar
-  `b`** (distorsión de barril) en el optimizador — sin eso el gran angular deja
-  paredes/piso ondulados (RMS ~50); con `b` queda derecha y legible. Sigue
-  prohibido `v` y `-a`. Resultado navegable: `index.html?proyecto=prueba-v14`.
-- `scripts/tapar_polos.py` (nuevo): tapa nadir (disco de marca) + cenit (relleno).
-  El texto del disco del nadir todavía se ve algo tosco (envuelto/espejado) —
-  mejorable pero funcional.
+  El optimizador YA libera `b` (distorsión de barril) — SIN eso el gran angular
+  deja paredes/piso ondulados (RMS ~50); CON `b` queda derecha (probado). NO se
+  usa `pano_modify --straighten` (se probó, EMPEORA: arrastra el techo mal
+  cubierto al centro).
+- **`scripts/tapar_polos.py`** (nuevo): tapa nadir (disco con glifo de marca) +
+  cenit (relleno con el color del techo real, muestreado por debajo del hueco).
+  Uso: `python scripts/tapar_polos.py <esfera.webp> <final.webp> [--nadir-grados N]
+  [--cenit-grados N] [--texto "..."]`. **Por defecto SIN texto** (solo el glifo):
+  el texto curvado sale espejado por la proyección polar — `_texto_en_arco` está
+  a medias, hay que afinarlo MIRÁNDOLO en el visor (no a ciegas).
+- **Flujo de producción v14 completo**:
+  1. Capturar con `capturar/` v14 (gran angular, tripié, 32 fotos)
+  2. `bash scripts/armar-esfera.sh <carpeta> <esfera.webp>` (detecta el patrón solo)
+  3. `python scripts/tapar_polos.py <esfera.webp> <final.webp> --nadir-grados 22 --cenit-grados 24`
+  4. `python scripts/optimizar_panoramas.py` si hace falta re-comprimir, mover a
+     `proyectos/<slug>/panoramas/`, editar `proyecto.json`, commit+push.
+- **OJO**: `scripts/generar_og.py` SOBREESCRIBE `assets/og-imagen.jpg` (la imagen
+  OG del sitio). NO usarlo con fotos de prueba — o revertir después.
 
 ### Visor — navegación tipo Street View (v en vivo)
 - Hotspots = marcadores con etiqueta (`tipo`: `propiedad` / `destino` / `salir`).
@@ -102,13 +117,11 @@ son placeholders hasta tener fotos).
 
 ## Próximas tareas (orden sugerido)
 
-1. **Daniel captura un cuarto con captura v14** (tripié, ~32 fotos, LENTE GRAN
-   ANGULAR) → leer el `console.log` del lente, re-armar con `armar-esfera.sh`,
-   ver si el gran angular mejora el cosido. Si el lente no se pudo seleccionar,
-   revisar `FOV_CAMARA`/`FOV_GUIA_*`.
-2. **Tapar los cascos con el logo** — `scripts/tapar_polos.py` YA existe y funciona
-   (nadir = disco de marca, cenit = relleno de color). Ajustar `--nadir-grados` /
-   `--cenit-grados` al tamaño real de los cascos de v14 (~±10°).
+1. **Daniel: 1 captura v14 más en el cuarto** (teléfono derecho) + probar la
+   COCINA. Armar ambas con el flujo v14 y juzgar calidad.
+2. **v15: indicador de nivel** en `capturar/` (UI pura, reusa `derZ`).
+3. Afinar el texto curvado del nadir en `tapar_polos.py` mirándolo en el visor
+   (baja prioridad — el glifo solo ya se ve bien).
 3. Reemplazar placeholders de `depto-lagos` por fotos reales (fachada + cuartos).
 4. Ajustar posición del marcador de la propiedad en la aérea.
 5. **Página índice** que liste los recorridos (portafolio para brokers).
