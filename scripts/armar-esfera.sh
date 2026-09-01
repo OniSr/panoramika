@@ -206,33 +206,27 @@ echo "--- 3/6  Limpiando puntos de control malos (cpclean)"
 cpclean -o "$PTO" "$PTO"
 
 if [ "$PATRON_AST" -eq 1 ]; then
-  echo "--- 4/6  Ajuste fino de posiciones + exposición (asistente: solo yaw/pitch/roll)"
-  # Las posiciones YA vienen sembradas (paso 1b) y son razonables. Optimizamos
-  # SOLO la orientación (yaw, pitch, roll) de cada foto, MENOS la foto 0 (anclada
-  # como referencia, para que el conjunto no gire en bloque).
+  echo "--- 4/6  Ajuste fino de posiciones + distorsión + exposición (asistente)"
+  # Las posiciones YA vienen sembradas (paso 1b). Optimizamos:
+  #   · yaw / pitch / roll de cada foto (MENOS la foto 0, anclada como referencia
+  #     para que el conjunto no gire en bloque), y
+  #   · `b` = distorsión radial (barril) del lente. El gran angular v14 la tiene
+  #     FUERTE; sin corregirla las paredes y el piso salen ondulados y el error de
+  #     alineación se dispara (RMS ~50). Con `b` liberado, la esfera queda derecha
+  #     y legible (probado real con la captura "V14", 32 fotos). `b` es un
+  #     parámetro por LENTE (compartido por todas las fotos), así que 940 puntos
+  #     de control lo determinan de sobra.
   #
-  # NUNCA se optimiza el FOV (`v`) ni se usa `autooptimiser -a`: en pruebas
-  # reales, en cuanto se libera el FOV el optimizador encuentra una solución
-  # degenerada (FOV enorme) y la esfera sale como una tira delgada (RMS ~70-85,
-  # lienzo de 16000 px). Con solo y,p,r el resultado es estable y predecible
-  # (RMS ~16).
+  # NUNCA se optimiza el FOV (`v`) ni se usa `autooptimiser -a`: en pruebas reales
+  # ambos degeneran la esfera — con `v` libre sale una tira delgada (RMS ~70-85,
+  # lienzo de 16000 px); con `-a` se descuadra el pitch y queda medio vacía.
   #   -n = optimiza solo las variables marcadas por pto_var --opt
   #   -m = iguala la exposición   ·   -s = elige el tamaño de lienzo
-  # El error residual (~16) es sobre todo paralaje de captura a mano/tripié en un
-  # cuarto chico; se reduce en la captura (girar sobre el eje), no aquí.
-  # Una foto sin puntos de control (una pared muy lisa) no se puede mover → se
-  # queda en su posición sembrada. Es lo que queremos.
-  #
-  # PROBAR (v14, lente gran angular): el ultra-wide tiene DISTORSIÓN DE BARRIL
-  # fuerte. Con el traslape enorme de este lente PROBABLEMENTE convenga liberar
-  # también la distorsión radial `b` (parámetro compartido: mismo lente en todas
-  # las fotos). Todavía NO se ha probado en real. Si el cosido sale con las
-  # líneas rectas curvadas, cambia las 2 líneas de abajo por:
-  #     pto_var --opt "y,p,r,b,!y0,!p0,!r0" -o "$PTO" "$PTO"
-  #     autooptimiser -n -m -s -o "$PTO" "$PTO"
-  # y compara. (Con el lente normal esto desestabilizaba; con el gran angular y
-  # su traslape debería converger.) NUNCA añadir `v` ni usar `-a`.
-  pto_var --opt "y,p,r,!y0,!p0,!r0" -o "$PTO" "$PTO"
+  # El error residual que quede es paralaje de captura a mano/tripié en un cuarto
+  # chico; se reduce en la captura (girar sobre el eje), no aquí.
+  # Una foto sin puntos de control (pared muy lisa) se queda en su posición
+  # sembrada — es lo que queremos.
+  pto_var --opt "y,p,r,b,!y0,!p0,!r0" -o "$PTO" "$PTO"
   autooptimiser -n -m -s -o "$PTO" "$PTO"
 else
   echo "--- 4/6  Optimizando posiciones, nivelado y exposición (autooptimiser -a)"
