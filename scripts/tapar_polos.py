@@ -81,15 +81,17 @@ def _texto_en_arco(img, texto, cx, cy, radio, px_fuente, color):
     sep = px_fuente * 0.28                       # aire entre letras
     total = sum(anchos) + sep * (len(texto) - 1)
     ang_total = total / radio                    # radianes que ocupa la palabra
-    ang_centro = math.pi / 2                     # 90° = abajo del disco
-    # El texto se lee de izquierda a derecha; en el arco de ABAJO eso es en
-    # sentido HORARIO decreciente de ángulo desde el borde izquierdo.
-    # Se recorre de IZQUIERDA a DERECHA: la izquierda del arco de abajo está en
-    # ángulos > 90°, así que empezamos alto y bajamos el ángulo por cada letra.
-    ang = ang_centro + ang_total / 2
+    # El texto se coloca en el arco de ARRIBA del disco. Al envolver el nadir,
+    # el "arriba" del disco cae en el CENTRO de la equirectangular (yaw 180°),
+    # una zona contigua — si se pone abajo cae justo en la costura (yaw 0°/360°)
+    # y la palabra se parte y se espeja. El disco además se ve "desde atrás" al
+    # mirar el piso desde dentro de la esfera, así que se recorre de DERECHA a
+    # IZQUIERDA y cada letra se voltea en horizontal.
+    ang_centro = -math.pi / 2                     # arriba del disco
+    ang = ang_centro - ang_total / 2
     for ch, w in zip(texto, anchos):
         paso = (w / 2) / radio
-        ang -= paso
+        ang += paso
         x = cx + radio * math.cos(ang)
         y = cy + radio * math.sin(ang)
         cajon = int(px_fuente * 1.8)
@@ -98,13 +100,11 @@ def _texto_en_arco(img, texto, cx, cy, radio, px_fuente, color):
         lb = ld.textbbox((0, 0), ch, font=f)
         ld.text(((cajon - (lb[2] - lb[0])) / 2 - lb[0],
                  (cajon - (lb[3] - lb[1])) / 2 - lb[1]), ch, font=f, fill=color + (255,))
-        # Tangente al arco: en el fondo del disco (ang=90°) la letra va derecha
-        # (giro 0); hacia los lados se inclina siguiendo la curva. PIL rota en
-        # sentido antihorario con ángulo positivo.
-        giro = 90.0 - math.degrees(ang)
+        letra = letra.transpose(Image.FLIP_LEFT_RIGHT)   # se lee "desde atrás"
+        giro = -(math.degrees(ang) + 90.0)               # tangente al arco de arriba
         letra = letra.rotate(giro, resample=Image.BICUBIC, expand=True)
         img.alpha_composite(letra, (int(x - letra.width / 2), int(y - letra.height / 2)))
-        ang -= paso + sep / radio
+        ang += paso + sep / radio
 
 
 def disco_marca(lado, texto):
@@ -120,7 +120,7 @@ def disco_marca(lado, texto):
 
     # --- Glifo: globo (círculo + elipse + meridiano), como el favicon -------
     g = r * 0.40                        # radio del globo
-    gy = c - r * 0.05                   # casi centrado (el texto va en el arco)
+    gy = c + r * 0.10                   # un poco abajo (el texto va en el arco de arriba)
     lw = max(2, int(lado * 0.011))
     d.ellipse([c - g, gy - g, c + g, gy + g], outline=ACENTO + (255,), width=lw)
     d.ellipse([c - g * 0.42, gy - g, c + g * 0.42, gy + g],
@@ -286,10 +286,6 @@ def main(argv):
     if nadir_grados > 0:
         lado = int(H * nadir_grados / 180.0) * 2 + 2
         disco = disco_marca(lado, texto)
-        # El envoltorio polar del nadir proyecta el disco "visto desde detrás"
-        # (al mirar el piso desde dentro de la esfera). Se espeja en horizontal
-        # para que el texto y el glifo se lean bien en el visor.
-        disco = disco.transpose(Image.FLIP_LEFT_RIGHT)
         equi = envolver_polo(equi, disco, nadir_grados, pluma, arriba=False)
         print(f"Nadir tapado: disco de marca, {nadir_grados:g}° de pitch"
               + (f', texto "{texto}"' if texto else ", sin texto"))
