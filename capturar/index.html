@@ -7,7 +7,7 @@
   <title>Asistente de captura · Panorámika</title>
   <meta name="theme-color" content="#0d0f12" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="captura.css?v=14" />
+  <link rel="stylesheet" href="captura.css?v=15" />
 </head>
 
 <body>
@@ -18,13 +18,13 @@
   <!-- ================= PANTALLA 1 · BIENVENIDA ================= -->
   <section class="pantalla pantalla--intro" id="pantallaIntro">
     <div class="tarjeta">
-      <div class="marca"><span class="marca__punto"></span> Panorámika <span class="version">v14</span></div>
+      <div class="marca"><span class="marca__punto"></span> Panorámika <span class="version">v15</span></div>
       <h1>Asistente de captura 360°</h1>
       <p>Te guía para tomar las fotos de una toma esférica. Necesitas:</p>
       <ul>
         <li>Un <strong>tripié</strong> en el punto exacto del recorrido (o, a pulso, girar sobre tu propio eje sin caminar)</li>
         <li>Buena luz</li>
-        <li>Unos 4 minutos: son ~32 fotos</li>
+        <li>Unos 6 minutos: son ~48 fotos</li>
       </ul>
       <button class="btn" id="btnEmpezar">Empezar</button>
       <p class="nota" id="notaEscritorio" hidden>
@@ -74,9 +74,10 @@
           del recorrido y afloja <strong>solo el giro horizontal</strong> (que
           suba/baje quede firme). A pulso: teléfono vertical pegado al pecho y
           <strong>gira sobre tus pies</strong>, sin mover los brazos ni caminar.</li>
-        <li>Son <strong>2 vueltas</strong> de 360°: una con el teléfono un poco
-          <strong>hacia arriba</strong> y otra un poco <strong>hacia abajo</strong>
-          (unos 30°). Sin foto de techo ni piso. En total unas <strong>32
+        <li>Son <strong>3 vueltas</strong> de 360°: primero con el teléfono
+          <strong>de frente</strong> (al centro), luego un poco <strong>hacia
+          arriba</strong> y por último un poco <strong>hacia abajo</strong> (unos
+          40°). Sin foto de techo ni piso. En total unas <strong>48
           fotos</strong>.</li>
         <li>Gira <strong>MUY despacio</strong> siguiendo el círculo. Si giras
           rápido el sensor se adelanta y la vuelta queda incompleta. Cuando el
@@ -100,7 +101,7 @@
     <div class="flecha" id="flecha" hidden></div>
 
     <header class="hud-top">
-      <span class="progreso" id="progreso">0 / 32</span>
+      <span class="progreso" id="progreso">0 / 48</span>
       <div class="hud-acciones">
         <button class="hud-btn" id="btnRehacer" aria-label="Rehacer última toma" disabled>↩</button>
         <button class="hud-btn" id="btnReiniciar" aria-label="Reiniciar todo">↻</button>
@@ -140,6 +141,6 @@
     </div>
   </section>
 
-  <script src="captura.js?v=14"></script>
+  <script src="captura.js?v=15"></script>
 </body>
 </html>

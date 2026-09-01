@@ -7,11 +7,13 @@
 #
 # El dron y el iPhone entregan las tomas SUELTAS; este script las cose.
 #
-# Con el asistente de captura v14 son ~32 fotos por cuarto (16 por fila × 2 filas
-# a ±28°), tomadas con el LENTE GRAN ANGULAR del iPhone y con paso de giro chico
-# (22.5°) para que la vuelta cierre y haya traslape de sobra. El TECHO y el PISO
-# no se capturan: los cascos de arriba y abajo quedan vacíos A PROPÓSITO y se
-# tapan luego con el logo (scripts/tapar_polos.py).
+# Con el asistente de captura v15 son ~48 fotos por cuarto (16 por fila × 3 filas
+# a 0° / +40° / −40°), tomadas con el LENTE GRAN ANGULAR del iPhone y con paso de
+# giro chico (22.5°) para que la vuelta cierre y haya traslape de sobra. La fila
+# de NIVEL (0°) carga el horizonte y los muebles de una sola pasada, sin costura.
+# El asistente v14 entregaba 32 fotos (2 filas a ±28°): también se soporta.
+# El CENIT y el NADIR no se capturan: los cascos de arriba y abajo quedan vacíos
+# A PROPÓSITO y se tapan luego con el logo (scripts/tapar_polos.py).
 #
 # Requiere Hugin:  winget install --id Hugin.Hugin
 #
@@ -74,7 +76,7 @@ PTO="$TRABAJO/proyecto.pto"
 
 # Hugin necesita el angulo de vision horizontal de cada foto. Estrategia:
 #   1. Si el EXIF trae distancia focal                 -> pto_gen lo calcula solo.
-#   2. Patron del asistente v14 (LENTE GRAN ANGULAR)   -> ~95 grados.
+#   2. Patron del asistente v14/v15 (LENTE GRAN ANGULAR) -> ~95 grados.
 #   3. Dron DJI (modelo "FC...")                       -> ~82 grados.
 #   4. Otro sin EXIF (iPhone, lente normal)            -> ~63 grados.
 # Se puede forzar con la variable de entorno FOV_CAMARA.
@@ -96,14 +98,16 @@ lente="$(python -c "$DETECTA" "${FOTOS[0]}" 2>/dev/null || echo iphone)"
 # ===========================================================================
 # ¿Es el patrón del asistente de captura?  (modo "sembrado" vs modo "ciego")
 # ---------------------------------------------------------------------------
-# El asistente `capturar/` v14 SIEMPRE entrega 32 fotos en un orden conocido
-# (las fotos ordenadas por nombre = el orden de captura):
-#   fotos  1..16 (idx  0..15) -> fila "arriba", pitch +28°, giro +22.5°/foto
-#                                 -> yaw = idx * 22.5
-#   fotos 17..32 (idx 16..31) -> fila "abajo",  pitch -28°, mismo giro
-#                                 -> yaw = (idx - 16) * 22.5
+# El asistente `capturar/` entrega las fotos en un orden conocido (las fotos
+# ordenadas por nombre = el orden de captura). Dos formatos soportados:
+#   v15 → 48 fotos (16 por fila × 3 filas):
+#     fotos  1..16 (idx  0..15) -> fila "nivel",  pitch   0°, yaw = pos * 22.5
+#     fotos 17..32 (idx 16..31) -> fila "arriba", pitch +40°, yaw = pos * 22.5
+#     fotos 33..48 (idx 32..47) -> fila "abajo",  pitch -40°, yaw = pos * 22.5
+#   v14 → 32 fotos (16 por fila × 2 filas):
+#     fotos  1..16 -> fila "arriba", pitch +28°   ·   fotos 17..32 -> "abajo", -28°
 #   (parámetros = capturar/captura.js PASO 1: PASO_YAW, FILAS[*].pitch/disparos)
-#   v14 NO tiene foto de techo ni de piso, y captura con el LENTE GRAN ANGULAR.
+#   Ninguno tiene foto de cenit ni de nadir, y capturan con el LENTE GRAN ANGULAR.
 #
 # Si reconocemos ese patrón SEMBRAMOS esas posiciones (yaw/pitch/roll) en el
 # .pto ANTES de buscar puntos de control, en vez de que cpfind las adivine.
@@ -111,36 +115,46 @@ lente="$(python -c "$DETECTA" "${FOTOS[0]}" 2>/dev/null || echo iphone)"
 # `autooptimiser -a` auto-nivela adivinando y rola la esfera entera ~90° en
 # cuartos chicos sin horizonte claro.
 #
-# El modo CIEGO (dron, fotos con EXIF, o cualquier cosa que no sean 32 fotos
+# El modo CIEGO (dron, fotos con EXIF, o cualquier cosa que no sean 32/48 fotos
 # de canvas) se queda EXACTAMENTE igual que antes: el aéreo del dron cose
 # perfecto así y no se toca.
 #
 # Forzar a mano con la variable de entorno PATRON:
-#   PATRON=ciego      -> modo viejo aunque haya 32 fotos
-#   PATRON=asistente  -> sembrado aunque no haya exactamente 32
-#   (PATRON=v11 / v12 / v13 / v14 son alias de "asistente")
+#   PATRON=ciego      -> modo viejo aunque haya 32/48 fotos
+#   PATRON=asistente  -> sembrado aunque no haya exactamente 32/48
+#   (PATRON=v11 / v12 / v13 / v14 / v15 son alias de "asistente")
 # ===========================================================================
 PATRON_AST=0
 case "${PATRON:-}" in
-  ciego)                       PATRON_AST=0 ;;
-  asistente|v11|v12|v13|v14)   PATRON_AST=1 ;;
+  ciego)                           PATRON_AST=0 ;;
+  asistente|v11|v12|v13|v14|v15)   PATRON_AST=1 ;;
   *)
-    # Autodetección: 32 fotos + sin EXIF de lente (= salieron del <canvas>).
-    if [ "${#FOTOS[@]}" -eq 32 ] && [ "$lente" != "dron" ] && [ "$lente" != "exif" ]; then
+    # Autodetección: 32 (v14) o 48 (v15) fotos + sin EXIF de lente (= salieron
+    # del <canvas> del asistente, que no escribe metadatos).
+    if { [ "${#FOTOS[@]}" -eq 32 ] || [ "${#FOTOS[@]}" -eq 48 ]; } \
+       && [ "$lente" != "dron" ] && [ "$lente" != "exif" ]; then
       PATRON_AST=1
     fi
     ;;
 esac
 
 # Parámetros del patrón — DEBEN coincidir con capturar/captura.js PASO 1.
+# El pitch real de cada fila lo decide el heredoc de Python (paso 1b) según
+# cuántas filas trae la captura (2 -> v14 ±28° · 3 -> v15 0/+40/−40). Estas
+# constantes son la referencia legible y alimentan el mensaje de abajo.
 AST_PASO_YAW=22.5        # PASO_YAW
-AST_PITCH_ARRIBA=28      # FILAS[0].pitch   (v14: ±28 con lente gran angular)
-AST_PITCH_ABAJO=-28      # FILAS[1].pitch
+AST_PITCH_NIVEL=0        # v15 FILAS[0].pitch  (fila que carga el horizonte)
+AST_PITCH_ARRIBA=40      # v15 FILAS[1].pitch  (en v14 / 32 fotos el Python usa +28)
+AST_PITCH_ABAJO=-40      # v15 FILAS[2].pitch  (en v14 / 32 fotos el Python usa -28)
 AST_POR_FILA=16          # FILAS[*].disparos
 
 if [ "$PATRON_AST" -eq 1 ]; then
   echo "--- Patrón del asistente detectado: siembro las posiciones de las ${#FOTOS[@]} fotos"
-  echo "    (16 arriba a +${AST_PITCH_ARRIBA}° · 16 abajo a ${AST_PITCH_ABAJO}° · paso ${AST_PASO_YAW}° · lente gran angular)"
+  if [ "${#FOTOS[@]}" -eq 32 ]; then
+    echo "    (v14: 16 a +28° · 16 a -28° · paso ${AST_PASO_YAW}° · lente gran angular)"
+  else
+    echo "    (v15: 16 a ${AST_PITCH_NIVEL}° · 16 a +${AST_PITCH_ARRIBA}° · 16 a ${AST_PITCH_ABAJO}° · paso ${AST_PASO_YAW}° · lente gran angular)"
+  fi
 else
   echo "--- Modo ciego: cpfind adivina las posiciones (dron / EXIF / captura no estándar)"
 fi
@@ -148,8 +162,8 @@ fi
 # --- FOV por defecto (ahora sí sabemos si es el patrón del asistente) --------
 if [ -z "${FOV_CAMARA:-}" ]; then
   if [ "$PATRON_AST" -eq 1 ]; then
-    # Patrón asistente v14 = LENTE GRAN ANGULAR del iPhone en retrato. Su FOV
-    # horizontal ronda ~95° (ESTIMADO; afínalo con FOV_CAMARA=NN si el cosido
+    # Patrón asistente (v14/v15) = LENTE GRAN ANGULAR del iPhone en retrato. Su
+    # FOV horizontal ronda ~95° (ESTIMADO; afínalo con FOV_CAMARA=NN si el cosido
     # sale "ojo de pez" o al revés, comprimido). El lente normal era ~63°.
     FOV_CAMARA=95
   elif [ "$lente" = "dron" ]; then
@@ -169,23 +183,38 @@ fi
 
 # --- 1b/6  (solo patrón asistente) Sembrar yaw/pitch/roll de cada foto ----
 # Generamos la cadena "y0=..,p0=..,r0=0,y1=.." con Python (más legible que
-# armarla en shell) y la aplicamos con `pto_var --set`. El bucle es tolerante
-# a que sobren o falten fotos: se reparten en 2 mitades (arriba / abajo). Así,
-# si Daniel toma 31 o 33, no se rompe.
+# armarla en shell) y la aplicamos con `pto_var --set`.
+#
+# El nº de FILAS se deduce del conteo: 16 disparos por fila (AST_POR_FILA).
+#   32 fotos -> 2 filas -> pitch [+28, -28]        (v14)
+#   48 fotos -> 3 filas -> pitch [0, +40, -40]     (v15; la de 0° carga el horizonte)
+# Dentro de cada fila el yaw avanza PASO_YAW (22.5°) por disparo, empezando en 0.
+# Es tolerante a que sobren/falten fotos: redondea el nº de filas y las fotos de
+# más caen en la última fila, así una captura de 31/33/47 no rompe el sembrado.
 if [ "$PATRON_AST" -eq 1 ]; then
   echo "--- 1b/6  Sembrando posiciones de las fotos (pto_var --set)"
-  SEMBRADO="$(python - "${#FOTOS[@]}" <<'PY'
+  SEMBRADO="$(python - "${#FOTOS[@]}" "$AST_PASO_YAW" "$AST_POR_FILA" <<'PY'
 import sys
-n = int(sys.argv[1])
-PASO, P_ARRIBA, P_ABAJO = 22.5, 28, -28   # v14: paso 22.5°, filas a ±28° (gran angular)
-por_fila = max(1, round(n / 2))    # ~16; se adapta si el conteo no es 32 exacto
+n        = int(sys.argv[1])
+PASO     = float(sys.argv[2])          # AST_PASO_YAW  = 22.5
+POR_FILA = int(sys.argv[3])            # AST_POR_FILA  = 16
+
+# pitch de cada fila segun cuantas filas trae la captura (debe coincidir con
+# capturar/captura.js PASO 1 · FILAS[*].pitch):
+PITCHES = {2: [28, -28], 3: [0, 40, -40]}
+
+n_filas = max(1, round(n / POR_FILA))
+pitches = PITCHES.get(n_filas)
+if pitches is None:
+    # conteo muy raro (ni ~32 ni ~48): reparte en 2 filas ±28 como en v14
+    pitches, n_filas = [28, -28], 2
+
 partes = []
 for i in range(n):
-    if i < por_fila:                       # fila arriba
-        yaw, pitch = (i * PASO) % 360, P_ARRIBA
-    else:                                  # fila abajo (y cualquier foto de más)
-        yaw, pitch = ((i - por_fila) * PASO) % 360, P_ABAJO
-    partes.append("y{0}={1:g},p{0}={2:g},r{0}=0".format(i, yaw, pitch))
+    fila = min(i // POR_FILA, n_filas - 1)   # fotos de mas -> ultima fila
+    pos  = i - fila * POR_FILA               # posicion dentro de la fila (0..15)
+    yaw  = (pos * PASO) % 360
+    partes.append("y{0}={1:g},p{0}={2:g},r{0}=0".format(i, yaw, pitches[fila]))
 print(",".join(partes))
 PY
 )"
@@ -242,15 +271,15 @@ else
 fi
 
 echo "--- 5/6  Fijando salida equirectangular 360x180 (pano_modify)"
-# Se fuerza esfera completa 360x180. Los cascos de arriba (~+83°..+90°) y de
-# abajo (nadir, ~−83°..−90°) quedan SIN fotos por diseño de la captura v14
-# (2 filas a ±28°, sin polos): saldrán vacíos/negros y se tapan con el logo.
-# Es lo esperado, no un fallo.
+# Se fuerza esfera completa 360x180. Los cascos del cenit (~+90°) y del nadir
+# (~−90°) quedan SIN fotos por diseño del asistente (v15: 3 filas a 0/±40°; v14:
+# 2 filas a ±28°; ninguno captura polos): saldrán vacíos/negros y se tapan con el
+# logo. Es lo esperado, no un fallo.
 pano_modify --canvas=AUTO --crop=AUTO --projection=2 --fov=360x180 -o "$PTO" "$PTO"
 
 # Verificación defensiva: ¿cpfind conectó las fotos?
-# Con ~32 fotos y el traslape denso del asistente deberían salir VARIOS CIENTOS
-# de puntos de control; en modo ciego el listón es más bajo.
+# Con ~32-48 fotos y el traslape denso del asistente deberían salir VARIOS
+# CIENTOS de puntos de control; en modo ciego el listón es más bajo.
 n_cp="$(grep -c '^c ' "$PTO" || true)"
 : "${n_cp:=0}"
 if [ "$PATRON_AST" -eq 1 ]; then UMBRAL_CP=120; else UMBRAL_CP=40; fi
@@ -287,8 +316,8 @@ python "$RAIZ/scripts/optimizar_panoramas.py" "$TRABAJO/panorama.tif" "$SALIDA"
 
 echo
 echo "LISTO -> $SALIDA"
-echo "Los CASCOS de arriba y de abajo (~±7-12° en cada polo) quedan VACÍOS por diseño:"
-echo "la captura v14 son 2 filas a ±28° (lente gran angular), sin techo ni piso. Taparlos con:"
+echo "Los CASCOS del cenit y del nadir (~±10° en cada polo) quedan VACÍOS por diseño:"
+echo "el asistente no captura polos (v15: 3 filas 0/±40° · v14: 2 filas ±28°). Taparlos con:"
 echo "  python scripts/tapar_polos.py \"$SALIDA\" <salida-final.webp>"
 echo "La franja del horizonte debe verse completa y SIN CUÑA NEGRA (si hay cuña, la"
 echo "vuelta no cerró: gira más despacio y da la vuelta completa)."

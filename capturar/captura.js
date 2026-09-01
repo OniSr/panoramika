@@ -1,6 +1,6 @@
 /* ============================================================================
    Asistente de captura 360° — Panorámika
-   JavaScript vanilla. Guía la toma de ~32 fotos para armar una esfera con Hugin.
+   JavaScript vanilla. Guía la toma de ~48 fotos para armar una esfera con Hugin.
 
    Orden de lectura:
      PASO 1 · Configuración (dianas, tolerancias, cámara)
@@ -16,28 +16,36 @@
 /* ============================================================================
    PASO 1 · CONFIGURACIÓN
    ============================================================================
-   Captura v14 — "2 filas a ±28°, LENTE GRAN ANGULAR, sin polos". Para TRIPIÉ.
+   Captura v15 — "3 filas (0 / +40 / −40), LENTE GRAN ANGULAR, sin polos". TRIPIÉ.
 
-   Novedad v14: la app captura con el LENTE GRAN ANGULAR del iPhone (ultra-wide /
-   0.5x), NO con el normal (ver PASO 3). El gran angular "ve" ~95-106° por foto
-   (el normal ~55-63°). Eso da:
-     · traslape enorme entre fotos → Hugin encuentra MUCHÍSIMOS más puntos de
-       control → el paralaje de un cuarto chico perdona mucho más,
-     · casi cobertura de polo a polo con solo 2 filas,
-     · menos sensible a que el giroscopio no sea exacto.
+   Por qué v15: en v14 (2 filas a ±28°) los objetos CERCANOS al horizonte (un
+   escritorio con monitor) se PARTÍAN. El pitch 0° — justo donde están los bordes
+   de los muebles — caía en la COSTURA entre las dos filas: cada fila veía el
+   objeto cercano desde un ángulo distinto (paralaje) y el blend lo rompía. El
+   techo y el piso sí mejoraron en v14 porque quedaban DENTRO de una fila, no en
+   la unión.
+
+   Solución (así lo hacen Teleport / Polycam): el ANILLO DE NIVEL (pitch 0°) es
+   la fila PRINCIPAL y carga TODO el horizonte y los muebles de una sola pasada,
+   SIN costura donde están las cosas cercanas. Las filas de arriba (+40°) y abajo
+   (−40°) solo rellenan techo y piso, donde el paralaje molesta mucho menos.
+
+   Orden de captura: PRIMERO la fila "nivel" (el usuario está fresco y firme, y
+   así el horizonte —lo más importante— se toma con el mejor pulso), luego
+   "arriba", luego "abajo".
+
+   Se toman 3 vueltas de 360°. NO hay foto de cenit ni de nadir: los cascos
+   (~±10° de pitch en cada polo) quedan vacíos A PROPÓSITO y se tapan luego con
+   el logo (scripts/tapar_polos.py).
+
+   El LENTE GRAN ANGULAR del iPhone (ultra-wide / 0.5x, ver PASO 3) "ve" ~95-106°
+   por foto (el normal ~55-63°). Eso da traslape enorme entre fotos → Hugin
+   encuentra MUCHÍSIMOS más puntos de control → el paralaje de un cuarto chico
+   perdona más, y basta con 3 filas para cubrir de casi-polo a casi-polo.
    Lo que el gran angular NO cambia: el NÚMERO de fotos. Las apps tipo Teleport /
-   Polycam hacen 16 porque usan ARKit (pose sin deriva); la web no tiene eso, así
-   que seguimos con ~32 fotos y paso de 22.5° para que la vuelta CIERRE.
-
-   Se siguen tomando 2 vueltas de 360°: una un poco hacia ARRIBA (+28°) y una un
-   poco hacia ABAJO (−28°). NO hay foto de techo ni de piso: los cascos (~±7-12°
-   de pitch) se tapan luego con el logo (scripts/tapar_polos.py).
-
-   Por qué ±28 y no ±32 (v13): con el gran angular SOBRA cobertura vertical, así
-   que se bajan las filas a ±28° — más cómodo de sostener en el tripié y aun así
-   el horizonte queda cubierto de sobra por traslape. Si al leer el diagnóstico
-   de consola (PASO 3) el FOV real sale más chico de lo esperado, subir a ±30/±32;
-   si sale más grande, ±25 vale.
+   Polycam hacen 16 por fila porque usan ARKit (pose sin deriva); la web no tiene
+   eso, así que seguimos con 16 disparos/fila y paso 22.5° para que la vuelta
+   CIERRE.
 
    Historia previa (cada versión arregló algo real):
    · v8  giroscopio puro (matriz W3C); brújula descartada (imanes en interiores).
@@ -46,9 +54,13 @@
    · v12 3 filas 0/±30 paso 30° → la vuelta NO cerró: 12 disparos a 30° taparon
      solo ~220° (el giroscopio se adelanta con pasos grandes).
    · v13 2 filas ±32 paso 22.5° con el lente NORMAL.
-   · v14 igual estructura que v13 pero LENTE GRAN ANGULAR y filas a ±28°.
+   · v14 2 filas ±28 paso 22.5°, LENTE GRAN ANGULAR. La vuelta cerró y la
+     cobertura vertical fue plena, pero los muebles cercanos se partían en la
+     costura del pitch 0°.
+   · v15 3 filas 0/+40/−40, paso 22.5°, gran angular: el horizonte lo carga la
+     fila de nivel sin costura; arriba/abajo solo rellenan techo y piso.
 
-   Se conserva de v8/v11/v13:
+   Se conserva de v8/v11/v13/v14:
    · "Paso denso": el giro entre foto y foto es CHICO (PASO_YAW = 22.5° → 16
      fotos por vuelta). Sobra traslape AUNQUE el giroscopio se equivoque ±10°.
      Pasos más grandes → el giroscopio se adelanta → vuelta incompleta. NO subir.
@@ -56,21 +68,24 @@
      PASO_YAW), NO respecto a un "norte" fijo. La brújula sigue descartada.
 
    Cobertura vertical (FOV_GUIA_V ≈ 110°, cada fila "ve" ±55° de su centro):
-   · Fila +28° cubre −27°..+83°   ·  Fila −28° cubre −83°..+27°
-     → se solapan de −27° a +27° (banda de 54° en el horizonte, sin zona muerta).
-     Sin cubrir queda ~±83°..±90° (±7° de casco en cada polo) → lo tapa el logo. */
+   · Fila  0° cubre −55°..+55°   (todo el horizonte y los muebles, sin costura)
+   · Fila +40° cubre −15°..+90°  ·  Fila −40° cubre −90°..+15°
+     → las filas de arriba/abajo se solapan de sobra con la de nivel (banda de
+     ~40° a cada lado). Sin cubrir queda ~±90° exacto (casco de ~±10° tras el
+     recorte real del gran angular) → lo tapa el logo. */
 const PASO_YAW = 22.5;           // grados de giro entre foto y foto (16 por vuelta) — NO subir
 const FILAS = [
-  { id: "arriba", nombre: "un poco hacia arriba", pitch:  28, disparos: 16 },
-  { id: "abajo",  nombre: "un poco hacia abajo",  pitch: -28, disparos: 16 },
+  { id: "nivel",  nombre: "de frente, al centro",   pitch:   0, disparos: 16 },
+  { id: "arriba", nombre: "un poco hacia arriba",   pitch:  40, disparos: 16 },
+  { id: "abajo",  nombre: "un poco hacia abajo",    pitch: -40, disparos: 16 },
 ];
-const POLOS = [];   // v14: sin foto de techo ni piso (nunca enganchan; se tapan con logo)
+const POLOS = [];   // v15: sin foto de cenit ni nadir (nunca enganchan; se tapan con logo)
 
-/** Plan plano de disparos (32 = 16×2): cada uno sabe a qué fila pertenece. */
+/** Plan plano de disparos (48 = 16×3): cada uno sabe a qué fila pertenece. */
 const PLAN = [];
 FILAS.forEach((f) => { for (let i = 0; i < f.disparos; i++) PLAN.push({ tipo: "fila", fila: f, i }); });
 POLOS.forEach((p) => PLAN.push({ tipo: "polo", polo: p }));
-const TOTAL = PLAN.length;    // 32 — SIEMPRE derivado del PLAN, nunca un número suelto
+const TOTAL = PLAN.length;    // 48 — SIEMPRE derivado del PLAN, nunca un número suelto
 
 // Tolerancias flojas: con traslape denso el stitch perdona imprecisión y así
 // capturar no desespera.
