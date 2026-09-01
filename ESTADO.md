@@ -85,13 +85,11 @@ son placeholders hasta tener fotos).
 - Modo **"patrón asistente"** (autodetecta 32 fotos sin EXIF; `PATRON=asistente` /
   `PATRON=ciego` / `PATRON=v14`): **siembra** yaw/pitch de cada foto (16 a +28°,
   16 a −28°; yaw = pos×22.5°) con `pto_var --set` antes de `cpfind --prealigned`;
-  `FOV_CAMARA=95` (gran angular, afinar con la var de entorno); optimiza **solo
-  yaw/pitch/roll** (`pto_var --opt` + `autooptimiser -n`). **NUNCA** `-a` ni
-  liberar `v` (degeneran la esfera). Comentario "PROBAR (v14)": liberar `b`
-  (distorsión de barril) si el gran angular deja costura en los bordes.
-  El optimizador YA libera `b` (distorsión de barril) — SIN eso el gran angular
-  deja paredes/piso ondulados (RMS ~50); CON `b` queda derecha (probado). NO se
-  usa `pano_modify --straighten` (se probó, EMPEORA: arrastra el techo mal
+  `FOV_CAMARA=95` (gran angular, afinar con la var de entorno); optimiza
+  `y,p,r,b` (`pto_var --opt` + `autooptimiser -n`). **NUNCA** `-a` ni liberar `v`
+  (degeneran la esfera). **`b` (distorsión de barril) es clave** para el gran
+  angular: sin él, paredes/piso ondulados (RMS ~50); con él, derecha (probado).
+  NO usar `pano_modify --straighten` (se probó, EMPEORA: arrastra el techo mal
   cubierto al centro).
 - **`scripts/tapar_polos.py`** (nuevo): tapa nadir (disco con glifo de marca) +
   cenit (relleno con el color del techo real, muestreado por debajo del hueco).
