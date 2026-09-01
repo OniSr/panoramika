@@ -119,8 +119,8 @@ def disco_marca(lado, texto):
     d.ellipse([c - r, c - r, c + r, c + r], fill=FONDO + (255,))
 
     # --- Glifo: globo (círculo + elipse + meridiano), como el favicon -------
-    g = r * 0.40                        # radio del globo
-    gy = c + r * 0.10                   # un poco abajo (el texto va en el arco de arriba)
+    g = r * (0.40 if texto else 0.46)  # más grande si no hay texto
+    gy = c + (r * 0.10 if texto else 0.0)
     lw = max(2, int(lado * 0.011))
     d.ellipse([c - g, gy - g, c + g, gy + g], outline=ACENTO + (255,), width=lw)
     d.ellipse([c - g * 0.42, gy - g, c + g * 0.42, gy + g],
@@ -254,7 +254,10 @@ def main(argv):
     salida = Path(argv[1])
     nadir_grados = 24.0
     cenit_grados = 20.0
-    texto = "PANORÁMIKA"
+    # Por defecto SIN texto: solo el glifo (se lee limpio en el visor). El texto
+    # curvado (`--texto "..."`) todavía sale espejado por la proyección polar
+    # del nadir — pendiente de afinar mirándolo en el visor. Ver _texto_en_arco.
+    texto = ""
     pluma = 0.35
 
     it = iter(argv[2:])
