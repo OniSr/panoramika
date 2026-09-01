@@ -142,14 +142,20 @@ def disco_marca(lado, texto):
 # 2 · Color de relleno para el CENIT
 # ==========================================================================
 def color_borde_cenit(equi, grados_relleno):
-    """Color promedio del techo REAL, muestreado en una franja JUSTO por debajo
-    de la zona que vamos a rellenar (si muestreáramos las primeras filas
-    tomaríamos el hueco negro del cenit y el relleno saldría negro)."""
+    """Color del techo REAL, muestreado en una franja por debajo de la zona que
+    vamos a rellenar. Ojo: en un cosido de cuarto, esa franja suele traer
+    manchas OSCURAS (sombras de las costuras infladas del techo). Un promedio
+    simple sale gris-parduzco. Como el techo casi siempre es lo más CLARO que
+    hay arriba, promediamos solo el tercio más brillante de la franja."""
     H = equi.height
-    y0 = int(H * grados_relleno / 180.0)         # fin de la zona de relleno
-    y1 = min(H, y0 + max(4, int(H * 0.03)))      # + una franja fina de techo real
+    y0 = int(H * grados_relleno / 180.0)              # fin de la zona de relleno
+    y1 = min(H, y0 + max(6, int(H * 0.10)))           # franja ancha de techo real
     tira = equi.crop((0, max(0, y0), equi.width, y1)).convert("RGB")
-    return tira.resize((1, 1), Image.BOX).getpixel((0, 0))
+    px = list(tira.getdata())
+    px.sort(key=lambda c: c[0] * 0.299 + c[1] * 0.587 + c[2] * 0.114)  # por luma
+    claros = px[int(len(px) * 0.66):]                 # tercio más brillante
+    n = len(claros) or 1
+    return tuple(sum(c[k] for c in claros) // n for k in range(3))
 
 
 # ==========================================================================
@@ -259,6 +265,7 @@ def main(argv):
     # del nadir — pendiente de afinar mirándolo en el visor. Ver _texto_en_arco.
     texto = ""
     pluma = 0.35
+    cenit_color = None   # None = detectar del techo; "R,G,B" = forzar
 
     it = iter(argv[2:])
     for a in it:
@@ -266,6 +273,8 @@ def main(argv):
             nadir_grados = float(next(it))
         elif a == "--cenit-grados":
             cenit_grados = float(next(it))
+        elif a == "--cenit-color":
+            cenit_color = tuple(int(x) for x in next(it).split(","))
         elif a == "--texto":
             texto = next(it)
         elif a == "--sin-texto":
@@ -295,9 +304,10 @@ def main(argv):
 
     # --- CENIT: relleno de color ---------------------------------------
     if cenit_grados > 0:
-        col = color_borde_cenit(equi, cenit_grados)
+        col = cenit_color if cenit_color else color_borde_cenit(equi, cenit_grados)
         equi = rellenar_polo_color(equi, col, cenit_grados, pluma, arriba=True)
-        print(f"Cenit tapado: relleno liso RGB{col}, {cenit_grados:g}° de pitch")
+        print(f"Cenit tapado: relleno liso RGB{col}, {cenit_grados:g}° de pitch"
+              + (" (forzado)" if cenit_color else ""))
 
     # Un desenfoque muy leve en las dos bandas polares suaviza el aliasing del
     # muestreo polar sin tocar el resto de la esfera.

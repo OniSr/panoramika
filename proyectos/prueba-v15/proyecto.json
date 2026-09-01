@@ -1,0 +1,17 @@
+{
+  "_comentario": "Prueba del pipeline v15 (3 filas 0/+40/-40). Mismo cuarto de Daniel, captura de 48 fotos. Objetivo: verificar que la fila de nivel arregla la costura del pitch 0 que partía el escritorio en v14.",
+  "nombre": "Prueba v15 — 3 filas (fila de nivel)",
+  "ubicacion": "Xalapa, Veracruz",
+  "descripcion": "Esfera de prueba: 48 fotos con el lente gran angular, 3 vueltas (nivel / arriba / abajo), cosidas con Hugin patrón asistente.",
+  "portada": "panoramas/cuarto.webp",
+  "escenaInicial": "cuarto",
+  "escenas": [
+    {
+      "id": "cuarto",
+      "titulo": "Cuarto",
+      "panorama": "panoramas/cuarto.webp",
+      "miradaInicial": { "yaw": 0, "pitch": -8 },
+      "hotspots": []
+    }
+  ]
+}
