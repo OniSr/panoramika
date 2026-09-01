@@ -92,7 +92,9 @@ const TOTAL = PLAN.length;    // 48 — SIEMPRE derivado del PLAN, nunca un núm
 const TOL_YAW = 10;           // margen horizontal para "alineado"
 const TOL_PITCH = 10;         // margen vertical
 const TOL_POLO = 16;          // (sin uso en v14: no hay polos; se deja por si vuelven)
-const MS_PARA_DISPARAR = 500; // sostener la alineación este tiempo antes de disparar
+const MS_PARA_DISPARAR = 900; // sostener la alineación quieto este tiempo antes de
+                             // disparar. Subido de 500 a 900 (v16): da margen a que
+                             // el teléfono se estabilice y la foto no salga borrosa.
 
 // FOV de la cámara, SOLO para proyectar la diana en la pantalla. El disparo NO
 // se decide con esto: se decide con diferencias de ángulo (TOL_YAW / TOL_PITCH).
@@ -563,9 +565,8 @@ function actualizarProgreso() {
 
      rollGrados = asin(derZ) en grados
 
-   SIGNO: si al inclinar el teléfono hacia un lado la burbuja se va para el lado
-   contrario, cambia `derZ` por `-derZ` en la línea marcada más abajo (y borra
-   esta nota tras verificarlo en el navegador de Daniel).
+   SIGNO: verificado en el iPhone de Daniel (v16) — la burbuja cae al lado
+   correcto. Si algún día se invierte, es cambiar `derZ` por `-derZ` abajo.
    ---------------------------------------------------------------------------- */
 const elNivel = $("nivel");
 const elNivelBurbuja = $("nivelBurbuja");
@@ -588,7 +589,7 @@ function nivelNeutro() {
 function actualizarNivel() {
   if (!elNivel || !elNivelBurbuja) return;
 
-  const z = derZ;   // ← si la burbuja sale invertida, pon aquí  -derZ
+  const z = derZ;   // (si algún día sale invertida: -derZ)
   if (!Number.isFinite(z)) { nivelNeutro(); return; }   // sin dato válido: nunca NaN en pantalla
 
   const rollGrados = Math.asin(Math.max(-1, Math.min(1, z))) * 180 / Math.PI;

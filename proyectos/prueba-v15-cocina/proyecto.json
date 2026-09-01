@@ -1,0 +1,11 @@
+{
+  "_comentario": "Prueba v15 en un espacio distinto: la cocina. 48 fotos, tripie al centro. Objetivo: ver si el flujo aguanta fuera del cuarto de prueba.",
+  "nombre": "Prueba v15 — cocina",
+  "ubicacion": "Xalapa, Veracruz",
+  "descripcion": "Cocina capturada con el asistente v15/v16 (48 fotos, 3 filas) y cosida con Hugin.",
+  "portada": "panoramas/cocina.webp",
+  "escenaInicial": "cocina",
+  "escenas": [
+    { "id": "cocina", "titulo": "Cocina", "panorama": "panoramas/cocina.webp", "miradaInicial": { "yaw": 0, "pitch": -6 }, "hotspots": [] }
+  ]
+}
