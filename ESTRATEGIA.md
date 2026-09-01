@@ -107,7 +107,7 @@ documenta una segunda "por si las dudas".
 |---|---|---|---|
 | **1. Producción** | Cobro único por hacer el recorrido de una propiedad | $2,500–8,000 MXN | **Ahora** |
 | **2. Alojamiento** | Renta mensual mientras el recorrido está publicado (mantenemos el link, cambiamos estatus, soporte) | $200–500 MXN/mes por propiedad | **Ahora** |
-| **3. Agencias** | Una agencia local nos manda sus propiedades; somos su "área de recorridos". Paquete por volumen + mensualidad | $1,500–3,000 MXN/propiedad + iguala mensual | Fase 2 (con 10+ casos) |
+| **3. Agencias** | Una agencia local nos manda sus propiedades; somos su "área de recorridos". Volumen + iguala. **Detalle en §9** | $2,800/propiedad por volumen · iguala $14-18k/mes | Fase 2 (con 3-5 casos) |
 | **4. Licencia / white-label** | Operadores en otras ciudades/países hacen el mismo modelo local; **nosotros alojamos**, su marca, sus recorridos como subpáginas de nuestro dominio. Cobramos setup + mensualidad por recorrido activo | setup + $X/mes por recorrido | Fase 3 (proceso probado) |
 | **5. Propiedades propias** | Usar la plataforma como catálogo de terrenos/propiedades nuestras | — (ahorro de marketing) | Continuo |
 | **6. Preventa / desarrolladores** | Subir a la liga de "La Rosa": planos, toggle amueblado, selector 3D de unidades, para proyectos de obra nueva | ticket alto ($$$) | Fase 4 (cuando el producto lo aguante) |
@@ -221,10 +221,151 @@ eso pesa — es criterio de composición, no solo de equipo.
 
 ---
 
-## 6. Frase para tener clara
+## 6. Paquetes y precios (Xalapa · base septiembre 2026)
+
+> Investigado contra estudios que ya operan en México (2025-26); fuentes al final.
+> Precios en **MXN**, pago único salvo que se indique. Rangos validados por Daniel.
+
+**Contexto de mercado:** foto suelta $1,200-2,500 · video <2 min $2,900-3,500 · 360
+depa (≤50 m²) $2,700-3,000 · 360 casa (≤150 m²) $4,900-5,000 · aérea con dron
+$1,600-3,500 · **paquete combinado foto+video+dron $5,800-7,100**. Lo normal es
+**sin mensualidad**. El piso a evitar es el DIY de ~$1,000 — ahí no hay negocio.
+
+**Referencia de valor:** comisión de broker en México = 3-6%. En un inmueble de
+$1.5M son ~$45-90k. Un paquete de $4,000 es **5-8% de esa comisión** → se justifica
+solo.
+
+### 🟢 Esencial — $2,200
+Rentas, depas chicos, presupuesto corto.
+- 15-18 fotos editadas
+- Video recorrido 45-60 s (vertical redes + horizontal)
+- Página de marca con link · entrega 72 h
+
+### 🔵 Completo — $3,900  *(el que se empuja)*
+Venta de casa/depa. El estándar.
+- 25-30 fotos editadas
+- Video recorrido 60-90 s
+- Aérea con dron (fotos + clip)
+- 360 de 2-3 espacios héroe con hotspots
+- Página de marca · 72 h
+
+### 🟣 Premium — $6,900
+Casas grandes, hoteles boutique.
+- 40+ fotos + twilight / edición extra
+- Video 2-3 min
+- Aérea completa
+- 360 de todos los espacios, navegación tipo Street View
+- Plano 2D si aplica
+
+### Add-ons
+- Foto extra $90 · escena 360 extra $500
+- **Hospedaje del link:** 3 meses incluidos, luego **renovación anual $900/año**
+  (incluye cambios de estatus "vendido/rentado" y cambio de fotos). NO mensualidad
+  chica a dueño particular.
+- Viáticos fuera de Xalapa: costo + 15%
+
+### Precio de lanzamiento (primeros ~5 clientes)
+**−35%** a cambio de permiso de portafolio + reseña. Ej. Completo a **$2,500**.
+Comunicar como oferta con fecha de término, no como "valgo menos".
+
+---
+
+## 7. Terrenos en lotificación / fraccionamientos
+
+> Hay muchos terrenos grandes en venta en Xalapa. El cliente es el dueño o
+> desarrollador que vende lotes.
+
+**Se cobra POR LOTE, no por m².** Un terreno de 10 hectáreas no es 100× más
+trabajo que uno de 1,000 m² — el dron lo vuela en tiempo similar. El valor está en
+el **mapa interactivo de lotes** (polígonos disponible / vendido / apartado — el
+"mapa de polígonos" de la rama `archivo-nextjs`), y ese trabajo escala con el
+número de lotes.
+
+**Estructura:**
+- **Tarifa base $9,000-15,000:** vuelo de dron del terreno completo + armado del
+  mapa interactivo + 360 de 1-2 puntos a nivel de piso.
+- **Por lote $150-300:** polígono + tarjeta de lote (medidas, precio, estatus).
+- **Mantenimiento $600-1,500/mes** mientras se comercializa: aquí SÍ va
+  mensualidad — la lotificación se vende en 1-3 años y necesitan marcar lotes
+  vendidos y mantener el mapa vivo. Es esperado en este segmento.
+
+Ejemplo: fraccionamiento de 40 lotes → $12,000 base + 40 × $200 = **$20,000
+producción + $1,000/mes**. Ticket alto y recurrente.
+
+---
+
+## 8. Dominio y plataforma — lo paga Panorámika
+
+**Panorámika compra y paga UN dominio propio** (ej. `panoramika.mx` ~$700-1,500
+MXN/año, o `.com` ~$300/año). TODOS los recorridos de TODOS los clientes viven
+ahí: `panoramika.mx/casa-lomas-verdes`.
+
+- El dominio es **un gasto fijo anual**, repartido entre todos los clientes — no es
+  por cliente.
+- El hosting sigue **gratis** (GitHub Pages / Cloudflare Pages a esta escala).
+- El cliente **nunca toca nada**: recibe un link limpio con nuestra marca. Es
+  ventaja de venta (§2).
+- La renovación anual de $900 NO cubre costo de servidor (es casi cero) — cubre
+  **mantenimiento** (estatus, ediciones). Comunicarlo así.
+- Si un cliente quiere el recorrido en SU dominio → add-on de configuración y su
+  dominio lo paga él.
+
+**Pendiente:** comprar el dominio. `.mx` / `.com.mx` dan más confianza local que
+`.com`.
+
+---
+
+## 9. Estrategia de agencias (Capa 3, en detalle)
+
+> *"Hay inmobiliarias con más de 5 propiedades; si les vendo para todas sería
+> enorme"* — sí, y es el objetivo real. Requiere plan.
+
+**El pitch:** *"Me vuelvo tu área de recorridos. Me mandas los listings, en 72 h
+los tienes; todo tu catálogo se ve premium y consistente."*
+
+**Modelos de cobro (de menos a más comprometido):**
+1. **Precio por volumen:** Completo $3,900 → **$2,800/propiedad** si se comprometen
+   a un bloque de 10 o a 5+/mes.
+2. **Iguala mensual (retainer):** **$14,000-18,000/mes** por hasta 6
+   propiedades/mes incluidas, extras a precio de volumen. Ingreso predecible para
+   Daniel, costo predecible para ellos.
+3. **Catálogo con su marca:** todas sus propiedades en un índice Panorámika con SU
+   logo (co-marca). Pegajoso: una vez que su catálogo está aquí, cambiarse cuesta.
+
+**Cómo aterrizar la primera:**
+- Primero 2-3 propiedades individuales (portafolio + relación).
+- Luego, al dueño de una agencia con quien YA trabajaste una propiedad → pitch de
+  "tu área de recorridos" + números de volumen.
+- Piloto de 1 mes: 3 propiedades a precio de lanzamiento; si les gusta → iguala.
+
+**Límites a planear (importante):**
+- Daniel es una persona. 6 propiedades/mes ≈ 6 días de trabajo (½ día captura + ½
+  día edición cada una). **Aguanta 2-3 agencias solo** antes de necesitar ayuda.
+  Precia la iguala reflejando esa escasez; no sobrevendas capacidad.
+- Las agencias pagan lento (30+ días). Exigir anticipo o prepago mensual.
+- Consistencia bajo volumen: tener checklist de captura y de edición.
+
+**Por qué las agencias son el objetivo:** una venta = 5-20 propiedades = pipeline
+recurrente (siempre tienen listings nuevos), menor costo de adquisición, ingreso
+predecible. Es el puente a la Capa 4 (licencia a otras ciudades).
+
+---
+
+## 10. Frase para tener clara
 
 > No competimos con las plataformas de preventa. Hacemos que **cualquier
 > propiedad que ya existe** se vea profesional —aérea, video recorrido, 360 y
 > fotografía, la mezcla que le sirva a esa propiedad— hecho por nosotros, rápido
 > y a precio justo, todo en un link con nuestra marca. Empezando por rentas de
 > Xalapa y hoteles boutique, con el modelo listo para licenciarse a otras ciudades.
+
+---
+
+## Fuentes de la investigación de precios (§6, sep 2026)
+
+- Cronoshare — [fotografía inmobiliaria](https://www.cronoshare.com.mx/cuanto-cuesta/fotografia-inmobiliaria) · [tour virtual 360](https://www.cronoshare.com.mx/cuanto-cuesta/tour-virtual-360)
+- [recorridos360.com.mx — precios y paquetes](https://www.recorridos360.com.mx/precios-y-paquetes/) (Básico $2,999 / Negocios $4,999 / Premium $14,999)
+- [Holii — fotografía y video inmobiliario](https://holii.mx/servicios/fotografia-video-inmobiliario) (10 fotos 4K $1,740 · video <2 min $2,900 · combo $5,800)
+- [EC Yucatán — foto/dron/video](https://www.ecyucatan.com/nueva-p%C3%A1gina1) (video $3,500 · video+dron $5,100 · completo $7,100)
+- [Racher Estate](https://racher-estate.com.mx/servicio-de-creacion-de-recorridos-virtuales/) (foto+360+video+plataforma 3 meses $1,000 — referencia de piso DIY)
+- [fotopisos.pro](https://fotopisos.pro/precios/) (referencia España, estructura de paquetes)

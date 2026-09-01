@@ -165,7 +165,10 @@ son placeholders hasta tener fotos).
 2. **FITACH — escena tipo "video"** en el visor: embeber YouTube/Vimeo sin listar
    en una escena, misma página de marca que los 360. No toca el motor Pannellum.
 3. **FITACH — página índice / portafolio** que liste los recorridos (carta de
-   presentación para brokers) + sección "paquete y precios".
+   presentación para brokers) + sección "paquete y precios" (rangos ya definidos
+   en `ESTRATEGIA.md` §6: Esencial $2,200 / Completo $3,900 / Premium $6,900).
+   - **Comprar dominio propio** (`panoramika.mx` o `.com.mx`) — lo paga Panorámika,
+     todos los recorridos viven ahí (`ESTRATEGIA.md` §8).
 4. **FITACH (opcional) — `armar-esfera.sh` más robusto:** avisar qué dirección se
    quedó sin cobertura en vez de fallar callado; anclar a la posición sembrada las
    fotos que no se atan (esquina movida > muro en blanco).
