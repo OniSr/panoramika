@@ -129,9 +129,11 @@ case "${PATRON:-}" in
   ciego)                           PATRON_AST=0 ;;
   asistente|v11|v12|v13|v14|v15)   PATRON_AST=1 ;;
   *)
-    # Autodetección: 32 (v14) o 48 (v15) fotos + sin EXIF de lente (= salieron
-    # del <canvas> del asistente, que no escribe metadatos).
-    if { [ "${#FOTOS[@]}" -eq 32 ] || [ "${#FOTOS[@]}" -eq 48 ]; } \
+    # Autodetección: entre 30 y 50 fotos + sin EXIF de lente (= salieron del
+    # <canvas> del asistente, que no escribe metadatos). El rango cubre v14 (32),
+    # v15 (48) y capturas donde el asistente perdió algunos disparos (p.ej. 40).
+    # El dron trae EXIF → cae en "dron"/"exif" y NO entra aquí.
+    if [ "${#FOTOS[@]}" -ge 30 ] && [ "${#FOTOS[@]}" -le 50 ] \
        && [ "$lente" != "dron" ] && [ "$lente" != "exif" ]; then
       PATRON_AST=1
     fi
@@ -182,39 +184,61 @@ else
 fi
 
 # --- 1b/6  (solo patrón asistente) Sembrar yaw/pitch/roll de cada foto ----
-# Generamos la cadena "y0=..,p0=..,r0=0,y1=.." con Python (más legible que
-# armarla en shell) y la aplicamos con `pto_var --set`.
+# Generamos la cadena "y0=..,p0=..,r0=0,y1=.." con Python y la aplicamos con
+# `pto_var --set`.
 #
-# El nº de FILAS se deduce del conteo: 16 disparos por fila (AST_POR_FILA).
-#   32 fotos -> 2 filas -> pitch [+28, -28]        (v14)
-#   48 fotos -> 3 filas -> pitch [0, +40, -40]     (v15; la de 0° carga el horizonte)
-# Dentro de cada fila el yaw avanza PASO_YAW (22.5°) por disparo, empezando en 0.
-# Es tolerante a que sobren/falten fotos: redondea el nº de filas y las fotos de
-# más caen en la última fila, así una captura de 31/33/47 no rompe el sembrado.
+# CLAVE: la posición de cada foto en la cuadrícula NO se deduce de su orden (1º,
+# 2º, 3º…) sino del NÚMERO de su nombre (IMG_2468, IMG_2469…). El iPhone numera
+# en orden de captura, así que si el asistente perdió disparos (p.ej. faltan
+# IMG_2477-2480) los huecos se respetan y las demás fotos quedan en su lugar
+# real. Si los nombres no traen número, se cae a "orden secuencial".
+#
+#   posición = nº_de_la_foto − nº_de_la_primera        (0, 1, 2, … con huecos)
+#   fila     = posición // 16   (0 = nivel/arriba, 1 = medio, 2 = abajo)
+#   columna  = posición %  16   →  yaw = columna * 22.5°
+#   nº de filas = (posición_máxima // 16) + 1     → 2 filas = v14, 3 = v15
+#     2 filas -> pitch [+28, -28]        3 filas -> pitch [0, +40, -40]
 if [ "$PATRON_AST" -eq 1 ]; then
   echo "--- 1b/6  Sembrando posiciones de las fotos (pto_var --set)"
-  SEMBRADO="$(python - "${#FOTOS[@]}" "$AST_PASO_YAW" "$AST_POR_FILA" <<'PY'
-import sys
-n        = int(sys.argv[1])
-PASO     = float(sys.argv[2])          # AST_PASO_YAW  = 22.5
-POR_FILA = int(sys.argv[3])            # AST_POR_FILA  = 16
+  SEMBRADO="$(python - "$AST_PASO_YAW" "$AST_POR_FILA" "${FOTOS[@]}" <<'PY'
+import sys, os, re
 
-# pitch de cada fila segun cuantas filas trae la captura (debe coincidir con
-# capturar/captura.js PASO 1 · FILAS[*].pitch):
-PITCHES = {2: [28, -28], 3: [0, 40, -40]}
+PASO     = float(sys.argv[1])          # AST_PASO_YAW  = 22.5
+POR_FILA = int(sys.argv[2])            # AST_POR_FILA  = 16
+rutas    = sys.argv[3:]               # en el MISMO orden que pto_gen (glob)
+n        = len(rutas)
 
-n_filas = max(1, round(n / POR_FILA))
-pitches = PITCHES.get(n_filas)
-if pitches is None:
-    # conteo muy raro (ni ~32 ni ~48): reparte en 2 filas ±28 como en v14
-    pitches, n_filas = [28, -28], 2
+# Nº final de cada nombre (IMG_2468.JPG -> 2468). Si alguna no trae número, o la
+# secuencia no es creciente, o los huecos son absurdos -> orden secuencial.
+def numeros(rutas):
+    nums = []
+    for r in rutas:
+        m = re.findall(r"(\d+)", os.path.basename(r))
+        if not m:
+            return None
+        nums.append(int(m[-1]))
+    if any(b <= a for a, b in zip(nums, nums[1:])):   # no estrictamente creciente
+        return None
+    return nums
+
+nums = numeros(rutas)
+if nums:
+    base = nums[0]
+    posiciones = [x - base for x in nums]
+    if max(posiciones) > 3 * POR_FILA - 1:            # más de 3 filas de rango: raro
+        posiciones = list(range(n))
+else:
+    posiciones = list(range(n))
+
+n_filas = min(3, max(1, max(posiciones) // POR_FILA + 1))
+PITCHES = {1: [0], 2: [28, -28], 3: [0, 40, -40]}[n_filas]
 
 partes = []
-for i in range(n):
-    fila = min(i // POR_FILA, n_filas - 1)   # fotos de mas -> ultima fila
-    pos  = i - fila * POR_FILA               # posicion dentro de la fila (0..15)
-    yaw  = (pos * PASO) % 360
-    partes.append("y{0}={1:g},p{0}={2:g},r{0}=0".format(i, yaw, pitches[fila]))
+for i, pos in enumerate(posiciones):
+    fila = min(pos // POR_FILA, n_filas - 1)          # fotos de más -> última fila
+    col  = pos % POR_FILA
+    yaw  = (col * PASO) % 360
+    partes.append("y{0}={1:g},p{0}={2:g},r{0}=0".format(i, yaw, PITCHES[fila]))
 print(",".join(partes))
 PY
 )"
@@ -304,10 +328,22 @@ fi
 
 echo "--- 6/6  Renderizando y fusionando (nona + enblend)"
 nona -m TIFF_m -o "$TRABAJO/remap" "$PTO"
-enblend --compression=LZW -o "$TRABAJO/panorama.tif" "$TRABAJO"/remap*.tif
+enblend --compression=LZW -o "$TRABAJO/panorama.tif" "$TRABAJO"/remap*.tif || true
+
+# Fallback: enblend a veces aborta con "degenerate image/mask geometry" cuando
+# hay paredes muy lisas (máscaras raras para su optimizador de costuras por
+# grafo). Reintenta con costuras simples "al vecino más cercano": son menos
+# finas pero no fallan. Mejor una esfera con costuras visibles que ninguna.
+if [ ! -s "$TRABAJO/panorama.tif" ]; then
+  echo "    enblend falló con costuras finas; reintento con costuras simples" >&2
+  enblend --compression=LZW --primary-seam-generator=nearest \
+    -o "$TRABAJO/panorama.tif" "$TRABAJO"/remap*.tif || true
+fi
 
 if [ ! -s "$TRABAJO/panorama.tif" ]; then
-  echo "ERROR: la fusión no produjo imagen. Revisa el traslape entre fotos." >&2
+  echo "ERROR: la fusión no produjo imagen ni con costuras simples. El traslape" >&2
+  echo "       entre fotos es insuficiente (paredes lisas / giro irregular)." >&2
+  echo "       Recaptura girando despacio sobre el eje del tripié." >&2
   exit 1
 fi
 

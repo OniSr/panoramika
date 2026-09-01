@@ -1,11 +1,20 @@
 {
-  "_comentario": "Prueba v15 en un espacio distinto: la cocina. 48 fotos, tripie al centro. Objetivo: ver si el flujo aguanta fuera del cuarto de prueba.",
-  "nombre": "Prueba v15 — cocina",
+  "_comentario": "Prueba v17: cocina re-tomada con el tripie SOBRE la barra (40 fotos, 8 disparos perdidos que armar-esfera.sh ahora tolera por numero de nombre). La esquina del mueble/paso a la sala que se comio en v15 ya aparece.",
+  "nombre": "Prueba v17 — cocina (sobre la barra)",
   "ubicacion": "Xalapa, Veracruz",
-  "descripcion": "Cocina capturada con el asistente v15/v16 (48 fotos, 3 filas) y cosida con Hugin.",
+  "descripcion": "Cocina, 40 fotos con el lente gran angular. Tripie por encima de la barra para que no tape la esquina del fondo.",
   "portada": "panoramas/cocina.webp",
   "escenaInicial": "cocina",
   "escenas": [
-    { "id": "cocina", "titulo": "Cocina", "panorama": "panoramas/cocina.webp", "miradaInicial": { "yaw": 0, "pitch": -6 }, "hotspots": [] }
+    {
+      "id": "cocina",
+      "titulo": "Cocina",
+      "panorama": "panoramas/cocina.webp",
+      "miradaInicial": {
+        "yaw": 0,
+        "pitch": -6
+      },
+      "hotspots": []
+    }
   ]
 }
