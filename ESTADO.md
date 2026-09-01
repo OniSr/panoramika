@@ -44,7 +44,16 @@ son placeholders hasta tener fotos).
 
 ## Estado de cada frente
 
-### Asistente de captura — `capturar/` (v14, en vivo tras push)
+### Asistente de captura — `capturar/` (v15, en vivo tras push)
+- **v15 (commit 7f5b518) — 3 FILAS 0/+40/−40**: en v14 (2 filas ±28°) los
+  objetos CERCANOS al horizonte (escritorio con monitor) se PARTÍAN — el pitch 0°
+  caía en la costura entre filas y el paralaje rompía el blend. Fix estilo
+  Teleport/Polycam: **anillo de NIVEL (0°) como fila principal** que cubre todo
+  el horizonte y los muebles de una pasada, sin costura; +40°/−40° solo rellenan
+  techo y piso (donde el paralaje molesta menos). **16 disparos/fila × 3 = 48
+  fotos.** Paso 22.5° sin tocar. `?v=15`.
+- **PENDIENTE (Daniel prueba)**: capturar el cuarto con v15 (48 fotos) + la
+  COCINA, armar ambas y juzgar si el escritorio ya no se rompe.
 - **Pantalla final (commit 5221165)**: compartir a Drive desde iOS NUNCA fue
   fiable. Ahora **un solo `navigator.share` con todas las fotos** → "Guardar
   imágenes" al carrete → Daniel las sube a Drive desde Fotos. Sin tandas.
@@ -82,9 +91,11 @@ son placeholders hasta tener fotos).
 ### Armado de esferas — `scripts/armar-esfera.sh`
 - Modo **CIEGO** (dron / fotos con EXIF): `pto_gen → cpfind --multirow → cpclean →
   autooptimiser -a -m -l -s`. El aéreo del dron cose **excelente** así — NO tocar.
-- Modo **"patrón asistente"** (autodetecta 32 fotos sin EXIF; `PATRON=asistente` /
-  `PATRON=ciego` / `PATRON=v14`): **siembra** yaw/pitch de cada foto (16 a +28°,
-  16 a −28°; yaw = pos×22.5°) con `pto_var --set` antes de `cpfind --prealigned`;
+- Modo **"patrón asistente"** (autodetecta **32 O 48** fotos sin EXIF;
+  `PATRON=asistente` / `PATRON=ciego` / `PATRON=v15`): **siembra** yaw/pitch de
+  cada foto con `pto_var --set` antes de `cpfind --prealigned`. El nº de filas
+  sale del conteo: **48 → 3 filas 0/+40/−40 (v15)**, 32 → 2 filas ±28 (v14).
+  yaw = pos_en_fila × 22.5°.
   `FOV_CAMARA=95` (gran angular, afinar con la var de entorno); optimiza
   `y,p,r,b` (`pto_var --opt` + `autooptimiser -n`). **NUNCA** `-a` ni liberar `v`
   (degeneran la esfera). **`b` (distorsión de barril) es clave** para el gran
@@ -115,9 +126,11 @@ son placeholders hasta tener fotos).
 
 ## Próximas tareas (orden sugerido)
 
-1. **Daniel: 1 captura v14 más en el cuarto** (teléfono derecho) + probar la
-   COCINA. Armar ambas con el flujo v14 y juzgar calidad.
-2. **v15: indicador de nivel** en `capturar/` (UI pura, reusa `derZ`).
+1. **Daniel: captura v15 del cuarto** (48 fotos, teléfono derecho) + la COCINA.
+   Armar ambas (`armar-esfera.sh` detecta el patrón solo) y verificar que el
+   escritorio ya NO se rompe.
+2. **Indicador de nivel** en `capturar/` (barra tipo burbuja, verde a ±2°, reusa
+   `derZ` que ya se calcula — UI pura). Daniel lo pidió; pendiente de hacer.
 3. Afinar el texto curvado del nadir en `tapar_polos.py` mirándolo en el visor
    (baja prioridad — el glifo solo ya se ve bien).
 3. Reemplazar placeholders de `depto-lagos` por fotos reales (fachada + cuartos).
