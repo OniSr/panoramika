@@ -150,20 +150,31 @@ son placeholders hasta tener fotos).
 
 ## Próximas tareas (orden sugerido)
 
-1. **Daniel: mapear el DEPA con v16** (captura de cada cuarto, 48 fotos, tripié
-   AL CENTRO lejos de muebles pegados a la pared). De paso, verificar el signo
-   de la burbuja del indicador de nivel. Subir a Drive, armar con
-   `armar-esfera.sh` (detecta el patrón solo) + `tapar_polos.py`, publicar
-   recorrido multi-escena con hotspots.
-2. Afinar el texto curvado del nadir en `tapar_polos.py` mirándolo en el visor
-   (baja prioridad — el glifo solo ya se ve bien).
-3. Reemplazar placeholders de `depto-lagos` por fotos reales (fachada + cuartos).
-4. Ajustar posición del marcador de la propiedad en la aérea.
-5. **Página índice** que liste los recorridos (portafolio para brokers).
-6. Después (features tipo competencia "La Rosa"): pestaña PLANO 2D, selector de
-   unidades/lotes (recuperar de `archivo-nextjs`), toggle amueblado/vacío,
-   transiciones más finas.
-7. Marketing: embudo social + 1 recorrido demo impecable.
+> **Giro de rumbo (sep 2026):** el producto es *visualización de propiedades*, no
+> "un 360". Paquete = aérea + video recorrido (Daniel graba a pulso con el iPhone,
+> sin gimbal) + 360 de espacios héroe + foto + página de marca. Ver `ESTRATEGIA.md`
+> §2b. No hay clientes; prioridad = 1-2 propiedades-portafolio para salir a vender.
+
+1. **Daniel: completar el DEPA** como propiedad-portafolio (cada espacio; 360
+   donde luzca, video para el flujo y los espacios chicos). Documentar una
+   **segunda propiedad de respaldo**. Captura 360: tripié MÁS ALTO que barras/
+   muebles y al centro; espacios en "L" o largos → 2 puntos + hotspot.
+   - Re-tomar la COCINA: en `prueba-v15-cocina` se "comió" la esquina del mueble/
+     escritorio/paso a la sala (la barra tapó esa dirección + pared blanca lisa
+     sin puntos de control → Hugin descartó esas fotos).
+2. **FITACH — escena tipo "video"** en el visor: embeber YouTube/Vimeo sin listar
+   en una escena, misma página de marca que los 360. No toca el motor Pannellum.
+3. **FITACH — página índice / portafolio** que liste los recorridos (carta de
+   presentación para brokers) + sección "paquete y precios".
+4. **FITACH (opcional) — `armar-esfera.sh` más robusto:** avisar qué dirección se
+   quedó sin cobertura en vez de fallar callado; anclar a la posición sembrada las
+   fotos que no se atan (esquina movida > muro en blanco).
+5. Afinar el texto curvado del nadir en `tapar_polos.py` (baja prioridad).
+6. Reemplazar placeholders de `depto-lagos` por fotos reales; ajustar marcador de
+   la propiedad en la aérea.
+7. Después (features tipo "La Rosa"): PLANO 2D, selector de unidades/lotes
+   (`archivo-nextjs`), toggle amueblado/vacío, transiciones finas.
+8. Marketing: embudo social + propiedad-portafolio impecable como carta.
 
 ## Decisiones tomadas (no re-litigar)
 

@@ -65,6 +65,42 @@ un terreno) tiene estas alternativas:
 
 ---
 
+## 2b. Qué vendemos: **visualización de propiedades**, no una sola técnica
+
+> Decisión de Daniel (sep 2026): *"la idea es vender la visualización, todos los
+> servicios; no nos podemos cerrar a solo 360, o solo IA, o solo edición y
+> fotografía."*
+
+El producto no es "un recorrido 360". Es **hacer que una propiedad se vea
+premium y traiga visitas más serias**, con la técnica que mejor le sirva a ESA
+propiedad. Un broker no compra una tecnología, compra un resultado.
+
+**El paquete (todo en un link con marca Panorámika, `?proyecto=<slug>`):**
+
+| Pieza | Herramienta (lo que YA hay) | Para qué sirve | Dónde brilla |
+|---|---|---|---|
+| **Aérea** | DJI Mini 3 | Contexto de zona, "entrar desde el cielo" | Todo. Es el punto más fuerte hoy |
+| **Video recorrido** | iPhone 15 Pro **a pulso** (Daniel graba) + edición propia | El *flujo* y las *proporciones reales* | Depas chicos, donde el 360 deforma |
+| **360 de espacios héroe** | Asistente v17 + Hugin | Explorar libremente 2-3 espacios | Sala, recámara principal, terraza, azotea, exteriores |
+| **Fotografía fija editada** | iPhone + edición/IA | Portada del anuncio, fichas | Siempre |
+| **Página de marca** | El sitio estático (ya existe) | Un solo enlace compartible, sin login | Siempre |
+
+**Reglas de composición (para no romper la demo):**
+- Depa chico → **video + aérea al frente**, 360 solo en 1-2 espacios que aguanten.
+  Nunca forzar 360 donde se ve mal.
+- Trípode 360: **más alto que barras/muebles y al centro**; en espacios en "L" o
+  largos, capturar desde 2 puntos y unirlos con hotspot.
+- **Sin gimbal por ahora.** La estabilización del iPhone 15 Pro caminando despacio
+  (talón-punta, brazos pegados) alcanza para un listing. Gimbal y cámara 360 usada
+  salen del 1º-2º cobro, no antes.
+
+**Estado (sep 2026):** no hay clientes todavía y el kit ya está comprado (dron +
+iPhone). Prioridad: **1-2 propiedades-portafolio** (el depa de Daniel + otra de
+respaldo) → salir a vender con ese link. El depa de Daniel se completa; se
+documenta una segunda "por si las dudas".
+
+---
+
 ## 3. Modelo de monetización — por capas (de lo viable hoy a lo escalable)
 
 | Capa | Qué es | Precio orientativo | Cuándo |
@@ -86,13 +122,19 @@ Daniel produzca cada recorrido.
 ## 4. Qué implica para el producto (roadmap)
 
 **Primero: terminar bien la plataforma base** (lo que Daniel pidió).
-- [ ] Captura interior que cosa limpio (asistente v11: giroscopio + paso denso +
-      2 filas suaves, pensado para tripié). Aún sin validar con fotos reales.
-- [ ] Cámara 360 dedicada: **descartada por ahora, sin capital.** Seguir con
-      celular + tripié. Reconsiderar cuando haya ingresos.
-- [ ] Tapar el nadir con el logo — prioridad alta: v11 no fotografía el piso.
-- [ ] Flujo completo de un recorrido real publicado (depto-lagos como piloto).
-- [ ] Página índice que liste los recorridos (para enseñar portafolio).
+- [x] Captura interior que cosa limpio — **asistente v15/v16/v17**: gran angular +
+      3 filas (0/±40°) + paso 22.5° + siembra de posiciones en Hugin. Probado en
+      cuarto y cocina: **calidad de demo**. Queda warp en objetos pegados a la
+      cámara (paralaje) y espacios muy chicos deforman → ahí entra el video.
+- [x] Tapar el nadir/cenit con el logo — `scripts/tapar_polos.py`.
+- [x] Indicador de nivel en el asistente (v16).
+- [ ] Cámara 360 dedicada + gimbal: **del 1º-2º cobro, no antes.**
+- [ ] **Escena tipo "video"** en el visor (embeber YouTube/Vimeo sin listar) para
+      que el recorrido en video viva en la misma página de marca que los 360.
+- [ ] **Página índice / portafolio** que liste los recorridos (carta de
+      presentación para brokers).
+- [ ] Sección de "paquete y precios".
+- [ ] Flujo completo de una propiedad-portafolio real publicada (el depa de Daniel).
 
 **Después: acercarse a la liga de "La Rosa"** (lo que da ticket alto):
 - [ ] Pestaña **PLANO 2D** por escena (subir la imagen del plano, marcar dónde
@@ -153,9 +195,11 @@ Daniel produzca cada recorrido.
   convierte. A negocios (hoteles, agencias, desarrolladores) con pitch de ROU sí.
 
 ### Realidades antes de lanzarse
-1. **El producto tiene que funcionar.** Hoy lo único fiable es el **aéreo con
-   dron**. El interior aún no cose limpio (ver `ESTADO.md`). No se vende afuera lo
-   que no se produce con seguridad.
+1. **El producto tiene que funcionar.** El **aéreo con dron** es sólido. El
+   **interior 360 ya cose a calidad de demo** (asistente v15+, ver `ESTADO.md`),
+   con límites conocidos: objetos pegados a la cámara y espacios muy chicos. Para
+   esos casos, **el video recorrido cubre el hueco** (ver §2b). No se vende afuera
+   lo que no se produce con seguridad — pero ya hay con qué salir a Xalapa.
 2. **Xalapa = laboratorio, no mercado.** 2-3 recorridos locales (baratos o gratis)
    para clavar el flujo de producción y tener portafolio presentable.
 3. **Viáticos: sí, pero después.** Nadie te vuela a Oaxaca sin casos que enseñar.
@@ -180,6 +224,7 @@ eso pesa — es criterio de composición, no solo de equipo.
 ## 6. Frase para tener clara
 
 > No competimos con las plataformas de preventa. Hacemos que **cualquier
-> propiedad que ya existe** tenga un recorrido 360 profesional, hecho por
-> nosotros, rápido y a precio justo — empezando por rentas de Xalapa y hoteles
-> boutique, con el modelo listo para licenciarse a otras ciudades.
+> propiedad que ya existe** se vea profesional —aérea, video recorrido, 360 y
+> fotografía, la mezcla que le sirva a esa propiedad— hecho por nosotros, rápido
+> y a precio justo, todo en un link con nuestra marca. Empezando por rentas de
+> Xalapa y hoteles boutique, con el modelo listo para licenciarse a otras ciudades.
