@@ -38,9 +38,19 @@ Repo `OniSr/panoramika` (público). Rama de trabajo `main`; MVP viejo Next.js en
 | Placeholder de escena | `scripts/placeholder_panorama.py` | — |
 | Miniatura de compartir | `scripts/generar_og.py` | — |
 
-Recorridos actuales: `proyectos/xalapa-demo/` (demo original 2 escenas),
-`proyectos/depto-lagos/` (piloto real: aérea del dron OK + fachada/sala/recámara
-son placeholders hasta tener fotos).
+**Proyectos (limpieza 2026-09-02 — commit 0ac4b45):**
+- **`depto-lagos`** — LA propiedad-portafolio real (depa de Daniel cerca del Paseo
+  de los Lagos). 4 escenas en secuencia: `aerea` (Los Lagos) → `exterior` (video)
+  → `cocina` (v17) → `cuarto` (v15). Es `PROYECTO_POR_DEFECTO`.
+  - PENDIENTE: ajustar la mira/hotspot de la `aerea` al edificio real (ahora
+    apunta a un punto cualquiera). La aérea sale algo OSCURA — subir exposición.
+- **`demo-lotes`** / **`demo-recorrido`** — demos internas de las funciones
+  `mapa-lotes` y `video`. Privadas (panel admin las marca).
+- BORRADOS: `xalapa-demo` (etiqueta falsa "Terreno en Las Ánimas" — NO existe tal
+  terreno), `prueba-v14/v15/v15-cocina/v17-sala` (pruebas de pipeline; su .webp
+  útil pasó a `depto-lagos`).
+- **NO hay "Terreno en Las Ánimas".** Si aparece en el portafolio, es de la etapa
+  vieja — borrar.
 
 ## Estado de cada frente
 
