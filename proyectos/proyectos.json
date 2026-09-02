@@ -1,0 +1,57 @@
+[
+  {
+    "slug": "xalapa-demo",
+    "nombre": "Terreno en Las Ánimas",
+    "tipo": "Terreno",
+    "publico": true
+  },
+  {
+    "slug": "demo-lotes",
+    "nombre": "Fraccionamiento demo — mapa de lotes",
+    "tipo": "Terreno",
+    "publico": false,
+    "nota": "Demo de la maqueta de lotes (la aérea es una imagen sustituta). Ábrelo con &editar=1 para trazar polígonos."
+  },
+  {
+    "slug": "prueba-v15-cocina",
+    "nombre": "Departamento — cocina y estancia",
+    "tipo": "Departamento",
+    "publico": true,
+    "nota": "Esfera de cocina v17: la mejor toma de interior hasta ahora."
+  },
+  {
+    "slug": "depto-lagos",
+    "nombre": "Departamento en renta — Los Lagos",
+    "tipo": "Departamento",
+    "publico": false,
+    "nota": "Piloto real: la aérea del dron está bien; fachada, sala y recámara son placeholders hasta tener fotos."
+  },
+  {
+    "slug": "demo-recorrido",
+    "nombre": "Demo recorrido — 360 + video",
+    "tipo": "Departamento",
+    "publico": false,
+    "nota": "Mixto: una escena 360 + una escena de video. Sirve de demo del tipo de escena \"video\"."
+  },
+  {
+    "slug": "prueba-v14",
+    "nombre": "Prueba v14 — captura gran angular",
+    "tipo": "Departamento",
+    "publico": false,
+    "nota": "Prueba de pipeline (32 fotos, lente gran angular). No es un recorrido comercial."
+  },
+  {
+    "slug": "prueba-v15",
+    "nombre": "Prueba v15 — 3 filas (fila de nivel)",
+    "tipo": "Departamento",
+    "publico": false,
+    "nota": "Prueba de pipeline (48 fotos, 3 vueltas). No es un recorrido comercial."
+  },
+  {
+    "slug": "prueba-v17-sala",
+    "nombre": "Prueba v17 — sala",
+    "tipo": "Departamento",
+    "publico": false,
+    "nota": "Prueba de pipeline (sala llena de cajas de mudanza). No es imagen vendible."
+  }
+]

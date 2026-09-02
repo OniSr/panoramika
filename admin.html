@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <title>Panel interno · Panorámika</title>
+  <meta name="theme-color" content="#0d0f12" />
+
+  <!-- PÁGINA PRIVADA: no debe indexarse ni enlazarse desde ninguna página
+       pública. Mismo criterio que capturar/. -->
+  <meta name="robots" content="noindex, nofollow" />
+
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="admin.css?v=1" />
+</head>
+
+<body>
+
+  <!-- ====================================================================
+       BANDA DE AVISO — deja claro que esto NO es una página de cliente
+       ==================================================================== -->
+  <div class="banda" role="note">
+    <span class="banda__punto" aria-hidden="true"></span>
+    PANEL INTERNO · enlace privado — no lo compartas con clientes
+  </div>
+
+  <!-- ====================================================================
+       CABECERA
+       ==================================================================== -->
+  <header class="cab">
+    <div class="contenedor">
+      <div class="marca">
+        <span class="marca__punto" aria-hidden="true"></span>
+        <span class="marca__texto">Panorámika</span>
+        <span class="marca__modo">Panel interno</span>
+      </div>
+
+      <h1 class="cab__titulo">Todo en un solo lugar</h1>
+      <p class="cab__fecha" id="fecha">&nbsp;</p>
+
+      <nav class="cab__enlaces" aria-label="Enlaces útiles">
+        <a href="portafolio.html" target="_blank" rel="noopener">Sitio público (portafolio) &nearr;</a>
+        <a href="https://github.com/OniSr/panoramika" target="_blank" rel="noopener">Repositorio en GitHub &nearr;</a>
+        <a href="https://onisr.github.io/panoramika/" target="_blank" rel="noopener">Sitio en vivo &nearr;</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="contenedor">
+
+    <!-- ==================================================================
+         1 · RECORRIDOS — se pinta desde proyectos/proyectos.json
+         ================================================================== -->
+    <section class="bloque" id="recorridos" aria-labelledby="tit-recorridos">
+      <h2 class="bloque__titulo" id="tit-recorridos">Recorridos</h2>
+      <p class="bloque__bajada">
+        Todos los proyectos que existen en <code>proyectos/</code>, públicos y
+        privados. Filtra por tipo para ver juntos los terrenos en venta.
+      </p>
+
+      <!-- Chips de filtro por tipo (los pinta el JS según los datos). -->
+      <div class="filtros" id="filtros" role="group" aria-label="Filtrar por tipo"></div>
+
+      <!-- El JS pinta aquí las fichas agrupadas por tipo. Si el JSON falla,
+           muestra un aviso con "Reintentar" — nunca queda en blanco. -->
+      <div id="lista" aria-live="polite" aria-busy="true">
+        <p class="aviso" id="listaEstado">Cargando proyectos…</p>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         2 · HERRAMIENTAS
+         ================================================================== -->
+    <section class="bloque" id="herramientas" aria-labelledby="tit-herramientas">
+      <h2 class="bloque__titulo" id="tit-herramientas">Herramientas</h2>
+
+      <div class="tarjetas">
+        <a class="tarjeta" href="capturar/" target="_blank" rel="noopener">
+          <span class="tarjeta__nombre">Asistente de captura 360 &nearr;</span>
+          <span class="tarjeta__texto">
+            Guía la cuadrícula de fotos con el teléfono para armar una esfera.
+            (Para interiores hoy se usa Travvir/Teleport; este asistente es el propio.)
+          </span>
+        </a>
+
+        <div class="tarjeta tarjeta--info">
+          <span class="tarjeta__nombre">Editor de mapa de lotes</span>
+          <span class="tarjeta__texto">
+            No es una página aparte: abre un recorrido con
+            <code>?proyecto=&lt;slug&gt;&amp;editar=1</code>. Arriba, cada terreno
+            con mapa de lotes ya trae el botón <strong>Editar mapa de lotes</strong>.
+            Traza los polígonos clic a clic y usa <strong>Copiar JSON</strong>.
+          </span>
+        </div>
+
+        <a class="tarjeta" href="portafolio.html" target="_blank" rel="noopener">
+          <span class="tarjeta__nombre">Portafolio público &nearr;</span>
+          <span class="tarjeta__texto">
+            La carta de presentación para brokers. Su lista sale de
+            <code>proyectos/recorridos.json</code>.
+          </span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         3 · REFERENCIA RÁPIDA — comandos exactos, con botón "copiar"
+         ================================================================== -->
+    <section class="bloque" id="referencia" aria-labelledby="tit-referencia">
+      <h2 class="bloque__titulo" id="tit-referencia">Referencia rápida</h2>
+      <p class="bloque__bajada">
+        Comandos que se corren desde la carpeta del repo. El botón copia el texto
+        tal cual; reemplaza lo que va entre <code>&lt; &gt;</code>.
+      </p>
+
+      <ul class="comandos">
+        <li class="comando">
+          <p class="comando__que">Armar la esfera con las fotos sueltas del dron</p>
+          <div class="comando__fila">
+            <code id="cmd-1">bash scripts/armar-esfera.sh &lt;carpeta&gt; &lt;salida.webp&gt;</code>
+            <button type="button" class="comando__copiar" data-copiar="cmd-1">Copiar</button>
+          </div>
+        </li>
+
+        <li class="comando">
+          <p class="comando__que">Optimizar fotos a WebP 2:1 (lote o un solo archivo)</p>
+          <div class="comando__fila">
+            <code id="cmd-2">python scripts/optimizar_panoramas.py &lt;carpeta-o-archivo&gt;</code>
+            <button type="button" class="comando__copiar" data-copiar="cmd-2">Copiar</button>
+          </div>
+        </li>
+
+        <li class="comando">
+          <p class="comando__que">Tapar los polos (nadir con el logo, cenit con el color del techo)</p>
+          <div class="comando__fila">
+            <code id="cmd-3">python scripts/tapar_polos.py &lt;esfera.webp&gt; &lt;final.webp&gt; --nadir-grados 26 --cenit-grados 32</code>
+            <button type="button" class="comando__copiar" data-copiar="cmd-3">Copiar</button>
+          </div>
+        </li>
+
+        <li class="comando">
+          <p class="comando__que">Crear un recorrido nuevo a partir de la plantilla</p>
+          <div class="comando__fila">
+            <code id="cmd-4">cp -r proyectos/_plantilla proyectos/&lt;slug&gt;</code>
+            <button type="button" class="comando__copiar" data-copiar="cmd-4">Copiar</button>
+          </div>
+        </li>
+
+        <li class="comando">
+          <p class="comando__que">Publicar los cambios (GitHub Pages redepliega solo)</p>
+          <div class="comando__fila">
+            <code id="cmd-5">git add -A &amp;&amp; git commit -m "..." &amp;&amp; git push</code>
+            <button type="button" class="comando__copiar" data-copiar="cmd-5">Copiar</button>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ==================================================================
+         4 · CÓMO AÑADIR CONTENIDO
+         ================================================================== -->
+    <section class="bloque" id="como" aria-labelledby="tit-como">
+      <h2 class="bloque__titulo" id="tit-como">Cómo añadir contenido</h2>
+      <ul class="pasos">
+        <li>
+          <strong>Añadir una toma</strong> a un recorrido = editar el arreglo
+          <code>escenas</code> de <code>proyectos/&lt;slug&gt;/proyecto.json</code>.
+          <code>script.js</code> no se toca nunca.
+        </li>
+        <li>
+          <strong>Añadir un recorrido nuevo</strong> = copiar
+          <code>proyectos/_plantilla</code>, mover las panorámicas a
+          <code>panoramas/</code>, editar su <code>proyecto.json</code> y añadir una
+          línea a <code>proyectos/proyectos.json</code> (para que salga en este panel).
+        </li>
+        <li>
+          <strong>Publicarlo en el portafolio público</strong> = además añadir una
+          línea a <code>proyectos/recorridos.json</code> con <code>portada</code> y,
+          si quieres, <code>destacado</code>.
+        </li>
+        <li>
+          <strong>Trazar el mapa de lotes de un terreno</strong> = abrir
+          <code>index.html?proyecto=&lt;slug&gt;&amp;editar=1</code>, poner los vértices
+          clic a clic, botón <strong>Copiar JSON</strong> y pegar en la escena
+          <code>"tipo":"mapa-lotes"</code> del <code>proyecto.json</code>.
+        </li>
+      </ul>
+    </section>
+
+  </main>
+
+  <footer class="pie">
+    <div class="contenedor">
+      Panorámika · panel interno · © <span id="anio">2026</span>
+    </div>
+  </footer>
+
+  <script src="admin.js?v=1"></script>
+</body>
+</html>
