@@ -2,7 +2,7 @@
 
 > Punto de traspaso entre sesiones. Una sesión nueva lee **esto + CLAUDE.md +
 > ESTRATEGIA.md** y ya puede continuar sin releer el chat. Se actualiza al cerrar
-> cada sesión o antes de compactar contexto. Última actualización: **2026-08-31**.
+> cada sesión o antes de compactar contexto. Última actualización: **2026-09-01**.
 
 ## Qué es
 
@@ -158,6 +158,30 @@ son placeholders hasta tener fotos).
   `proyectos/depto-lagos/proyecto.json`.
 
 ## Próximas tareas (orden sugerido)
+
+> ### ▶ PLAN PARA HOY (acordado 2026-09-01, se ejecuta el 2026-09-02)
+> **Objetivo: publicar la maqueta demo de un fraccionamiento real y salir a vender.**
+>
+> **Daniel:**
+> 1. **Vuela 1 esfera 360 de MUESTRA** con el dron (~20 m) — en Valle Dorado desde
+>    la carretera Alto Lucero, o en cualquier baldío en zona de dron legal (lejos
+>    de El Lencero; checar DJI Fly). Sube las tomas sueltas a Drive.
+> 2. Elige el fraccionamiento para la demo (**Valle Dorado / Raíz Noble**,
+>    `ESTRATEGIA.md` §10). Screenshot de **Google Earth satélite** de esa zona.
+> 3. Lista ~15-20 lotes: número, estatus (mayoría disponible, 2-3 apartado, 2-3
+>    vendido), precio ($65k contado / $85k financiado), m² (120 / 8×15).
+>
+> **Ricardo (sesión nueva):**
+> 4. Cose la esfera de muestra (`armar-esfera.sh`, modo ciego/dron).
+> 5. `cp -r proyectos/_plantilla proyectos/valle-dorado-demo`; mete la imagen de
+>    Google Earth como `mapa/aerea.webp`; escena `"tipo":"mapa-lotes"`.
+> 6. Daniel traza los lotes con `?proyecto=valle-dorado-demo&editar=1` → "Copiar
+>    JSON" → Ricardo pega y ajusta datos; 2-3 lotes con `"escena"` → la esfera de
+>    muestra. Publicar.
+> 7. Daniel manda el WhatsApp a los 5 prospectos (`ESTRATEGIA.md` §10) con el link.
+>
+> **Oferta a comunicar:** mapa interactivo de TODOS los lotes + 360 de los que
+> quieran destacar (NO uno por lote). Entrada: 1º al costo ~$6-8k flat.
 
 > **Giro de rumbo (sep 2026):** el producto es *visualización de propiedades*, no
 > "un 360". Paquete = aérea + video recorrido + 360 de espacios héroe + foto +
