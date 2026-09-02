@@ -67,6 +67,36 @@ cp -r proyectos/_plantilla proyectos/<slug>     # slug: solo minúsculas, númer
 | `miradaInicial` | no | `{ yaw, pitch }` hacia dónde mira al entrar |
 | `hotspots` | no | lista de saltos a otras escenas |
 
+## Escena de tipo "video" (recorrido caminando / aéreo, no una 360)
+
+Una escena puede ser un video en vez de una panorámica. Se distingue por
+`"tipo": "video"` y vive en la misma barra de escenas (chip con ícono ▶):
+
+```json
+{
+  "id": "exterior",
+  "titulo": "Exterior",
+  "tipo": "video",
+  "video": "https://www.youtube.com/watch?v=XXXX",
+  "poster": "panoramas/exterior-poster.webp"
+}
+```
+
+| Campo | Obligatorio | Nota |
+|---|---|---|
+| `id`, `titulo` | `id` sí | igual que una escena normal |
+| `tipo` | sí | debe ser `"video"` |
+| `video` | sí | URL de YouTube (cualquier forma), URL de Vimeo, o ruta local a un `.mp4` **relativa a la carpeta del proyecto** (igual que `panorama`) |
+| `poster` | no | imagen de portada; solo aplica al `.mp4` local |
+
+- YouTube se incrusta vía `youtube-nocookie.com` (sin autoplay, sin videos de
+  otros canales). Vimeo con `dnt=1`. El `.mp4` local usa `<video controls>`.
+- Una escena de video **no lleva `hotspots`** (se ignoran con `console.warn`).
+  Se navega desde la barra. Un hotspot de una escena 360 **sí** puede apuntar a
+  una escena de video.
+- Si `video` no es válido, esa escena se **omite** con aviso (no rompe el resto).
+- El `<iframe>`/`<video>` se crea solo al abrir la escena (carga diferida).
+
 ## Colocar hotspots (yaw / pitch)
 
 - **yaw**: horizontal, `-180..180`. `0` = centro de la foto, positivo gira a la derecha.

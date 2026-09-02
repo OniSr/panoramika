@@ -1,0 +1,33 @@
+{
+  "_comentario": "Recorrido MIXTO de demostracion: 1 escena 360 (cocina, de prueba-v15-cocina) + 1 escena de tipo video (videos/exterior.mp4, clip vertical del exterior tomado a pulso). Cambia entre ambas desde la barra de escenas.",
+  "nombre": "Demo recorrido — 360 + video",
+  "ubicacion": "Xalapa, Veracruz",
+  "descripcion": "Recorrido de prueba que mezcla una panoramica 360 navegable y un video del exterior. Cambia entre ambos desde la barra de escenas.",
+  "portada": "panoramas/cocina.webp",
+  "escenaInicial": "cocina",
+  "escenas": [
+    {
+      "id": "cocina",
+      "titulo": "Cocina",
+      "panorama": "panoramas/cocina.webp",
+      "miradaInicial": {
+        "yaw": 0,
+        "pitch": -6
+      },
+      "hotspots": [
+        {
+          "yaw": 120,
+          "pitch": -8,
+          "destino": "exterior",
+          "texto": "Ver el video del exterior"
+        }
+      ]
+    },
+    {
+      "id": "exterior",
+      "titulo": "Exterior",
+      "tipo": "video",
+      "video": "videos/exterior.mp4"
+    }
+  ]
+}
