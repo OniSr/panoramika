@@ -188,14 +188,18 @@ son placeholders hasta tener fotos).
 - Para **cobrar** (uso comercial): registrar el dron en AFAC.
 
 ### Fitachs
-1. **FITACH — escena tipo "video"** en el visor 🔄 EN CURSO (sub-agente, worktree).
-   Escena con `"tipo":"video"` + `"video"` (YouTube/Vimeo/mp4 local). No toca el
-   motor Pannellum. Video de prueba: `assets/demo/exterior.mp4` (23 s, PORTRAIT
-   1080×1920 — el CSS debe tolerar 9:16). Ricardo integra al terminar.
-2. **FITACH — página portafolio** 🔄 EN CURSO (sub-agente, worktree).
-   `portafolio.html` + `portafolio.css` + `proyectos/recorridos.json` (manifiesto).
-   Galería de recorridos + qué hacemos (§2b) + precios (§6) + contacto placeholder.
+1. **Escena tipo "video" en el visor ✅** (commit 8301a5d). Escena de
+   `proyecto.json` con `"tipo":"video"` + `"video"` (URL YouTube/Vimeo o `.mp4`
+   local relativo al proyecto). Chip `▶` en la barra; un hotspot de una 360 puede
+   saltar a ella. No toca Pannellum para las 360. Al volver de un video →
+   `visor.resize()`. `index.html` ahora con cache-bust `?v=2`. Demo:
+   `?proyecto=demo-recorrido` (cocina 360 + exterior.mp4 vertical). Esquema en la
+   skill `add-panorama`.
+2. **Página portafolio ✅** (commit 420c36b). `portafolio.html` en vivo.
 3. **Comprar dominio** (`panoramika.mx` / `.com.mx`) — lo paga Panorámika (§8).
+   PENDIENTE.
+4. **Poner contacto real** en `portafolio.html` (WhatsApp + correo, marcados
+   `TODO(Daniel)`).
 4. **Daniel**: completar el depa portafolio con Travvir/Teleport + re-tomar la
    sala despejada. Video del exterior ya recibido y transcodificado.
 5. **FITACH (opcional) — `armar-esfera.sh` aún más robusto:** ya tolera disparos
