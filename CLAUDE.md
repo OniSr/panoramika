@@ -84,6 +84,14 @@ script.js
 - **`script.js` NO se edita al añadir contenido.** Añadir una toma = editar un
   `proyecto.json`. Añadir un recorrido = `cp -r proyectos/_plantilla proyectos/<slug>`.
   Ver skill `add-panorama`.
+- **Segundo punto de entrada: `portafolio.html`** (+ `portafolio.css` + `portafolio.js`)
+  — la carta de presentación para brokers. Su "modelo de datos" es
+  `proyectos/recorridos.json` (manifiesto: `slug`, `nombre`, `ubicacion`, `tipo`,
+  `portada`, `destacado`, `proximamente`). Añadir un recorrido al portafolio = una
+  línea ahí. Esta página SÍ se indexa (`robots: index`).
+- **Escena tipo `"video"`**: una escena de `proyecto.json` con `"tipo":"video"` y
+  `"video"` (URL de YouTube/Vimeo o `.mp4` local) muestra un video en vez de una
+  panorámica. El resto de escenas 360 no cambian.
 - Enlace público de un recorrido: `index.html?proyecto=<slug>`. El `slug` se limpia
   a `[a-z0-9-]` para evitar rutas maliciosas.
 - **Carga diferida**: nativa de Pannellum — solo baja la textura de la escena

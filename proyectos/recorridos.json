@@ -1,0 +1,36 @@
+[
+  {
+    "slug": "prueba-v15-cocina",
+    "nombre": "Departamento — cocina y estancia",
+    "ubicacion": "Xalapa, Veracruz",
+    "tipo": "Departamento",
+    "portada": "proyectos/prueba-v15-cocina/panoramas/cocina.webp",
+    "destacado": true
+  },
+  {
+    "slug": "xalapa-demo",
+    "nombre": "Terreno en Las Ánimas",
+    "ubicacion": "Xalapa, Veracruz",
+    "tipo": "Terreno",
+    "portada": "proyectos/xalapa-demo/panoramas/aerea-xalapa.webp",
+    "destacado": true
+  },
+  {
+    "nombre": "Departamento en renta — Los Lagos",
+    "ubicacion": "Xalapa, Veracruz",
+    "tipo": "Renta amueblada",
+    "proximamente": true
+  },
+  {
+    "nombre": "Casa en venta — Coatepec",
+    "ubicacion": "Coatepec, Veracruz",
+    "tipo": "Casa",
+    "proximamente": true
+  },
+  {
+    "nombre": "Hotel boutique — Centro",
+    "ubicacion": "Xalapa, Veracruz",
+    "tipo": "Hospedaje",
+    "proximamente": true
+  }
+]

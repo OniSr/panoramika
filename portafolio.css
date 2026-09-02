@@ -1,0 +1,379 @@
+/* ============================================================================
+   Panorámika — hoja de estilos de la PÁGINA DE PORTAFOLIO (portafolio.html)
+
+   CSS3 nativo, sin frameworks. Mobile-first: las reglas base son para teléfono
+   y @media (min-width: …) ajusta para pantallas grandes.
+
+   POR QUÉ NO `@import "style.css"`:
+   `style.css` es la hoja del VISOR — fija `body { overflow: hidden }`, posiciona
+   barras con `position: fixed` y llena la pantalla con el lienzo 360. Importarla
+   aquí traería toda esa maquinaria del visor a una página que SÍ hace scroll.
+   En su lugar copiamos SOLO el bloque de tokens de `:root` (el "sistema de
+   diseño": color, tipografía, espaciado) para que el portafolio y el visor se
+   vean como el mismo producto. Si cambian los tokens del visor, hay que
+   reflejarlos aquí — son ~30 líneas y es el único punto de duplicación.
+
+   Índice:
+     1. Tokens de diseño (:root)      6. Sección "Recorridos" (galería)
+     2. Reset + base de la página     7. Sección "Paquetes y precios"
+     3. Utilidades de layout          8. Sección "Contacto"
+     4. Hero                          9. Pie de página
+     5. Sección "Qué hacemos"        10. Escritorio + accesibilidad
+   ========================================================================== */
+
+/* --- 1. Tokens de diseño (copiados de style.css + extras del portafolio) -- */
+:root {
+  --sup-fondo:        #0d0f12;
+  --sup-panel:        rgba(18, 21, 26, 0.72);
+  --sup-panel-solido: #14171c;
+  --sup-borde:        rgba(255, 255, 255, 0.10);
+
+  --tx-fuerte: #f4f6f8;
+  --tx-medio:  #b9c0c8;
+  --tx-suave:  #7d858f;
+
+  /* Acento ámbar/bronce arquitectónico: calidez y "hecho a medida". */
+  --acento:       #d99a4e;
+  --acento-claro: #e8c27a;
+  --acento-tinte: rgba(217, 154, 78, 0.16);
+  --acento-tx:    #1c1206;
+
+  --ok:    #46b17a;
+  --wa:    #25d366;   /* verde WhatsApp */
+
+  --fuente: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+            "Helvetica Neue", Arial, sans-serif;
+
+  --e-1: 4px;  --e-2: 8px;  --e-3: 12px;  --e-4: 16px;  --e-5: 24px;  --e-6: 32px;
+  --radio: 12px;
+  --radio-pill: 999px;
+  --sombra: 0 8px 30px rgba(0, 0, 0, 0.45);
+  --difuminado: blur(14px) saturate(1.2);
+
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Extras propios del portafolio (no existen en el visor) */
+  --ancho-max:  1120px;   /* ancho del contenido; el fondo llega a los bordes */
+  --e-7: 48px;  --e-8: 72px;  --e-9: 112px;   /* ritmo vertical de secciones */
+  --radio-lg: 18px;
+}
+
+/* --- 2. Reset + base de la página --------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--sup-fondo);
+  color: var(--tx-fuerte);
+  font-family: var(--fuente);
+  line-height: 1.6;
+  /* A diferencia del visor, esta página SÍ hace scroll vertical y NUNCA
+     horizontal. `overflow-x: clip` corta cualquier desbordamiento accidental. */
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+[hidden] { display: none !important; }
+
+:focus-visible { outline: 2px solid var(--acento-claro); outline-offset: 3px; border-radius: var(--e-1); }
+
+/* --- 3. Utilidades de layout ------------------------------------------- */
+
+/* Contenedor centrado con ancho máximo y aire lateral en móvil. */
+.contenedor {
+  width: 100%;
+  max-width: var(--ancho-max);
+  margin-inline: auto;
+  padding-inline: var(--e-5);
+}
+
+/* Separación vertical entre secciones. */
+.seccion { padding-block: var(--e-8); }
+.seccion--borde { border-top: 1px solid var(--sup-borde); }
+
+/* Encabezado de sección: kicker + título + bajada. */
+.seccion__kicker {
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--acento);
+}
+.seccion__titulo {
+  font-size: clamp(1.5rem, 5vw, 2.1rem); line-height: 1.15; font-weight: 700;
+  letter-spacing: -0.01em; margin-top: var(--e-2);
+}
+.seccion__bajada {
+  color: var(--tx-medio); font-size: 1rem; max-width: 52ch; margin-top: var(--e-3);
+}
+
+/* Marca (logotipo de texto), reutiliza el patrón del visor. */
+.marca { display: inline-flex; align-items: center; gap: var(--e-2); font-weight: 650; letter-spacing: 0.02em; }
+.marca__punto {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--acento); box-shadow: 0 0 0 4px var(--acento-tinte);
+}
+.marca__texto { font-size: 0.95rem; }
+
+/* Botones (mismo lenguaje que .btn-primario del visor). */
+.btn-primario,
+.btn-secundario {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--e-2);
+  padding: var(--e-3) var(--e-6); min-height: 50px;
+  font-size: 0.95rem; font-weight: 650; text-decoration: none;
+  border-radius: var(--radio-pill);
+  transition: transform 0.12s ease, box-shadow 0.2s ease, border-color 0.15s, color 0.15s;
+}
+.btn-primario {
+  color: var(--acento-tx); background: var(--acento);
+  box-shadow: 0 6px 24px var(--acento-tinte);
+}
+.btn-primario:hover { transform: translateY(-1px); box-shadow: 0 10px 32px var(--acento-tinte); }
+.btn-primario:active { transform: translateY(0); }
+
+.btn-secundario {
+  color: var(--tx-fuerte); background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--sup-borde);
+}
+.btn-secundario:hover { border-color: var(--acento); color: var(--acento-claro); }
+
+/* --- 4. Hero ---------------------------------------------------------- */
+.hero {
+  position: relative;
+  padding-block: calc(var(--safe-top) + var(--e-8)) var(--e-8);
+  /* Mismo degradado radial que el fondo del lienzo del visor: continuidad visual. */
+  background: radial-gradient(circle at 50% 22%, #1a1e24, var(--sup-fondo) 68%);
+  overflow: hidden;
+}
+/* Halo ámbar muy sutil detrás del título; puro adorno, se anima solo opacity. */
+.hero::after {
+  content: ""; position: absolute; inset: -20% 30% auto; height: 320px; z-index: 0;
+  background: radial-gradient(ellipse at top, var(--acento-tinte), transparent 70%);
+  pointer-events: none;
+}
+.hero__contenido { position: relative; z-index: 1; max-width: 40ch; }
+.hero__marca { margin-bottom: var(--e-6); }
+.hero__marca .marca__texto { font-size: 1.1rem; }
+
+.hero__titulo {
+  font-size: clamp(2rem, 8vw, 3.4rem); line-height: 1.08; font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.hero__titulo em { color: var(--acento-claro); font-style: normal; }
+
+.hero__propuesta {
+  color: var(--tx-medio); font-size: clamp(1rem, 2.6vw, 1.15rem);
+  margin-top: var(--e-4); max-width: 46ch;
+}
+.hero__acciones { display: flex; flex-wrap: wrap; gap: var(--e-3); margin-top: var(--e-6); }
+
+/* --- 5. Sección "Qué hacemos" --------------------------------------- */
+.pilares {
+  list-style: none;
+  display: grid; grid-template-columns: 1fr; gap: var(--e-3);
+  margin-top: var(--e-6);
+}
+.pilar {
+  display: flex; gap: var(--e-4); align-items: flex-start;
+  padding: var(--e-4);
+  background: var(--sup-panel-solido);
+  border: 1px solid var(--sup-borde);
+  border-radius: var(--radio);
+}
+.pilar__ico {
+  flex: 0 0 auto;
+  display: grid; place-items: center;
+  width: 42px; height: 42px; border-radius: 50%;
+  color: var(--acento-claro);
+  background: var(--acento-tinte);
+}
+.pilar__ico svg { width: 22px; height: 22px; }
+.pilar__titulo { font-size: 0.98rem; font-weight: 650; }
+.pilar__texto { color: var(--tx-medio); font-size: 0.9rem; margin-top: 2px; }
+
+/* --- 6. Sección "Recorridos" (galería desde recorridos.json) -------- */
+.galeria {
+  display: grid; grid-template-columns: 1fr; gap: var(--e-4);
+  margin-top: var(--e-6);
+}
+
+/* Tarjeta = enlace a index.html?proyecto=<slug>. */
+.recorrido {
+  position: relative;
+  display: flex; flex-direction: column;
+  background: var(--sup-panel-solido);
+  border: 1px solid var(--sup-borde);
+  border-radius: var(--radio-lg);
+  overflow: hidden; text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.2s ease;
+}
+a.recorrido:hover {
+  transform: translateY(-3px);
+  border-color: var(--acento);
+  box-shadow: var(--sombra);
+}
+.recorrido__foto {
+  position: relative;
+  aspect-ratio: 3 / 2; width: 100%; object-fit: cover;
+  background: linear-gradient(135deg, #1a1e24, #23272e);
+}
+.recorrido__cuerpo { padding: var(--e-4); }
+.recorrido__ubicacion {
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--acento);
+}
+.recorrido__nombre { font-size: 1.05rem; font-weight: 650; margin-top: var(--e-1); }
+.recorrido__tipo {
+  display: inline-block; margin-top: var(--e-3);
+  font-size: 0.75rem; font-weight: 600; color: var(--tx-medio);
+  padding: 3px var(--e-3);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--sup-borde);
+  border-radius: var(--radio-pill);
+}
+
+/* Etiqueta "Ver recorrido" sobre la foto.
+   En táctil (sin hover) se muestra siempre; con ratón, aparece al pasar. */
+.recorrido__cta {
+  position: absolute; top: var(--e-3); right: var(--e-3);
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.75rem; font-weight: 650;
+  color: var(--acento-tx); background: var(--acento);
+  padding: 5px var(--e-3); border-radius: var(--radio-pill);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+@media (hover: hover) {
+  .recorrido__cta { opacity: 0; transform: translateY(-4px); }
+  a.recorrido:hover .recorrido__cta,
+  a.recorrido:focus-visible .recorrido__cta { opacity: 1; transform: translateY(0); }
+}
+
+/* Destacados: en escritorio ocupan las dos columnas (ver @media). */
+.recorrido--destacado .recorrido__nombre { font-size: 1.15rem; }
+
+/* Tarjeta "Próximamente": atenuada y sin enlace. */
+.recorrido--proximamente { opacity: 0.55; cursor: default; }
+.recorrido--proximamente .recorrido__foto {
+  aspect-ratio: 3 / 2;
+  display: grid; place-items: center;
+}
+.recorrido__proxlabel {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--tx-suave);
+}
+
+/* Aviso dentro de la galería (JSON vacío o con error). Nunca página en blanco. */
+.galeria__aviso {
+  grid-column: 1 / -1;
+  text-align: center; color: var(--tx-medio);
+  padding: var(--e-7) var(--e-4);
+  background: var(--sup-panel-solido);
+  border: 1px dashed var(--sup-borde);
+  border-radius: var(--radio-lg);
+}
+.galeria__aviso.--error { border-color: rgba(217, 154, 78, 0.5); color: var(--tx-fuerte); }
+.galeria__aviso button {
+  margin-top: var(--e-3);
+  padding: var(--e-2) var(--e-5); min-height: 42px; font-weight: 600;
+  color: var(--acento-tx); background: var(--acento); border-radius: var(--radio-pill);
+}
+
+/* --- 7. Sección "Paquetes y precios" ------------------------------- */
+.planes {
+  display: grid; grid-template-columns: 1fr; gap: var(--e-4);
+  margin-top: var(--e-6);
+}
+.plan {
+  display: flex; flex-direction: column;
+  padding: var(--e-5);
+  background: var(--sup-panel-solido);
+  border: 1px solid var(--sup-borde);
+  border-radius: var(--radio-lg);
+}
+.plan--destacado {
+  border-color: var(--acento);
+  box-shadow: 0 0 0 1px var(--acento), var(--sombra);
+}
+.plan__insignia {
+  align-self: flex-start;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--acento-tx); background: var(--acento);
+  padding: 3px var(--e-3); border-radius: var(--radio-pill);
+  margin-bottom: var(--e-3);
+}
+.plan__nombre { font-size: 1.1rem; font-weight: 700; }
+.plan__para { color: var(--tx-suave); font-size: 0.85rem; margin-top: 2px; }
+.plan__precio {
+  font-size: 2rem; font-weight: 700; letter-spacing: -0.01em;
+  margin: var(--e-3) 0 var(--e-4);
+}
+.plan__precio span { font-size: 0.85rem; font-weight: 550; color: var(--tx-suave); }
+.plan__lista { list-style: none; display: grid; gap: var(--e-2); }
+.plan__lista li {
+  position: relative; padding-left: var(--e-5);
+  color: var(--tx-medio); font-size: 0.9rem;
+}
+.plan__lista li::before {
+  content: ""; position: absolute; left: 0; top: 0.5em;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--acento); opacity: 0.8;
+}
+
+.precios__nota {
+  margin-top: var(--e-5); color: var(--tx-suave); font-size: 0.85rem;
+  max-width: 60ch;
+}
+.precios__nota strong { color: var(--acento-claro); font-weight: 650; }
+
+/* --- 8. Sección "Contacto" --------------------------------------- */
+.contacto__caja {
+  margin-top: var(--e-6);
+  padding: var(--e-6);
+  background: radial-gradient(circle at 20% 0%, #1a1e24, var(--sup-panel-solido) 70%);
+  border: 1px solid var(--sup-borde);
+  border-radius: var(--radio-lg);
+}
+.contacto__acciones { display: flex; flex-wrap: wrap; gap: var(--e-3); margin-top: var(--e-4); }
+.contacto__todo {
+  margin-top: var(--e-4); font-size: 0.8rem; color: var(--tx-suave);
+}
+
+/* --- 9. Pie de página ------------------------------------------ */
+.pie {
+  border-top: 1px solid var(--sup-borde);
+  padding-block: var(--e-6) calc(var(--safe-bottom) + var(--e-6));
+  color: var(--tx-suave); font-size: 0.8rem;
+}
+.pie__fila { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-3); }
+
+/* --- 10. Escritorio / tablet --------------------------------- */
+@media (min-width: 720px) {
+  .contenedor { padding-inline: var(--e-6); }
+  .seccion { padding-block: var(--e-9); }
+
+  .pilares { grid-template-columns: repeat(2, 1fr); }
+
+  .galeria { grid-template-columns: repeat(2, 1fr); }
+  /* Un recorrido destacado ocupa el ancho completo y muestra la foto más grande. */
+  .recorrido--destacado { grid-column: 1 / -1; flex-direction: row; }
+  .recorrido--destacado .recorrido__foto { width: 58%; aspect-ratio: auto; min-height: 300px; }
+  .recorrido--destacado .recorrido__cuerpo { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
+
+  .planes { grid-template-columns: repeat(3, 1fr); align-items: start; }
+  .plan--destacado { transform: translateY(-8px); }
+
+  .contacto__caja { padding: var(--e-8); }
+}
+
+@media (min-width: 1000px) {
+  .pilares { grid-template-columns: repeat(3, 1fr); }
+  .hero__contenido { max-width: 46ch; }
+}
+
+/* --- Accesibilidad: menos movimiento ------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}

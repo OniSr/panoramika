@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <title>Panorámika — Visualización de propiedades en Xalapa</title>
+  <meta name="description" content="Hacemos que una propiedad se vea premium: aérea con dron, video recorrido, 360 y fotografía editada, todo en un solo link con marca Panorámika. Xalapa, Veracruz." />
+  <meta name="theme-color" content="#0d0f12" />
+
+  <!-- Esta página SÍ queremos que la indexen los buscadores (al revés que capturar/). -->
+  <meta name="robots" content="index, follow" />
+
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+
+  <!-- Vista previa al compartir el enlace (WhatsApp, Facebook, Telegram…). -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Panorámika — Visualización de propiedades" />
+  <meta property="og:description" content="Aérea, video recorrido, 360 y fotografía. La mezcla que le sirva a la propiedad, en un link con tu marca." />
+  <meta property="og:image" content="assets/og-imagen.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="stylesheet" href="portafolio.css" />
+</head>
+
+<body>
+
+  <!-- ====================================================================
+       1 · HERO — carta de presentación
+       ==================================================================== -->
+  <header class="hero">
+    <div class="contenedor hero__contenido">
+      <div class="marca hero__marca">
+        <span class="marca__punto" aria-hidden="true"></span>
+        <span class="marca__texto">Panorámika</span>
+      </div>
+
+      <h1 class="hero__titulo">
+        Que cada propiedad se vea <em>como se merece</em>.
+      </h1>
+
+      <p class="hero__propuesta">
+        Aérea con dron, video recorrido, 360 y fotografía editada — la mezcla que
+        le sirva a esa propiedad. Hecho por nosotros, rápido y a precio justo,
+        todo en un solo link con tu marca. Xalapa, Veracruz.
+      </p>
+
+      <div class="hero__acciones">
+        <a class="btn-primario" href="#recorridos">Ver recorridos</a>
+        <a class="btn-secundario" href="#precios">Paquetes y precios</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ==================================================================
+         2 · QUÉ HACEMOS — el paquete (ESTRATEGIA.md §2b)
+         ================================================================== -->
+    <section class="seccion" id="que-hacemos" aria-labelledby="tit-que-hacemos">
+      <div class="contenedor">
+        <p class="seccion__kicker">El paquete</p>
+        <h2 class="seccion__titulo" id="tit-que-hacemos">Una propiedad, varias técnicas</h2>
+        <p class="seccion__bajada">
+          Un comprador no compra una tecnología, compra un resultado: entender el
+          espacio antes de ir a verlo. Usamos la herramienta que mejor le sienta a
+          cada propiedad.
+        </p>
+
+        <ul class="pilares">
+          <!-- Cada ícono es SVG en línea (trazo, 24×24), sin librerías. -->
+
+          <li class="pilar">
+            <span class="pilar__ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="5" cy="5" r="2.5"/><circle cx="19" cy="5" r="2.5"/>
+                <circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/>
+                <path d="M7 7l3 3M17 7l-3 3M7 17l3-3M17 17l-3-3"/>
+                <rect x="9.5" y="9.5" width="5" height="5" rx="1"/>
+              </svg>
+            </span>
+            <div>
+              <p class="pilar__titulo">Aérea con dron</p>
+              <p class="pilar__texto">Contexto de zona y "entrar desde el cielo" a la propiedad. Nuestro punto más fuerte hoy.</p>
+            </div>
+          </li>
+
+          <li class="pilar">
+            <span class="pilar__ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="14" height="12" rx="2"/>
+                <path d="M16 10l6-3v10l-6-3z"/>
+              </svg>
+            </span>
+            <div>
+              <p class="pilar__titulo">Video recorrido</p>
+              <p class="pilar__texto">El flujo real y las proporciones honestas del espacio. Ideal en depas chicos.</p>
+            </div>
+          </li>
+
+          <li class="pilar">
+            <span class="pilar__ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/>
+                <ellipse cx="12" cy="12" rx="4" ry="9"/>
+                <path d="M3 12h18"/>
+              </svg>
+            </span>
+            <div>
+              <p class="pilar__titulo">360 de espacios héroe</p>
+              <p class="pilar__texto">Explorar libremente sala, recámara o terraza, con salto entre tomas tipo Street View.</p>
+            </div>
+          </li>
+
+          <li class="pilar">
+            <span class="pilar__ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L19 6h0a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <circle cx="12" cy="12.5" r="3.5"/>
+              </svg>
+            </span>
+            <div>
+              <p class="pilar__titulo">Fotografía fija editada</p>
+              <p class="pilar__texto">Portada del anuncio y fichas, con edición y retoque. Siempre incluida.</p>
+            </div>
+          </li>
+
+          <li class="pilar">
+            <span class="pilar__ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/>
+                <path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>
+              </svg>
+            </span>
+            <div>
+              <p class="pilar__titulo">Página de marca</p>
+              <p class="pilar__texto">Un solo enlace compartible, sin login, con tu marca. Nosotros alojamos y damos mantenimiento.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         3 · RECORRIDOS — galería desde proyectos/recorridos.json
+         ================================================================== -->
+    <section class="seccion seccion--borde" id="recorridos" aria-labelledby="tit-recorridos">
+      <div class="contenedor">
+        <p class="seccion__kicker">Portafolio</p>
+        <h2 class="seccion__titulo" id="tit-recorridos">Recorridos</h2>
+        <p class="seccion__bajada">
+          Ejemplos navegables. Toca una tarjeta para abrir el recorrido completo.
+        </p>
+
+        <!-- El JS pinta aquí las tarjetas. Si el JSON falla o está vacío,
+             muestra un aviso dentro de este contenedor (nunca queda en blanco). -->
+        <div class="galeria" id="galeria" aria-live="polite" aria-busy="true">
+          <p class="galeria__aviso" id="galeriaEstado">Cargando recorridos…</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         4 · PAQUETES Y PRECIOS (ESTRATEGIA.md §6)
+         ================================================================== -->
+    <section class="seccion seccion--borde" id="precios" aria-labelledby="tit-precios">
+      <div class="contenedor">
+        <p class="seccion__kicker">Inversión</p>
+        <h2 class="seccion__titulo" id="tit-precios">Paquetes y precios</h2>
+        <p class="seccion__bajada">
+          Precios en pesos, pago único. El hospedaje del link va incluido 3 meses;
+          después, renovación anual con cambios de estatus y de fotos.
+        </p>
+
+        <div class="planes">
+
+          <article class="plan">
+            <h3 class="plan__nombre">Esencial</h3>
+            <p class="plan__para">Rentas y departamentos chicos</p>
+            <p class="plan__precio">$2,200</p>
+            <ul class="plan__lista">
+              <li>15–18 fotos editadas</li>
+              <li>Video recorrido de 45–60 s (vertical y horizontal)</li>
+              <li>Página de marca con link</li>
+              <li>Entrega en 72 horas</li>
+            </ul>
+          </article>
+
+          <article class="plan plan--destacado">
+            <span class="plan__insignia">El más pedido</span>
+            <h3 class="plan__nombre">Completo</h3>
+            <p class="plan__para">Venta de casa o departamento</p>
+            <p class="plan__precio">$3,900</p>
+            <ul class="plan__lista">
+              <li>25–30 fotos editadas</li>
+              <li>Video recorrido de 60–90 s</li>
+              <li>Aérea con dron (fotos + clip)</li>
+              <li>360 de 2–3 espacios héroe con hotspots</li>
+              <li>Página de marca · entrega en 72 horas</li>
+            </ul>
+          </article>
+
+          <article class="plan">
+            <h3 class="plan__nombre">Premium</h3>
+            <p class="plan__para">Casas grandes y hoteles boutique</p>
+            <p class="plan__precio">$6,900</p>
+            <ul class="plan__lista">
+              <li>40+ fotos con edición extra y tomas al atardecer</li>
+              <li>Video de 2–3 min</li>
+              <li>Aérea completa</li>
+              <li>360 de todos los espacios, navegación tipo Street View</li>
+              <li>Plano 2D si aplica</li>
+            </ul>
+          </article>
+
+        </div>
+
+        <p class="precios__nota">
+          Add-ons: foto extra $90 · escena 360 extra $500 · viáticos fuera de
+          Xalapa a costo + 15%. Estamos arrancando en Xalapa:
+          <strong>consúltanos por la promoción de arranque</strong> a cambio de
+          permiso de portafolio y reseña.
+        </p>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         5 · CONTACTO — placeholders (Daniel pone los datos reales)
+         Sin formularios: nada que envíe datos a ningún lado.
+         ================================================================== -->
+    <section class="seccion seccion--borde" id="contacto" aria-labelledby="tit-contacto">
+      <div class="contenedor">
+        <p class="seccion__kicker">Hablemos</p>
+        <h2 class="seccion__titulo" id="tit-contacto">¿Tienes una propiedad que mostrar?</h2>
+        <p class="seccion__bajada">
+          Cuéntanos qué propiedad es y en 72 horas tienes el link listo para
+          compartir.
+        </p>
+
+        <div class="contacto__caja">
+          <div class="contacto__acciones">
+            <!-- TODO(Daniel): reemplazar por el número real, formato internacional
+                 sin signos: https://wa.me/52XXXXXXXXXX -->
+            <a class="btn-primario" href="https://wa.me/520000000000" target="_blank" rel="noopener">
+              Escribir por WhatsApp
+            </a>
+            <!-- TODO(Daniel): reemplazar por el correo real de Panorámika -->
+            <a class="btn-secundario" href="mailto:hola@panoramika.mx">
+              hola@panoramika.mx
+            </a>
+          </div>
+          <p class="contacto__todo">
+            (Datos de ejemplo — pendientes de reemplazar por los reales.)
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ====================================================================
+       6 · PIE
+       ==================================================================== -->
+  <footer class="pie">
+    <div class="contenedor pie__fila">
+      <span>Hecho en Xalapa · recorridos alojados en Panorámika</span>
+      <span>© <span id="anio">2026</span> Panorámika</span>
+    </div>
+  </footer>
+
+  <script src="portafolio.js"></script>
+</body>
+</html>
