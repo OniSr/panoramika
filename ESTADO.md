@@ -160,35 +160,52 @@ son placeholders hasta tener fotos).
 ## Próximas tareas (orden sugerido)
 
 > **Giro de rumbo (sep 2026):** el producto es *visualización de propiedades*, no
-> "un 360". Paquete = aérea + video recorrido (Daniel graba a pulso con el iPhone,
-> sin gimbal) + 360 de espacios héroe + foto + página de marca. Ver `ESTRATEGIA.md`
-> §2b. No hay clientes; prioridad = 1-2 propiedades-portafolio para salir a vender.
+> "un 360". Paquete = aérea + video recorrido + 360 de espacios héroe + foto +
+> página de marca. Ver `ESTRATEGIA.md` §2b. No hay clientes; prioridad = arrancar
+> a vender **terrenos/lotes en Xalapa** con portafolio demo. Plan y prospectos
+> concretos (contactos, pitch, entrada de precio): `ESTRATEGIA.md` §10.
 
-1. **Daniel: completar el DEPA** como propiedad-portafolio (cada espacio; 360
-   donde luzca, video para el flujo y los espacios chicos). Documentar una
-   **segunda propiedad de respaldo**. Captura 360: tripié MÁS ALTO que barras/
-   muebles y al centro; espacios en "L" o largos → 2 puntos + hotspot.
-   - **Cocina v17 ✅** (sobre la barra, la esquina ya aparece).
-   - **Sala: re-tomar despejada** (ahora está llena de cajas); colgar algo en las
-     paredes grandes lisas.
-   - Cuidar el **video del exterior** (23 s, 1080p, recibido) para la escena
-     "video" del recorrido.
-2. **FITACH — escena tipo "video"** en el visor: embeber YouTube/Vimeo sin listar
-   en una escena, misma página de marca que los 360. No toca el motor Pannellum.
-3. **FITACH — página índice / portafolio** que liste los recorridos (carta de
-   presentación para brokers) + sección "paquete y precios" (rangos ya definidos
-   en `ESTRATEGIA.md` §6: Esencial $2,200 / Completo $3,900 / Premium $6,900).
-   - **Comprar dominio propio** (`panoramika.mx` o `.com.mx`) — lo paga Panorámika,
-     todos los recorridos viven ahí (`ESTRATEGIA.md` §8).
-4. **FITACH (opcional) — `armar-esfera.sh` más robusto:** avisar qué dirección se
-   quedó sin cobertura en vez de fallar callado; anclar a la posición sembrada las
-   fotos que no se atan (esquina movida > muro en blanco).
-5. Afinar el texto curvado del nadir en `tapar_polos.py` (baja prioridad).
-6. Reemplazar placeholders de `depto-lagos` por fotos reales; ajustar marcador de
-   la propiedad en la aérea.
-7. Después (features tipo "La Rosa"): PLANO 2D, selector de unidades/lotes
-   (`archivo-nextjs`), toggle amueblado/vacío, transiciones finas.
-8. Marketing: embudo social + propiedad-portafolio impecable como carta.
+> **Cambio de herramienta de captura interior (sep 2026):** dejamos de pelear el
+> asistente `capturar/` propio. Daniel captura interiores con **Travvir** (~$5
+> USD/mes) o **Teleport** (gratis) — cosen en el teléfono y exportan la
+> equirectangular. El pipeline solo hace WebP + `proyecto.json` + publicar (salta
+> Hugin). El asistente propio y las mejoras (poses.json, guía) quedan para "algún
+> día". El dron sí sigue con `armar-esfera.sh` (aéreo cose confiable).
+
+### Alturas de dron para 360 de lotes
+- **Overview**: 60–100 m sobre el centro del fraccionamiento → 1 escena inicial.
+- **Por lote**: 15–25 m sobre cada lote → límites, vecinos, acceso y **la vista**.
+- Evitar < 10 m (viento de hélices, sales en cuadro) y > 120 m (techo legal AFAC).
+- Hora dorada. Cada 360 = una escena; hotspots lote↔lote.
+
+### Legal dron — El Lencero (antes de facturar)
+- México: prohibido volar a < 9.2 km de aeropuerto controlado sin plan de vuelo +
+  autorización AFAC. **El Lencero** está en Emiliano Zapata (SE de Xalapa, ~13 km
+  del centro). Zonas al SE/S de Xalapa (Las Cruces, hacia Coatepec) pueden caer
+  dentro; NW/N (Las Ánimas, Alto Lucero) probablemente libres.
+- **Chequeo práctico:** abrir **DJI Fly** en las coordenadas del lote y ver la
+  zona GEO (verde/amarillo/rojo). El Mini 3 (249 g) igual respeta la zona.
+- Para **cobrar** (uso comercial): registrar el dron en AFAC.
+
+### Fitachs
+1. **FITACH — escena tipo "video"** en el visor 🔄 EN CURSO (sub-agente, worktree).
+   Escena con `"tipo":"video"` + `"video"` (YouTube/Vimeo/mp4 local). No toca el
+   motor Pannellum. Video de prueba: `assets/demo/exterior.mp4` (23 s, PORTRAIT
+   1080×1920 — el CSS debe tolerar 9:16). Ricardo integra al terminar.
+2. **FITACH — página portafolio** 🔄 EN CURSO (sub-agente, worktree).
+   `portafolio.html` + `portafolio.css` + `proyectos/recorridos.json` (manifiesto).
+   Galería de recorridos + qué hacemos (§2b) + precios (§6) + contacto placeholder.
+3. **Comprar dominio** (`panoramika.mx` / `.com.mx`) — lo paga Panorámika (§8).
+4. **Daniel**: completar el depa portafolio con Travvir/Teleport + re-tomar la
+   sala despejada. Video del exterior ya recibido y transcodificado.
+5. **FITACH (opcional) — `armar-esfera.sh` aún más robusto:** ya tolera disparos
+   perdidos + fallback de costuras; falta avisar qué dirección quedó sin cobertura.
+6. Afinar texto curvado del nadir en `tapar_polos.py` (baja prioridad).
+7. Reemplazar placeholders de `depto-lagos`; ajustar marcador en la aérea.
+8. Después (tipo "La Rosa"): PLANO 2D, **selector de lotes/polígonos**
+   (`archivo-nextjs`) ← esto es la "maqueta interactiva" que piden los
+   lotificadores, prioridad sube; toggle amueblado/vacío, transiciones finas.
+9. Marketing: embudo social + portafolio demo impecable como carta.
 
 ## Decisiones tomadas (no re-litigar)
 

@@ -351,7 +351,55 @@ predecible. Es el puente a la Capa 4 (licencia a otras ciudades).
 
 ---
 
-## 10. Frase para tener clara
+## 10. Arranque comercial — terrenos en Xalapa (sep 2026)
+
+### Plan de arranque acordado con Daniel
+1. **Dron**: 360 de lotes (1 overview a ~80 m + 1 por lote a ~15-25 m) + video de
+   acercamiento + fotos fijas. El 360 aéreo cose confiable (sin paralaje). Ver
+   alturas en `ESTADO.md`.
+2. **Interior** (para el depa portafolio): app dedicada que cose en el teléfono
+   (**Travvir** ~$5 USD/mes, o **Teleport** gratis) → exporta equirectangular →
+   Drive → pipeline solo hace WebP + `proyecto.json` + publicar. Salta Hugin.
+   El asistente `capturar/` propio queda para "algún día".
+3. Espacios chicos / con cajas / vacíos → **video**, no 360.
+4. Con el primer o segundo cobro → cámara 360 usada (~$150-300 USD).
+
+### Lo que se ve en el mercado (screenshots de Daniel + búsqueda)
+- **Varios vendedores de lotes activos en Xalapa**, anunciando fuerte en
+  FB/IG/Marketplace con **gráficos hechos con IA + mapa de lotes PLANO (imagen)** +
+  WhatsApp. Compiten en precio sobre lotes baratos ejido/rústico ($65k) con
+  urgencia ("último día", "los precios corren").
+- **Varios reclutan asesores/brokers con comisión** → receptivos a alianzas.
+- **Decreto que termina la creación de nuevos fraccionamientos en Xalapa** → los
+  que existen deben VENDER su inventario, sin competencia nueva entrando. Argumento
+  de venta: "ayúdate a vender más rápido tu inventario finito".
+- El ángulo comprador EUA/Canadá lo trabajan agencias (Meraki, DESUR) → §5-C real.
+
+### Prospectos concretos (frío, pero calientes: ya gastan en marketing)
+| Prospecto | Qué venden | Contacto | Por qué encaja |
+|---|---|---|---|
+| **Raíz Noble — "Valle Dorado"** (Leonardo Astur) | Lotes 120 m², Carr. Xalapa–Alto Lucero | WA **228 243 0839**, FB Marketplace | **Ya tienen mapa de lotes plano** → la maqueta interactiva es un upgrade directo y visible |
+| **Bienes Raíces JTM — "Terrenos Veracruz a tu alcance"** | Lotes 105 m² (7×15), Las Cruces | WA **229 529 5028**, FB/IG @bienesraicesjtm | Anuncian a diario con gráficos IA; presupuesto de marketing evidente |
+| **Valle Rubí** (Las Ánimas) | Terrenos 250–2,800 m², $7,800/m² | vía anuncios FB (buscar) | Mapa plano de Google; "comisiones para asesores & brokers" → alianza |
+| **Los Almendros Residencial** | Lotes residenciales, fracc. consolidado | administracion@losalmendrosresidencial.com, 33-1199-5646 | Ticket más alto, plusvalía; "última oportunidad" por el decreto |
+| **Nuevo Coapexpan Residencial** | Lotes 600–2,000 m², campestre alto nivel | nuevocoapexpan.com | Nivel alto → paquete Premium |
+
+Inmobiliarias que mueven terrenos (posible Capa 3 / §9): GALVA, Desarrollos
+Cumbres, InmobiHaus, AVA Bienes Raíces, PB&V, Terrenos Xalapa (Pixan).
+
+### Entrada de venta
+- **La primera al costo/regalada**: base ~$6,000-8,000 flat por todo el
+  fraccionamiento (dron + maqueta interactiva + 360 de 2-3 lotes) a cambio de
+  showcase de portafolio + testimonio + referidos. Full price (§7) a partir de la 2ª.
+- **El gancho**: "tu competencia usa un mapa en JPG y WhatsApp. Con esto el cliente
+  entra desde el cielo, ve su lote, ve la vista real, y aparta por el chat — sin
+  ir hasta allá." Se lo enseñas en el celular, en 30 segundos.
+- **Antes de facturar con dron**: registro AFAC + revisar zona de El Lencero
+  (ver `ESTADO.md`). El Mini 3 (249 g) igual respeta la zona del aeropuerto.
+
+---
+
+## 11. Frase para tener clara
 
 > No competimos con las plataformas de preventa. Hacemos que **cualquier
 > propiedad que ya existe** se vea profesional —aérea, video recorrido, 360 y
