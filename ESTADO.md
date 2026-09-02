@@ -188,18 +188,29 @@ son placeholders hasta tener fotos).
 - Para **cobrar** (uso comercial): registrar el dron en AFAC.
 
 ### Fitachs
-1. **Escena tipo "video" en el visor ✅** (commit 8301a5d). Escena de
-   `proyecto.json` con `"tipo":"video"` + `"video"` (URL YouTube/Vimeo o `.mp4`
-   local relativo al proyecto). Chip `▶` en la barra; un hotspot de una 360 puede
-   saltar a ella. No toca Pannellum para las 360. Al volver de un video →
-   `visor.resize()`. `index.html` ahora con cache-bust `?v=2`. Demo:
-   `?proyecto=demo-recorrido` (cocina 360 + exterior.mp4 vertical). Esquema en la
-   skill `add-panorama`.
+1. **Escena tipo "video" en el visor ✅** (commit 8301a5d). `"tipo":"video"` +
+   `"video"` (URL YouTube/Vimeo o `.mp4` local). Chip `▶`. `visor.resize()` al
+   volver. Demo: `?proyecto=demo-recorrido`.
 2. **Página portafolio ✅** (commit 420c36b). `portafolio.html` en vivo.
-3. **Comprar dominio** (`panoramika.mx` / `.com.mx`) — lo paga Panorámika (§8).
+3. **Escena tipo "mapa-lotes" ✅ (LA MAQUETA)** (commit 72ed71c). `"tipo":"mapa-lotes"`
+   + `"imagen"` (aérea) + `"lotes"` (polígonos en % de la imagen, `estatus`
+   disponible/apartado/vendido, `m2`/`precio`/`nota` opcionales, `escena` opcional
+   para saltar a un 360). Toca un lote → panel con datos + botón "Ver en 360".
+   Leyenda + zoom. **`?editar=1`** = editor: clic pone vértices, "Copiar JSON"
+   vuelca los `lotes` listos para pegar. Demo: `?proyecto=demo-lotes` (y
+   `&editar=1`). Cache-bust del visor ahora `?v=3`. Esquema en skill `add-panorama`.
+4. **Comprar dominio** (`panoramika.mx` / `.com.mx`) — lo paga Panorámika (§8).
    PENDIENTE.
-4. **Poner contacto real** en `portafolio.html` (WhatsApp + correo, marcados
-   `TODO(Daniel)`).
+5. **Poner contacto real** en `portafolio.html` (WhatsApp + correo, `TODO(Daniel)`).
+
+### Flujo para armar una maqueta de lotes (para vender a lotificadores)
+1. Imagen base: screenshot de **Google Earth satélite** de la zona (o aérea del
+   dron después). Optimizar → `proyectos/<slug>/mapa/aerea.webp`.
+2. `cp -r proyectos/_plantilla proyectos/<slug>`, editar `proyecto.json`: 1 escena
+   `"tipo":"mapa-lotes"` con `"imagen"` y `"lotes": []`.
+3. Abrir `index.html?proyecto=<slug>&editar=1` → trazar cada lote clic a clic →
+   "Copiar JSON" → pegar en `lotes`. Ajustar `estatus`/`precio`/`m2`/`nota` a mano.
+4. commit + push. Enlace: `?proyecto=<slug>`.
 4. **Daniel**: completar el depa portafolio con Travvir/Teleport + re-tomar la
    sala despejada. Video del exterior ya recibido y transcodificado.
 5. **FITACH (opcional) — `armar-esfera.sh` aún más robusto:** ya tolera disparos
