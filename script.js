@@ -30,7 +30,7 @@
 /* ============================================================================
    PASO 1 · CONFIGURACIÓN
    ========================================================================== */
-const PROYECTO_POR_DEFECTO = "xalapa-demo";
+const PROYECTO_POR_DEFECTO = "depto-lagos";
 const PANNELLUM_LOCAL_JS = "vendor/pannellum/pannellum.js";
 
 /* Modo editor de polígonos para las escenas "mapa-lotes": SOLO se activa con

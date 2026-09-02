@@ -1,57 +1,23 @@
 [
   {
-    "slug": "xalapa-demo",
-    "nombre": "Terreno en Las Ánimas",
-    "tipo": "Terreno",
-    "publico": true
+    "slug": "depto-lagos",
+    "nombre": "Departamento — Los Lagos, Xalapa",
+    "tipo": "Departamento",
+    "publico": true,
+    "nota": "Propiedad-portafolio (real). Recorrido en secuencia: aérea → video del exterior → cocina → cuarto. La mira/hotspot de la aérea aún hay que ajustarla al edificio."
   },
   {
     "slug": "demo-lotes",
     "nombre": "Fraccionamiento demo — mapa de lotes",
     "tipo": "Terreno",
     "publico": false,
-    "nota": "Demo de la maqueta de lotes (la aérea es una imagen sustituta). Ábrelo con &editar=1 para trazar polígonos."
-  },
-  {
-    "slug": "prueba-v15-cocina",
-    "nombre": "Departamento — cocina y estancia",
-    "tipo": "Departamento",
-    "publico": true,
-    "nota": "Esfera de cocina v17: la mejor toma de interior hasta ahora."
-  },
-  {
-    "slug": "depto-lagos",
-    "nombre": "Departamento en renta — Los Lagos",
-    "tipo": "Departamento",
-    "publico": false,
-    "nota": "Piloto real: la aérea del dron está bien; fachada, sala y recámara son placeholders hasta tener fotos."
+    "nota": "Demo de la función 'mapa-lotes' (la aérea es una imagen sustituta). Ábrelo con &editar=1 para trazar polígonos. Se reemplaza cuando lleguen los 360 de Watusco / El Castillo."
   },
   {
     "slug": "demo-recorrido",
-    "nombre": "Demo recorrido — 360 + video",
-    "tipo": "Departamento",
+    "nombre": "Demo — escena de video",
+    "tipo": "Otro",
     "publico": false,
-    "nota": "Mixto: una escena 360 + una escena de video. Sirve de demo del tipo de escena \"video\"."
-  },
-  {
-    "slug": "prueba-v14",
-    "nombre": "Prueba v14 — captura gran angular",
-    "tipo": "Departamento",
-    "publico": false,
-    "nota": "Prueba de pipeline (32 fotos, lente gran angular). No es un recorrido comercial."
-  },
-  {
-    "slug": "prueba-v15",
-    "nombre": "Prueba v15 — 3 filas (fila de nivel)",
-    "tipo": "Departamento",
-    "publico": false,
-    "nota": "Prueba de pipeline (48 fotos, 3 vueltas). No es un recorrido comercial."
-  },
-  {
-    "slug": "prueba-v17-sala",
-    "nombre": "Prueba v17 — sala",
-    "tipo": "Departamento",
-    "publico": false,
-    "nota": "Prueba de pipeline (sala llena de cajas de mudanza). No es imagen vendible."
+    "nota": "Demo de la función 'video' (360 + video). Referencia interna, no es un recorrido comercial."
   }
 ]
