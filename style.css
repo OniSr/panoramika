@@ -31,6 +31,12 @@
   --ok:    #46b17a;
   --wa:    #25d366;   /* verde WhatsApp */
 
+  /* Estatus de lote (mapa de lotes): verde / ámbar / teja apagados, en la
+     línea cálida y sobria de la paleta (no colores de semáforo saturados). */
+  --lote-disponible: #5aa17a;
+  --lote-apartado:   #cf9a4a;
+  --lote-vendido:    #c26a5c;
+
   --fuente: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
             "Helvetica Neue", Arial, sans-serif;
 
@@ -122,6 +128,193 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 }
 .nav-escena--video[aria-current="true"] .nav-escena__ico {
   background: rgba(0, 0, 0, 0.18); color: inherit;
+}
+/* Chip de mapa de lotes: mismo patrón de acento que el de video. */
+.nav-escena--mapa .nav-escena__ico {
+  background: var(--acento-tinte); color: var(--acento-claro);
+}
+.nav-escena--mapa[aria-current="true"] .nav-escena__ico {
+  background: rgba(0, 0, 0, 0.18); color: inherit;
+}
+
+/* --- 3c. Capa de mapa de lotes (escena "tipo": "mapa-lotes") -------- */
+/* Ocupa la misma área que el visor 360; la barra y el selector (z 20) quedan
+   por encima y siguen funcionando. */
+#mapaLotes {
+  position: fixed; inset: 0; z-index: 10;
+  background: var(--sup-fondo);
+}
+/* El viewport recorta; el lienzo (img + svg) es lo que se mueve y escala. */
+.mapa-lotes__viewport {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  overflow: hidden;
+  touch-action: none;          /* el paneo / pellizco lo maneja el JS */
+  cursor: default;
+}
+.mapa-lotes__viewport.--ampliado { cursor: grab; }
+.mapa-lotes__lienzo {
+  position: relative;
+  display: inline-block;       /* se ajusta al tamaño real de la imagen */
+  max-width: 100%;
+  transform-origin: center center;
+  will-change: transform;
+  line-height: 0;
+}
+.mapa-lotes__img {
+  display: block;
+  max-width: 100%;
+  max-height: 100vh; max-height: 100dvh;
+  width: auto; height: auto;
+  user-select: none; -webkit-user-drag: none;
+}
+/* preserveAspectRatio="none" en el SVG: se estira EXACTO al cuadro de la imagen,
+   así "x,y" en % siempre cae en el mismo punto de la foto. */
+.mapa-lotes__svg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  overflow: visible;
+}
+
+/* Polígono de un lote. El borde usa vector-effect:non-scaling-stroke (en el JS)
+   para no deformarse con el estiramiento no uniforme del SVG. */
+.mapa-lote {
+  fill-opacity: 0.28;
+  stroke-width: 1.5;
+  cursor: pointer;
+  transition: fill-opacity 0.15s ease;
+}
+.mapa-lote--disponible { fill: var(--lote-disponible); stroke: var(--lote-disponible); }
+.mapa-lote--apartado   { fill: var(--lote-apartado);   stroke: var(--lote-apartado); }
+.mapa-lote--vendido    { fill: var(--lote-vendido);    stroke: var(--lote-vendido); }
+.mapa-lote:hover { fill-opacity: 0.5; }
+.mapa-lote:focus { outline: none; }
+.mapa-lote:focus-visible { fill-opacity: 0.5; outline: 2px solid var(--acento-claro); outline-offset: 1px; }
+.mapa-lote--activo { fill-opacity: 0.62; stroke-width: 3; }
+/* En modo editor los polígonos de datos no estorban el trazado. */
+.mapa-lotes__svg--editor .mapa-lote { opacity: 0.35; pointer-events: none; }
+
+/* Etiqueta con el id del lote (span en %, no <text> del SVG). */
+.mapa-lote__tag {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 1px 6px;
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.02em;
+  color: var(--tx-fuerte);
+  background: rgba(13, 15, 18, 0.6);
+  border-radius: var(--radio-pill);
+  white-space: nowrap; pointer-events: none;
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+}
+
+/* Leyenda de estatus (abajo-izquierda, sobre el selector). */
+.mapa-lotes__leyenda {
+  position: absolute; z-index: 12;
+  left: var(--e-4); bottom: calc(var(--safe-bottom) + 84px);
+  display: flex; flex-wrap: wrap; gap: var(--e-2) var(--e-3);
+  padding: var(--e-2) var(--e-3);
+  font-size: 0.72rem; color: var(--tx-medio);
+  background: var(--sup-panel);
+  -webkit-backdrop-filter: var(--difuminado); backdrop-filter: var(--difuminado);
+  border: 1px solid var(--sup-borde); border-radius: var(--radio);
+}
+.mapa-lotes__leyenda-item { display: inline-flex; align-items: center; gap: 6px; }
+.mapa-lotes__punto { width: 10px; height: 10px; border-radius: 3px; }
+.mapa-lotes__punto--disponible { background: var(--lote-disponible); }
+.mapa-lotes__punto--apartado   { background: var(--lote-apartado); }
+.mapa-lotes__punto--vendido    { background: var(--lote-vendido); }
+
+/* Botones de zoom (abajo-derecha). */
+.mapa-lotes__zoom {
+  position: absolute; z-index: 12;
+  right: var(--e-4); bottom: calc(var(--safe-bottom) + 84px);
+  display: flex; flex-direction: column;
+}
+.mapa-lotes__zoom-btn {
+  width: 40px; height: 40px; display: grid; place-items: center;
+  font-size: 1.3rem; font-weight: 500; color: var(--tx-fuerte);
+  background: var(--sup-panel);
+  -webkit-backdrop-filter: var(--difuminado); backdrop-filter: var(--difuminado);
+  border: 1px solid var(--sup-borde);
+}
+.mapa-lotes__zoom-btn:first-child { border-radius: var(--radio) var(--radio) 0 0; }
+.mapa-lotes__zoom-btn:last-child  { border-radius: 0 0 var(--radio) var(--radio); border-top: 0; }
+.mapa-lotes__zoom-btn:hover { color: var(--acento-claro); }
+.mapa-lotes__zoom-btn:focus-visible { outline: 2px solid var(--acento-claro); outline-offset: 2px; }
+
+/* Panel de detalle del lote: hoja inferior en móvil, tarjeta lateral en escritorio. */
+.lote-panel__fondo { position: fixed; inset: 0; z-index: 44; background: rgba(0, 0, 0, 0.35); }
+.lote-panel {
+  position: fixed; z-index: 45;
+  left: 0; right: 0; bottom: 0;
+  margin: 0 auto; width: 100%; max-width: 460px;
+  display: flex; flex-direction: column; gap: var(--e-3);
+  padding: var(--e-5) var(--e-5) calc(var(--safe-bottom) + var(--e-5));
+  background: var(--sup-panel-solido);
+  border: 1px solid var(--sup-borde);
+  border-radius: 20px 20px 0 0;
+  box-shadow: var(--sombra);
+  animation: subir 0.24s ease;
+}
+.lote-panel__cerrar {
+  position: absolute; top: var(--e-3); right: var(--e-3);
+  width: 34px; height: 34px; border-radius: 50%;
+  color: var(--tx-suave); background: rgba(255, 255, 255, 0.06);
+}
+.lote-panel__cerrar:hover { color: var(--tx-fuerte); }
+.lote-panel__id { font-size: 1.15rem; font-weight: 700; padding-right: 40px; }
+.lote-panel__estatus {
+  align-self: flex-start;
+  padding: 3px 10px; border-radius: var(--radio-pill);
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+}
+.lote-panel__estatus--disponible { background: var(--lote-disponible); color: #04170e; }
+.lote-panel__estatus--apartado   { background: var(--lote-apartado);   color: #1c1206; }
+.lote-panel__estatus--vendido    { background: var(--lote-vendido);    color: #1c0906; }
+.lote-panel__datos { display: flex; gap: var(--e-5); margin: 0; }
+.lote-panel__dato dt { font-size: 0.68rem; color: var(--tx-suave); text-transform: uppercase; letter-spacing: 0.06em; }
+.lote-panel__dato dd { font-size: 1rem; font-weight: 650; }
+.lote-panel__nota { font-size: 0.9rem; color: var(--tx-medio); }
+.lote-panel__ver { margin-top: var(--e-2); width: 100%; }
+
+/* Panel de herramientas del modo editor (?editar=1). */
+.editor-lotes {
+  position: absolute; z-index: 13;
+  top: calc(var(--safe-top) + 62px); left: var(--e-4); right: var(--e-4);
+  margin: 0 auto; max-width: 520px;
+  padding: var(--e-3) var(--e-4);
+  background: var(--sup-panel-solido);
+  border: 1px solid var(--acento); border-radius: var(--radio);
+  box-shadow: var(--sombra);
+}
+.editor-lotes__titulo { font-size: 0.9rem; font-weight: 700; color: var(--acento-claro); }
+.editor-lotes__ayuda { font-size: 0.78rem; color: var(--tx-medio); margin: 4px 0 var(--e-2); }
+.editor-lotes__btns { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+.editor-lotes__btns button {
+  padding: var(--e-2) var(--e-3); min-height: 38px;
+  font-size: 0.78rem; font-weight: 600; color: var(--tx-fuerte);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--sup-borde); border-radius: var(--radio);
+}
+.editor-lotes__btns button:hover { border-color: var(--acento); }
+.editor-lotes__lista {
+  list-style: none; margin: var(--e-2) 0 0;
+  display: flex; flex-wrap: wrap; gap: var(--e-1) var(--e-3);
+  font-size: 0.74rem; color: var(--tx-suave);
+}
+.editor-poly { fill: var(--acento-tinte); stroke: var(--acento); stroke-width: 1.5; }
+.editor-poly--curso { fill: none; stroke-dasharray: 2 1.5; }
+.editor-poly--hecho { fill-opacity: 0.3; }
+.editor-vertice { fill: var(--acento-claro); stroke: #000; stroke-width: 0.4; }
+
+@media (min-width: 768px) {
+  .lote-panel {
+    left: auto; right: var(--e-5); bottom: auto; top: 50%;
+    width: 320px;
+    border-radius: var(--radio);
+    animation: none;
+    translate: 0 -50%;
+  }
 }
 
 /* --- Marca (logotipo de texto) -------------------------------------- */

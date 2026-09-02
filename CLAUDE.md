@@ -92,6 +92,12 @@ script.js
 - **Escena tipo `"video"`**: una escena de `proyecto.json` con `"tipo":"video"` y
   `"video"` (URL de YouTube/Vimeo o `.mp4` local) muestra un video en vez de una
   panorámica. El resto de escenas 360 no cambian.
+- **Escena tipo `"mapa-lotes"`**: una escena con `"tipo":"mapa-lotes"`, `"imagen"`
+  (foto aérea) y `"lotes"` (polígonos en % de la imagen, `estatus`
+  disponible/apartado/vendido, `m2`/`precio`/`nota` opcionales, `escena` opcional
+  para saltar a un 360 de ese lote). Foto + `<svg>` superpuesto; toca un lote →
+  panel con sus datos. `?editar=1` activa un editor para trazar los polígonos
+  clic a clic y copiar el JSON. Ver PASO 6c de `script.js` y `add-panorama`.
 - Enlace público de un recorrido: `index.html?proyecto=<slug>`. El `slug` se limpia
   a `[a-z0-9-]` para evitar rutas maliciosas.
 - **Carga diferida**: nativa de Pannellum — solo baja la textura de la escena

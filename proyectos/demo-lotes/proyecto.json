@@ -1,0 +1,88 @@
+{
+  "_comentario": "Recorrido de DEMOSTRACION del tipo de escena 'mapa-lotes': una foto aerea con un poligono por lote (disponible / apartado / vendido). La imagen mapa/aerea.webp es un sustituto (en realidad es una 360) solo para probar el render y el editor. Un par de lotes enlazan a la escena de video para simular el 'ver este lote'. Abrir con index.html?proyecto=demo-lotes  (o  ?proyecto=demo-lotes&editar=1  para el editor de poligonos).",
+  "nombre": "Fraccionamiento demo — mapa de lotes",
+  "ubicacion": "Xalapa, Veracruz",
+  "descripcion": "Maqueta interactiva de un fraccionamiento: toca un lote para ver su estatus, superficie y precio.",
+  "portada": "mapa/aerea.webp",
+  "escenaInicial": "mapa",
+  "escenas": [
+    {
+      "id": "mapa",
+      "titulo": "Mapa de lotes",
+      "tipo": "mapa-lotes",
+      "imagen": "mapa/aerea.webp",
+      "leyenda": true,
+      "lotes": [
+        {
+          "id": "A-1",
+          "puntos": "8,30 26,30 26,48 8,48",
+          "estatus": "disponible",
+          "m2": 200,
+          "precio": "$780,000",
+          "nota": "Esquina, a pie de calle principal.",
+          "escena": "recorrido-lote"
+        },
+        {
+          "id": "A-2",
+          "puntos": "28,30 46,30 46,48 28,48",
+          "estatus": "vendido",
+          "m2": 180,
+          "precio": "$690,000"
+        },
+        {
+          "id": "A-3",
+          "puntos": "48,30 66,30 66,48 48,48",
+          "estatus": "apartado",
+          "m2": 180,
+          "precio": "$700,000",
+          "nota": "Apartado hasta fin de mes."
+        },
+        {
+          "id": "A-4",
+          "puntos": "68,30 86,30 86,48 68,48",
+          "estatus": "disponible",
+          "m2": 210,
+          "precio": "$815,000",
+          "nota": "10 x 21 m."
+        },
+        {
+          "id": "B-1",
+          "puntos": "8,54 26,54 26,72 8,72",
+          "estatus": "disponible",
+          "m2": 200,
+          "precio": "$760,000",
+          "nota": "Vista al arbolado.",
+          "escena": "recorrido-lote"
+        },
+        {
+          "id": "B-2",
+          "puntos": "28,54 46,54 46,72 28,72",
+          "estatus": "disponible",
+          "m2": 180,
+          "precio": "$675,000"
+        },
+        {
+          "id": "B-3",
+          "puntos": "48,54 66,54 66,72 48,72",
+          "estatus": "vendido",
+          "m2": 180
+        },
+        {
+          "id": "B-4",
+          "puntos": "68,54 86,54 86,72 68,72",
+          "estatus": "apartado",
+          "m2": 240,
+          "precio": "$930,000",
+          "nota": "El mas grande de la manzana B."
+        }
+      ]
+    },
+    {
+      "id": "recorrido-lote",
+      "titulo": "Recorrido del lote",
+      "tipo": "video",
+      "video": "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
+      "_comentario": "URL de YouTube publica solo para demostrar el salto lote -> video en la maqueta."
+    }
+  ]
+}

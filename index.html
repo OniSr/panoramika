@@ -25,7 +25,7 @@
     href="https://cdn.jsdelivr.net/npm/pannellum@2.5.7/build/pannellum.css"
     onerror="this.onerror=null; this.href='vendor/pannellum/pannellum.css';"
   />
-  <link rel="stylesheet" href="style.css?v=2" />
+  <link rel="stylesheet" href="style.css?v=3" />
 </head>
 
 <body>
@@ -35,6 +35,11 @@
   <!-- 1b · Capa de video (escenas "tipo": "video"). El reproductor se inyecta
        bajo demanda desde script.js (PASO 6b); vacío no ocupa nada. -->
   <div id="video" aria-label="Video del recorrido" hidden></div>
+
+  <!-- 1c · Capa de mapa de lotes (escenas "tipo": "mapa-lotes"). La imagen aérea,
+       el SVG de polígonos y (si aplica) el editor se inyectan bajo demanda desde
+       script.js (PASO 6c); vacío no ocupa nada. -->
+  <div id="mapaLotes" aria-label="Mapa de lotes del fraccionamiento" hidden></div>
 
   <!-- 2 · Barra superior -->
   <header class="barra-superior" id="barraSuperior" hidden>
@@ -95,6 +100,6 @@
   <p class="pista-arrastre" id="pistaArrastre" aria-hidden="true">Arrastra para mirar alrededor</p>
 
   <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.7/build/pannellum.js"></script>
-  <script src="script.js?v=2"></script>
+  <script src="script.js?v=3"></script>
 </body>
 </html>

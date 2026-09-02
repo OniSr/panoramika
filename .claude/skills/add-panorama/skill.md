@@ -97,6 +97,50 @@ Una escena puede ser un video en vez de una panorámica. Se distingue por
 - Si `video` no es válido, esa escena se **omite** con aviso (no rompe el resto).
 - El `<iframe>`/`<video>` se crea solo al abrir la escena (carga diferida).
 
+## Escena de tipo "mapa-lotes" (maqueta interactiva de un fraccionamiento)
+
+Foto aérea + un polígono por lote. Vive en la misma barra de escenas (chip ▦):
+
+```json
+{
+  "id": "mapa",
+  "titulo": "Mapa de lotes",
+  "tipo": "mapa-lotes",
+  "imagen": "mapa/aerea.webp",
+  "leyenda": true,
+  "lotes": [
+    {
+      "id": "A-12",
+      "puntos": "12.5,20.1 30,20.1 30,44.8 12.5,44.8",
+      "estatus": "disponible",
+      "m2": 120,
+      "precio": "$65,000",
+      "nota": "8 x 15 m, a pie de calle",
+      "escena": "lote-a12"
+    }
+  ]
+}
+```
+
+| Campo | Obligatorio | Nota |
+|---|---|---|
+| `tipo` | sí | `"mapa-lotes"` |
+| `imagen` | sí | foto aérea, ruta relativa a la carpeta del proyecto (no tiene que ser 2:1) |
+| `leyenda` | no | `false` oculta la leyenda de colores; cualquier otra cosa la muestra |
+| `lotes` | no | lista de polígonos (sin lotes = solo la foto) |
+| `lotes[].id` | sí | etiqueta visible del lote |
+| `lotes[].puntos` | sí | `"x,y x,y x,y …"` — vértices en **% de la imagen** (0 = borde izq./sup., 100 = der./inf.), mín. 3. Porcentaje = responsivo sin recalcular |
+| `lotes[].estatus` | no | `disponible` \| `apartado` \| `vendido` (default `disponible`) |
+| `lotes[].m2`, `precio`, `nota` | no | se muestran en el panel del lote |
+| `lotes[].escena` | no | id de otra escena (una 360 de ese lote) → botón "Ver este lote en 360" |
+
+- Un lote con `puntos` mal formados se ignora (aviso), los demás se pintan.
+- `imagen` inválida → la escena se omite. `escena` inexistente → sin botón (aviso).
+- **Editor**: abre `index.html?proyecto=<slug>&editar=1`, ve a la escena del mapa,
+  haz clic en la foto para poner vértices, "Cerrar polígono" (pide un id),
+  "Copiar JSON" copia el array `lotes` listo para pegar. Nunca se activa sin
+  `?editar=1`.
+
 ## Colocar hotspots (yaw / pitch)
 
 - **yaw**: horizontal, `-180..180`. `0` = centro de la foto, positivo gira a la derecha.
