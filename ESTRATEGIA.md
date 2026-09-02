@@ -257,12 +257,23 @@ Casas grandes, hoteles boutique.
 - 360 de todos los espacios, navegación tipo Street View
 - Plano 2D si aplica
 
+### Dos formas de comprar (decirlo en la llamada)
+- **Archivo suelto** — te entregamos el tour 360 / el video y lo pones donde
+  quieras (Kuula, tu web, Inmuebles24). Más barato, sin marca nuestra, sin
+  hosting. Es el piso.
+- **Con plataforma (recomendado)** — **página con TU marca y TU logo**, link
+  permanente, lo alojamos y le damos mantenimiento. Es lo que se ve profesional y
+  lo que dura. *El desarrollo e implementación de la página tiene valor — no es un
+  extra gratis.* Los precios de arriba son esta modalidad.
+
 ### Add-ons
-- Foto extra $90 · escena 360 extra $500
+- Foto extra $90 · escena 360 extra $500 · **co-marca (logo del broker/agencia en
+  la página)** incluida en "con plataforma"
 - **Hospedaje del link:** 3 meses incluidos, luego **renovación anual $900/año**
   (incluye cambios de estatus "vendido/rentado" y cambio de fotos). NO mensualidad
   chica a dueño particular.
 - Viáticos fuera de Xalapa: costo + 15%
+- **Alianza por comisión** (opcional): ver §11.
 
 ### Precio de lanzamiento (primeros ~5 clientes)
 **−35%** a cambio de permiso de portafolio + reseña. Ej. Completo a **$2,500**.
@@ -399,7 +410,54 @@ Cumbres, InmobiHaus, AVA Bienes Raíces, PB&V, Terrenos Xalapa (Pixan).
 
 ---
 
-## 11. Frase para tener clara
+## 11. Comisión por venta cerrada (el modelo "Domo360") — cómo hacerlo bien
+
+> Nota de Daniel (sep 2026): recuerda que JEBN Hunter (el Instagram de "Domo360")
+> "presenta clientes a brokers y se lleva la comisión". Quiere saber cómo funciona
+> y si aplica.
+
+**Cómo opera JEBN Hunter (deducido — es broker inmobiliario, ver `../CLAUDE.md`):**
+él ya está registrado como asesor. Arma el catálogo 360, le mete marketing, y
+cuando un comprador pica, **él cierra o co-broker­ea** y cobra comisión. La capa
+SaaS ($25/mes/proyecto) es aparte, software, sin regular.
+
+**El punto legal (Veracruz SÍ regula esto):** Veracruz tiene **Ley de Operaciones
+Inmobiliarias** con **Registro de Asesores Inmobiliarios**. "Asesor inmobiliario"
+= quien *habitualmente y con paga* asesora o **actúa como intermediario** en la
+compraventa/renta de un inmueble. Cobrar comisión por conectar comprador↔vendedor
+de forma habitual = ser asesor → hay que registrarse.
+
+**La línea limpia:**
+- **Producir tours, alojar páginas, correr anuncios = servicio de marketing/media.
+  NO regulado.** Daniel factura esto libremente. Es el 90% del negocio y NUNCA se
+  regala.
+- **Mediar la transacción / llevarse un % de la venta = regulado.**
+
+**Las 3 capas de ingreso, separadas limpio:**
+1. **Producción + plataforma** (marketing): el tour + la **página con la marca y el
+   logo del broker/dueño** + hosting + cambios. Dinero garantizado, no depende de
+   que se venda. → §6. *Pitch: "no es un archivo 360, es TU página con TU marca que
+   vive en internet; el desarrollo tiene valor y dura."*
+2. **Marketing de resultados** (opcional): publicar la propiedad en el catálogo
+   Panorámika + social/ads. Iguala mensual o bono por desempeño. Sigue siendo
+   marketing (traes tráfico, no medías).
+3. **Comisión por venta cerrada** — solo así:
+   - **(a) Aliarse con 1-2 brokers registrados.** Ellos cierran; Daniel cobra un
+     **referral fee del 20-30% de la comisión de ese broker** (estándar de la
+     industria: 25%), o **comisión compartida 50/50** del lado listador. **Contrato
+     escrito siempre.** Daniel se queda en el lado de marketing. ← lo viable YA.
+   - **(b) Daniel se registra como asesor inmobiliario en Veracruz** → puede cobrar
+     comisión directa. Paso real, para cuando esto sea un canal probado, no ahora.
+
+**Recomendación:** cobra fuerte la capa 1 (producción + plataforma con marca).
+Ofrece la capa 3 como **add-on de alianza**: *"además, si quieres, publico tu
+propiedad en mi catálogo y le meto marketing; si el comprador sale de ahí, hay
+comisión — lo dejamos por escrito."* Empieza con brokers que ya te compraron
+producción.
+
+---
+
+## 12. Frase para tener clara
 
 > No competimos con las plataformas de preventa. Hacemos que **cualquier
 > propiedad que ya existe** se vea profesional —aérea, video recorrido, 360 y
