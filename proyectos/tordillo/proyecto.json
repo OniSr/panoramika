@@ -1,0 +1,33 @@
+{
+  "_comentario": "Terreno en Tordillo (cerca de Plaza Ye / bodegas / Coppel). El lote EN VENTA es el de 522.23 m² (15 x 34.45 m), marcado en verde en planos/tordillo.jpg, entre los lotes de 511 y 533 m². La escena 'mapa' usa un frame NADIR del video (ASCENSOSITIO ~16s) como base — hay que TRAZAR el lote verde encima con ?proyecto=tordillo&editar=1 (ubicándolo con el plano de referencia). Esferas: 'terreno' = parado en el lote; 'sobre' = vista general sobre el terreno; 'contexto'/'contexto2' = hacia la zona de Coppel para el contexto. Video 'acceso' = recorte del dron de Coppel al terreno.",
+
+  "nombre": "Terreno en Tordillo",
+  "ubicacion": "Tordillo, Xalapa, Veracruz",
+  "descripcion": "Lote de 522 m² en venta en Tordillo, a un paso de Plaza Ye y Coppel. Mapa, recorrido de acceso y puntos 360 del terreno.",
+  "portada": "panoramas/terreno.webp",
+  "escenaInicial": "mapa",
+  "escenas": [
+    {
+      "id": "mapa",
+      "titulo": "Ubicación del lote",
+      "tipo": "mapa-lotes",
+      "imagen": "mapa/aerea.webp",
+      "leyenda": true,
+      "lotes": [
+        { "id": "Lote 522 m² (EN VENTA)", "puntos": "40,30 52,30 52,72 40,72", "estatus": "disponible", "m2": 522, "nota": "15 x 34.45 m. Polígono PROVISIONAL — trazar el real con ?editar=1 usando planos/tordillo.jpg.", "escena": "terreno" }
+      ]
+    },
+    { "id": "acceso", "titulo": "Cómo se llega (desde Coppel)", "tipo": "video", "video": "videos/acceso.mp4" },
+    { "id": "terreno", "titulo": "Parado en el lote", "panorama": "panoramas/terreno.webp", "miradaInicial": { "yaw": 0, "pitch": -6 },
+      "hotspots": [
+        { "tipo": "destino", "yaw": 120, "pitch": -5, "destino": "sobre", "texto": "Vista general" },
+        { "tipo": "salir", "yaw": 0, "pitch": -5, "destino": "mapa", "texto": "Volver al mapa" }
+      ] },
+    { "id": "sobre", "titulo": "Vista general del terreno", "panorama": "panoramas/sobre.webp", "miradaInicial": { "yaw": 0, "pitch": -8 },
+      "hotspots": [ { "tipo": "salir", "yaw": 0, "pitch": -5, "destino": "terreno", "texto": "Bajar al lote" } ] },
+    { "id": "contexto", "titulo": "Contexto — zona de Coppel", "panorama": "panoramas/contexto.webp", "miradaInicial": { "yaw": 0, "pitch": -8 },
+      "hotspots": [ { "tipo": "destino", "yaw": 90, "pitch": -5, "destino": "contexto2", "texto": "Otro punto" } ] },
+    { "id": "contexto2", "titulo": "Contexto — 2", "panorama": "panoramas/contexto2.webp", "miradaInicial": { "yaw": 0, "pitch": -8 },
+      "hotspots": [ { "tipo": "salir", "yaw": 0, "pitch": -5, "destino": "mapa", "texto": "Volver al mapa" } ] }
+  ]
+}

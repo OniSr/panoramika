@@ -21,6 +21,13 @@
     "nota": "ARMADO, SIN PULIR: 2 esferas 360. Falta la toma con el cartel."
   },
   {
+    "slug": "tordillo",
+    "nombre": "Terreno en Tordillo",
+    "tipo": "Terreno",
+    "publico": true,
+    "nota": "ARMADO, SIN PULIR: mapa (frame nadir del video + 1 polígono provisional del lote de 522 m²), video de acceso desde Coppel, 4 esferas 360. Trazar el lote verde con ?proyecto=tordillo&editar=1 (ref: planos/tordillo.jpg)."
+  },
+  {
     "slug": "watusco-raul",
     "nombre": "Terreno en Huatusco (R.)",
     "tipo": "Terreno",
