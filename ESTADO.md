@@ -196,6 +196,16 @@ Repo `OniSr/panoramika` (público). Rama de trabajo `main`; MVP viejo Next.js en
 
 ## Próximas tareas (orden sugerido)
 
+> ### ⚑ REDISEÑO EN CURSO (2026-09-03) — leer `handshake_state.md`
+> Daniel frenó: el producto no tiene estructura (URLs sueltas). Decisiones tomadas
+> (AskUserQuestion): (1) **portafolio = entrada pública** (Daniel lo hace con
+> impeccable — NO tocar `portafolio.*`) + **mapa de Xalapa con pines** por
+> propiedad, y pines DENTRO de los 360 para saltar entre propiedades;
+> (2) visor = **hotspots primero, barra de escenas colapsada**, botones "Ver
+> plano"/"Volver"; (3) polígonos = **mapa plano (elegir lote) + polígono dibujado
+> SOBRE la esfera 360** (yaw/pitch, función nueva + editor). Fixes de Tordillo y
+> plan completo en `handshake_state.md`. **Empezar por: polígono-sobre-esfera.**
+
 > ### ▶ PLAN PARA HOY (acordado 2026-09-01, se ejecuta el 2026-09-02)
 > **Objetivo: publicar la maqueta demo de un fraccionamiento real y salir a vender.**
 >
