@@ -44,8 +44,22 @@ Repo `OniSr/panoramika` (público). Rama de trabajo `main`; MVP viejo Next.js en
   → `cocina` (v17) → `cuarto` (v15). Es `PROYECTO_POR_DEFECTO`.
   - PENDIENTE: ajustar la mira/hotspot de la `aerea` al edificio real (ahora
     apunta a un punto cualquiera). La aérea sale algo OSCURA — subir exposición.
+- **`animas`** (público) — Fraccionamiento Las Ánimas (familia de Daniel, ~166
+  lotes). ARMADO SIN PULIR (commit 466f307): escena `mapa` (plano de lotificación
+  + 2 polígonos PROVISIONALES) + `aerea` (video, recorte 17-45s del dron) + 5
+  esferas 360 (P1/PC/PG/CD/EI). **Pendiente:** trazar los lotes reales con
+  `?proyecto=animas&editar=1`, ajustar hotspots, capa disponible/vendido (el
+  plano viene coloreado por DUEÑO), grado de color.
+- **`bodegas`** (público) — 2 esferas (BODEGAYE + PLAZAYE), bodegas en renta.
+  Falta la toma con el cartel.
+- **`watusco-raul`** / **`watusco-sergio`** (privados, segundo plano) — terrenos
+  de los tíos en Huatusco. 1 y 2 esferas. Faltan 360 dentro del lote + contexto.
+- **Todas las esferas del dron salieron OSCURAS** (Mini 3 midió para el cielo) →
+  se les subió sombras (gamma 0.68). Para los finales, gradado parejo de Daniel.
 - **`demo-lotes`** / **`demo-recorrido`** — demos internas de las funciones
-  `mapa-lotes` y `video`. Privadas (panel admin las marca).
+  `mapa-lotes` y `video`. Privadas.
+- **Selector de propiedades** (`?v=4`, PASO 7b): menú "Propiedades ▾" arriba a la
+  izquierda del visor; lista las `publico:true` de `proyectos/proyectos.json`.
 - BORRADOS: `xalapa-demo` (etiqueta falsa "Terreno en Las Ánimas" — NO existe tal
   terreno), `prueba-v14/v15/v15-cocina/v17-sala` (pruebas de pipeline; su .webp
   útil pasó a `depto-lagos`).
