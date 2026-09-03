@@ -52,10 +52,23 @@ Repo `OniSr/panoramika` (público). Rama de trabajo `main`; MVP viejo Next.js en
   plano viene coloreado por DUEÑO), grado de color.
 - **`bodegas`** (público) — 2 esferas (BODEGAYE + PLAZAYE), bodegas en renta.
   Falta la toma con el cartel.
+- **`tordillo`** (público, commit 326d2fb) — lote de 522 m² en venta cerca de
+  Plaza Ye / Coppel. **Mapa-lotes con base de FOTO AÉREA real** (frame nadir del
+  video, idea de Daniel — se ve DÓNDE está el lote, no un CAD abstracto) + 1
+  polígono provisional + video de acceso desde Coppel + 4 esferas 360. Plano de
+  referencia: `planos/tordillo.jpg` (lote verde entre 511 y 533 m²).
 - **`watusco-raul`** / **`watusco-sergio`** (privados, segundo plano) — terrenos
   de los tíos en Huatusco. 1 y 2 esferas. Faltan 360 dentro del lote + contexto.
 - **Todas las esferas del dron salieron OSCURAS** (Mini 3 midió para el cielo) →
   se les subió sombras (gamma 0.68). Para los finales, gradado parejo de Daniel.
+- **OJO peso del repo**: cada video en `proyectos/*/videos/*.mp4` pesa 25-30 MB.
+  Con varios recorridos el repo se infla. Plan: mover los videos a YouTube/Vimeo
+  sin listar (la escena `"tipo":"video"` ya acepta URLs) — pendiente.
+- **Pulido pendiente (todos los terrenos)**: trazar los lotes reales con
+  `?proyecto=<slug>&editar=1`, ajustar posición de hotspots en cada esfera,
+  gradado de color. Ánimas: idea de Daniel = calcar el plano CAD semitransparente
+  sobre un frame aéreo / sobre un 360 (necesita que Daniel dé las esquinas de
+  alineación).
 - **`demo-lotes`** / **`demo-recorrido`** — demos internas de las funciones
   `mapa-lotes` y `video`. Privadas.
 - **Selector de propiedades** (`?v=4`, PASO 7b): menú "Propiedades ▾" arriba a la
