@@ -25,7 +25,7 @@
     href="https://cdn.jsdelivr.net/npm/pannellum@2.5.7/build/pannellum.css"
     onerror="this.onerror=null; this.href='vendor/pannellum/pannellum.css';"
   />
-  <link rel="stylesheet" href="style.css?v=3" />
+  <link rel="stylesheet" href="style.css?v=4" />
 </head>
 
 <body>
@@ -47,6 +47,21 @@
       <span class="marca__punto" aria-hidden="true"></span>
       <span class="marca__texto">Panorámika</span>
     </div>
+
+    <!-- Selector de propiedades: menú para saltar entre recorridos públicos sin
+         salir del visor. La lista se descarga de proyectos/proyectos.json la
+         PRIMERA vez que se abre el menú (PASO 7b de script.js). Oculto por
+         defecto; script.js lo muestra solo si hay otra propiedad pública. -->
+    <div class="selector-props" id="selectorProps" hidden>
+      <button class="selector-props__btn" id="selectorPropsBtn" type="button"
+              aria-haspopup="true" aria-expanded="false" aria-controls="selectorPropsPanel">
+        <span class="selector-props__txt" id="selectorPropsTxt">Propiedades</span>
+        <span class="selector-props__flecha" aria-hidden="true">▾</span>
+      </button>
+      <div class="selector-props__panel" id="selectorPropsPanel" role="menu"
+           aria-label="Elegir propiedad" hidden></div>
+    </div>
+
     <div class="barra-superior__derecha">
       <p class="escena-actual" id="escenaActual" aria-live="polite"></p>
       <button class="btn-icono" id="btnCompartir" type="button" aria-label="Compartir recorrido">
@@ -100,6 +115,6 @@
   <p class="pista-arrastre" id="pistaArrastre" aria-hidden="true">Arrastra para mirar alrededor</p>
 
   <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.7/build/pannellum.js"></script>
-  <script src="script.js?v=3"></script>
+  <script src="script.js?v=4"></script>
 </body>
 </html>

@@ -16,6 +16,7 @@
      PASO 6 · Construir la configuración de Pannellum y arrancar el visor
      PASO 6b · Escenas de tipo "video" (YouTube / Vimeo / .mp4 local)
      PASO 7 · Interfaz del visor (barra, selector, hotspots, pista)
+     PASO 7b · Selector de propiedades (menú para saltar entre recorridos)
      PASO 8 · Compartir (WhatsApp / copiar enlace)
 
    Tipos de escena:
@@ -1036,6 +1037,178 @@ function gestionarPista() {
 }
 
 /* ============================================================================
+   PASO 7b · SELECTOR DE PROPIEDADES
+   ----------------------------------------------------------------------------
+   Menú desplegable (arriba a la izquierda, debajo de la marca) para saltar
+   entre propiedades sin salir del visor. La lista sale del manifiesto maestro
+   proyectos/proyectos.json  ->  [{ slug, nombre, tipo, publico, nota }, …].
+
+   Reglas:
+     - Carga diferida: proyectos.json NO se descarga durante el arranque del
+       recorrido (no bloquea nada). Se pide una sola vez, en tiempo ocioso
+       justo después de que el visor ya está en pantalla, y el resultado se
+       cachea (listaPropiedades). Abrir el menú antes de que llegue igual
+       fuerza y espera esa misma descarga.
+     - El botón nace OCULTO. Solo se muestra cuando ya sabemos que hay al menos
+       otra propiedad con  publico === true  además de la actual.
+     - Si el manifiesto no carga, o no hay ninguna otra propiedad pública, el
+       botón se queda oculto (no estorba) con un console.warn. Nunca un error
+       visible.
+     - Elegir otra propiedad = navegación normal a  index.html?proyecto=<slug>
+       (un enlace <a>: el visor recarga con esa propiedad).
+     - Cerrar: tocar fuera, Esc, o el botón otra vez.
+     - En modo editor (?editar=1) el selector no aparece: esa vista es una
+       herramienta interna y su panel ocupa esta misma esquina.
+   ========================================================================== */
+
+const $selProps      = $("selectorProps");
+const $selPropsBtn   = $("selectorPropsBtn");
+const $selPropsPanel = $("selectorPropsPanel");
+
+let listaPropiedades = null;   // caché del fetch (array). null = todavía no se pidió.
+let selPropsAbierto  = false;
+
+/** Descarga proyectos/proyectos.json UNA sola vez. Devuelve [] si algo falla. */
+async function obtenerListaPropiedades() {
+  if (Array.isArray(listaPropiedades)) return listaPropiedades;   // ya cacheada
+  try {
+    const resp = await fetch("proyectos/proyectos.json", { cache: "no-cache" });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const datos = await resp.json();
+    listaPropiedades = Array.isArray(datos) ? datos : [];
+  } catch (err) {
+    console.warn("[Panoramika] No se pudo leer proyectos/proyectos.json para el selector de propiedades:", err);
+    listaPropiedades = [];   // se cachea el fallo: no se reintenta en cada apertura
+  }
+  return listaPropiedades;
+}
+
+/** Pinta la lista de propiedades públicas dentro del panel. */
+function pintarListaPropiedades(publicas, slugActual) {
+  $selPropsPanel.innerHTML = "";
+
+  for (const p of publicas) {
+    const esActual = p.slug === slugActual;
+
+    // La actual es un <div> inerte (marcada, no navega); las demás, un <a>.
+    const item = document.createElement(esActual ? "div" : "a");
+    item.className = "selector-props__item" + (esActual ? " selector-props__item--actual" : "");
+    item.setAttribute("role", "menuitem");
+    if (esActual) item.setAttribute("aria-current", "true");
+    else item.href = "index.html?proyecto=" + encodeURIComponent(p.slug);
+
+    const nombre = document.createElement("span");
+    nombre.className = "selector-props__item-nombre";
+    if (esActual) {
+      const check = document.createElement("span");
+      check.className = "selector-props__item-check";
+      check.setAttribute("aria-hidden", "true");
+      check.textContent = "✓ ";
+      nombre.appendChild(check);
+    }
+    nombre.appendChild(document.createTextNode(p.nombre || p.slug));
+    item.appendChild(nombre);
+
+    // Segunda línea: el tipo, y la nota si es corta (para que quepa sin saturar).
+    const partes = [];
+    if (p.tipo) partes.push(String(p.tipo));
+    if (p.nota && String(p.nota).length <= 70) partes.push(String(p.nota));
+    if (partes.length) {
+      const meta = document.createElement("span");
+      meta.className = "selector-props__item-meta";
+      meta.textContent = partes.join(" · ");
+      item.appendChild(meta);
+    }
+
+    $selPropsPanel.appendChild(item);
+  }
+}
+
+function alTeclaSelProps(e) {
+  if (e.key === "Escape") { cerrarSelProps(); $selPropsBtn.focus(); }
+}
+
+/** Cierra si el gesto cae fuera del selector (botón + panel). */
+function alPunteroFueraSelProps(e) {
+  if (!$selProps.contains(e.target)) cerrarSelProps();
+}
+
+/** Filtra el manifiesto a las entradas públicas con slug válido. */
+function propiedadesPublicas(lista) {
+  return lista.filter(
+    (p) => p && p.publico === true && typeof p.slug === "string" && p.slug
+  );
+}
+
+/**
+ * Decide si el botón debe verse: hay que tener al menos otra propiedad pública
+ * además de la actual. Descarga el manifiesto (diferido) y ajusta la visibilidad.
+ */
+async function evaluarSelectorPropiedades() {
+  const lista = await obtenerListaPropiedades();
+  const slugActual = obtenerSlug();
+  const hayOtras = propiedadesPublicas(lista).some((p) => p.slug !== slugActual);
+
+  if (!hayOtras) {
+    console.warn("[Panoramika] Selector de propiedades oculto: no hay otra propiedad con publico:true en proyectos.json.");
+    $selProps.hidden = true;
+    return;
+  }
+  $selProps.hidden = false;
+}
+
+async function abrirSelProps() {
+  const lista = await obtenerListaPropiedades();
+  const slugActual = obtenerSlug();
+  const publicas = propiedadesPublicas(lista);
+
+  // Comprobación de última hora (por si el manifiesto cambió tras el arranque).
+  if (!publicas.some((p) => p.slug !== slugActual)) {
+    console.warn("[Panoramika] Selector de propiedades oculto: no hay otra propiedad con publico:true en proyectos.json.");
+    $selProps.hidden = true;
+    return;
+  }
+
+  pintarListaPropiedades(publicas, slugActual);
+  $selPropsPanel.hidden = false;
+  $selPropsBtn.setAttribute("aria-expanded", "true");
+  selPropsAbierto = true;
+
+  document.addEventListener("keydown", alTeclaSelProps);
+  // 'capture' para enterarnos antes de que otro handler se coma el evento.
+  document.addEventListener("pointerdown", alPunteroFueraSelProps, true);
+}
+
+function cerrarSelProps() {
+  if (!selPropsAbierto) return;
+  $selPropsPanel.hidden = true;
+  $selPropsBtn.setAttribute("aria-expanded", "false");
+  selPropsAbierto = false;
+  document.removeEventListener("keydown", alTeclaSelProps);
+  document.removeEventListener("pointerdown", alPunteroFueraSelProps, true);
+}
+
+/** Engancha el botón. Se llama una vez en el arranque (con el proyecto cargado). */
+function configurarSelectorPropiedades() {
+  // Defensivo: si el index.html en caché es viejo, los nodos no existen.
+  if (!$selProps || !$selPropsBtn || !$selPropsPanel) return;
+
+  // En ?editar=1 esta esquina la usa el panel del editor de lotes: no estorbar.
+  if (MODO_EDITOR) return;
+
+  $selPropsBtn.addEventListener("click", () => {
+    if (selPropsAbierto) cerrarSelProps();
+    else abrirSelProps();
+  });
+
+  // Descarga diferida: en tiempo ocioso, ya con el visor en pantalla. Así no
+  // añade nada a la ruta crítica del recorrido y el botón aparece (o no) solo.
+  const evaluar = () => { evaluarSelectorPropiedades(); };
+  if ("requestIdleCallback" in window) window.requestIdleCallback(evaluar, { timeout: 3000 });
+  else window.setTimeout(evaluar, 1200);
+}
+
+/* ============================================================================
    PASO 8 · COMPARTIR
    ========================================================================== */
 function configurarCompartir() {
@@ -1080,6 +1253,7 @@ async function arrancar() {
     await asegurarPannellum();
     proyecto = await cargarProyecto(obtenerSlug());
     configurarCompartir();
+    configurarSelectorPropiedades();
     await validarImagenInicial();
     mostrarIntro();
   } catch (err) {

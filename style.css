@@ -355,6 +355,77 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 .btn-icono:hover { color: var(--tx-fuerte); border-color: var(--acento); }
 .btn-icono:focus-visible { outline: 2px solid var(--acento-claro); outline-offset: 2px; }
 
+/* --- 4b. Selector de propiedades ("Propiedades ▾") ---------------- */
+/* Botón flotante DEBAJO de la barra, a la izquierda (mismo patrón visual que
+   el panel del editor de lotes). Salta entre recorridos públicos sin recargar
+   la URL a mano. Vive dentro de .barra-superior (z-index 20): queda por encima
+   de las capas de video / mapa (z 10) y por debajo de la capa de aviso (z 60).
+   Solo anima opacity/transform. Ver PASO 7b de script.js. */
+.selector-props {
+  position: absolute;
+  top: calc(var(--safe-top) + 60px);
+  left: var(--e-4);
+  display: inline-block;
+}
+
+.selector-props__btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  max-width: 60vw; min-height: 34px;
+  padding: var(--e-1) var(--e-3);
+  font-size: 0.8rem; font-weight: 600; color: var(--tx-medio);
+  background: var(--sup-panel);
+  -webkit-backdrop-filter: var(--difuminado); backdrop-filter: var(--difuminado);
+  border: 1px solid var(--sup-borde); border-radius: var(--radio-pill);
+  transition: color 0.15s, border-color 0.15s;
+}
+.selector-props__btn:hover { color: var(--tx-fuerte); border-color: var(--acento); }
+.selector-props__btn:focus-visible { outline: 2px solid var(--acento-claro); outline-offset: 2px; }
+.selector-props__txt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.selector-props__flecha { flex: 0 0 auto; font-size: 0.7rem; transition: transform 0.18s ease; }
+.selector-props__btn[aria-expanded="true"] .selector-props__flecha { transform: rotate(180deg); }
+
+/* Panel desplegable: baja desde el botón. Ancho acotado; con muchas
+   propiedades hace scroll interno (no crece sin límite ni desborda la pantalla). */
+.selector-props__panel {
+  position: absolute; top: calc(100% + var(--e-2)); left: 0;
+  min-width: 240px; max-width: min(80vw, 340px);
+  max-height: 420px;
+  max-height: min(60dvh, 420px);
+  overflow-y: auto;
+  padding: var(--e-1);
+  background: var(--sup-panel-solido);
+  border: 1px solid var(--sup-borde); border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  transform-origin: top left;
+  animation: props-desplegar 0.16s ease;
+}
+@keyframes props-desplegar { from { opacity: 0; transform: translateY(-4px); } }
+
+.selector-props__item {
+  display: block; width: 100%;
+  padding: var(--e-2) var(--e-3);
+  border-radius: var(--e-2);
+  color: var(--tx-medio); text-decoration: none;
+  transition: background 0.12s, color 0.12s;
+}
+a.selector-props__item:hover { background: rgba(255, 255, 255, 0.06); color: var(--tx-fuerte); }
+.selector-props__item:focus-visible { outline: 2px solid var(--acento-claro); outline-offset: -2px; }
+.selector-props__item--actual { color: var(--acento-claro); }
+.selector-props__item-nombre { display: block; font-size: 0.86rem; font-weight: 600; line-height: 1.3; }
+.selector-props__item-check { color: var(--acento); }
+.selector-props__item-meta {
+  display: block; margin-top: 2px;
+  font-size: 0.72rem; line-height: 1.35; color: var(--tx-suave);
+}
+
+@media (min-width: 768px) {
+  .selector-props { left: var(--e-6); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .selector-props__panel { animation: none; }
+  .selector-props__flecha { transition: none; }
+}
+
 /* --- 5. Barra de navegación entre escenas (siempre visible) ------- */
 .selector-escenas {
   position: fixed; left: 0; right: 0; bottom: calc(var(--safe-bottom) + var(--e-3)); z-index: 20;

@@ -100,6 +100,12 @@ script.js
   clic a clic y copiar el JSON. Ver PASO 6c de `script.js` y `add-panorama`.
 - Enlace público de un recorrido: `index.html?proyecto=<slug>`. El `slug` se limpia
   a `[a-z0-9-]` para evitar rutas maliciosas.
+- **Selector de propiedades** (PASO 7b de `script.js`): menú "Propiedades ▾" arriba
+  a la izquierda del visor para saltar entre recorridos sin editar la URL. Su
+  "modelo de datos" es `proyectos/proyectos.json` (manifiesto maestro:
+  `slug`, `nombre`, `tipo`, `publico`, `nota`); lista solo las entradas con
+  `publico: true`. Se descarga diferido (tiempo ocioso, no bloquea el arranque) y
+  el botón se oculta solo si no hay otra propiedad pública además de la actual.
 - **Carga diferida**: nativa de Pannellum — solo baja la textura de la escena
   visible. `script.js` además solo precarga la panorámica inicial.
 - **Programación defensiva** (skill `senior-coder`): validar el JSON y las imágenes
