@@ -1,0 +1,33 @@
+{
+  "_comentario": "Fraccionamiento en Las Ánimas (familia de Daniel — José/Benigno/Delfina/Juana). ~166 lotes en 9 manzanas. La escena 'mapa' usa el plano de lotificación como imagen base; los 2 polígonos son PROVISIONALES (trazar el resto con ?proyecto=animas&editar=1). Las 5 esferas 360 (P1, PC, PG, CD, EI) son puntos dentro/alrededor del predio; el pitch/yaw de sus hotspots y las posiciones aún hay que ajustarlos. Video: recorte del dron subiendo y girando al horizonte.",
+
+  "nombre": "Fraccionamiento Las Ánimas",
+  "ubicacion": "Las Ánimas, Xalapa, Veracruz",
+  "descripcion": "Lotes en venta en Las Ánimas. Empieza en el plano interactivo, mira el recorrido aéreo y entra a los puntos 360 del predio.",
+  "portada": "panoramas/p1.webp",
+  "escenaInicial": "mapa",
+  "escenas": [
+    {
+      "id": "mapa",
+      "titulo": "Plano de lotes",
+      "tipo": "mapa-lotes",
+      "imagen": "mapa/plano.webp",
+      "leyenda": true,
+      "lotes": [
+        { "id": "MZ-3 (muestra)", "puntos": "31,34 42,34 42,46 31,46", "estatus": "disponible", "m2": 200, "nota": "Polígono provisional — ajustar con ?editar=1", "escena": "p1" },
+        { "id": "MZ-5 (muestra)", "puntos": "58,55 72,55 72,68 58,68", "estatus": "disponible", "m2": 200, "nota": "Polígono provisional — ajustar con ?editar=1", "escena": "pg" }
+      ]
+    },
+    { "id": "aerea", "titulo": "Recorrido aéreo", "tipo": "video", "video": "videos/aerea-animas.mp4" },
+    { "id": "p1", "titulo": "Punto P1", "panorama": "panoramas/p1.webp", "miradaInicial": { "yaw": 0, "pitch": -6 },
+      "hotspots": [ { "tipo": "salir", "yaw": 0, "pitch": -5, "destino": "mapa", "texto": "Volver al plano" } ] },
+    { "id": "pc", "titulo": "Punto PC", "panorama": "panoramas/pc.webp", "miradaInicial": { "yaw": 0, "pitch": -6 },
+      "hotspots": [ { "tipo": "salir", "yaw": 0, "pitch": -5, "destino": "mapa", "texto": "Volver al plano" } ] },
+    { "id": "pg", "titulo": "Punto PG", "panorama": "panoramas/pg.webp", "miradaInicial": { "yaw": 0, "pitch": -6 },
+      "hotspots": [ { "tipo": "salir", "yaw": 0, "pitch": -5, "destino": "mapa", "texto": "Volver al plano" } ] },
+    { "id": "cd", "titulo": "Punto CD", "panorama": "panoramas/cd.webp", "miradaInicial": { "yaw": 0, "pitch": -6 },
+      "hotspots": [ { "tipo": "salir", "yaw": 0, "pitch": -5, "destino": "mapa", "texto": "Volver al plano" } ] },
+    { "id": "ei", "titulo": "Punto EI", "panorama": "panoramas/ei.webp", "miradaInicial": { "yaw": 0, "pitch": -6 },
+      "hotspots": [ { "tipo": "salir", "yaw": 0, "pitch": -5, "destino": "mapa", "texto": "Volver al plano" } ] }
+  ]
+}

@@ -1109,14 +1109,12 @@ function pintarListaPropiedades(publicas, slugActual) {
     nombre.appendChild(document.createTextNode(p.nombre || p.slug));
     item.appendChild(nombre);
 
-    // Segunda línea: el tipo, y la nota si es corta (para que quepa sin saturar).
-    const partes = [];
-    if (p.tipo) partes.push(String(p.tipo));
-    if (p.nota && String(p.nota).length <= 70) partes.push(String(p.nota));
-    if (partes.length) {
+    // Segunda línea: solo el tipo. La `nota` de proyectos.json es interna (la usa
+    // el panel admin) y NO debe verse en este menú que ve el cliente.
+    if (p.tipo) {
       const meta = document.createElement("span");
       meta.className = "selector-props__item-meta";
-      meta.textContent = partes.join(" · ");
+      meta.textContent = String(p.tipo);
       item.appendChild(meta);
     }
 

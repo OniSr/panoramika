@@ -1,0 +1,14 @@
+{
+  "_comentario": "Terreno del tío Sergio en Huatusco (predio + reserva). 2 esferas 360 del dron. Segundo plano.",
+  "nombre": "Terreno en Huatusco (S.)",
+  "ubicacion": "Huatusco, Veracruz",
+  "descripcion": "Terreno en venta en Huatusco, con área de reserva. Vistas aéreas 360.",
+  "portada": "panoramas/predio.webp",
+  "escenaInicial": "predio",
+  "escenas": [
+    { "id": "predio", "titulo": "Predio", "panorama": "panoramas/predio.webp", "miradaInicial": { "yaw": 0, "pitch": -6 },
+      "hotspots": [ { "tipo": "destino", "yaw": 90, "pitch": -5, "destino": "reserva", "texto": "Ver la reserva" } ] },
+    { "id": "reserva", "titulo": "Reserva", "panorama": "panoramas/reserva.webp", "miradaInicial": { "yaw": 0, "pitch": -6 },
+      "hotspots": [ { "tipo": "salir", "yaw": 0, "pitch": -5, "destino": "predio", "texto": "Volver al predio" } ] }
+  ]
+}

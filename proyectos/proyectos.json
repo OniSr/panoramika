@@ -4,20 +4,48 @@
     "nombre": "Departamento — Los Lagos, Xalapa",
     "tipo": "Departamento",
     "publico": true,
-    "nota": "Propiedad-portafolio (real). Recorrido en secuencia: aérea → video del exterior → cocina → cuarto. La mira/hotspot de la aérea aún hay que ajustarla al edificio."
+    "nota": "Propiedad-portafolio (real). Recorrido: aérea → video → cocina → cuarto. Falta ajustar el hotspot de la aérea al edificio."
+  },
+  {
+    "slug": "animas",
+    "nombre": "Fraccionamiento Las Ánimas",
+    "tipo": "Terreno",
+    "publico": true,
+    "nota": "ARMADO, SIN PULIR: plano interactivo (2 polígonos provisionales) + video del dron + 5 esferas 360 (P1/PC/PG/CD/EI). Trazar lotes con ?proyecto=animas&editar=1. El plano está coloreado por dueño, no por disponibilidad."
+  },
+  {
+    "slug": "bodegas",
+    "nombre": "Bodegas en renta",
+    "tipo": "Otro",
+    "publico": true,
+    "nota": "ARMADO, SIN PULIR: 2 esferas 360. Falta la toma con el cartel."
+  },
+  {
+    "slug": "watusco-raul",
+    "nombre": "Terreno en Huatusco (R.)",
+    "tipo": "Terreno",
+    "publico": false,
+    "nota": "Segundo plano. 1 esfera. Falta 360 dentro del lote + toma de contexto."
+  },
+  {
+    "slug": "watusco-sergio",
+    "nombre": "Terreno en Huatusco (S.)",
+    "tipo": "Terreno",
+    "publico": false,
+    "nota": "Segundo plano. 2 esferas (predio + reserva)."
   },
   {
     "slug": "demo-lotes",
     "nombre": "Fraccionamiento demo — mapa de lotes",
     "tipo": "Terreno",
     "publico": false,
-    "nota": "Demo de la función 'mapa-lotes' (la aérea es una imagen sustituta). Ábrelo con &editar=1 para trazar polígonos. Se reemplaza cuando lleguen los 360 de Watusco / El Castillo."
+    "nota": "Demo de la función 'mapa-lotes'. Referencia interna."
   },
   {
     "slug": "demo-recorrido",
     "nombre": "Demo — escena de video",
     "tipo": "Otro",
     "publico": false,
-    "nota": "Demo de la función 'video' (360 + video). Referencia interna, no es un recorrido comercial."
+    "nota": "Demo de la función 'video'. Referencia interna."
   }
 ]

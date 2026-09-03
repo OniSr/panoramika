@@ -1,0 +1,14 @@
+{
+  "_comentario": "Bodegas en renta de la familia (BODEGAYE + PLAZAYE). 2 esferas 360 del dron. Falta la toma con el cartel y ajustar mira/hotspots. Segundo plano hasta pulir.",
+  "nombre": "Bodegas en renta",
+  "ubicacion": "Xalapa, Veracruz",
+  "descripcion": "Bodegas en renta. Recorrido aéreo 360 de las dos ubicaciones.",
+  "portada": "panoramas/bodega.webp",
+  "escenaInicial": "bodega",
+  "escenas": [
+    { "id": "bodega", "titulo": "Bodega", "panorama": "panoramas/bodega.webp", "miradaInicial": { "yaw": 0, "pitch": -6 },
+      "hotspots": [ { "tipo": "destino", "yaw": 90, "pitch": -5, "destino": "plaza", "texto": "Ver la otra bodega" } ] },
+    { "id": "plaza", "titulo": "Plaza / segunda bodega", "panorama": "panoramas/plaza.webp", "miradaInicial": { "yaw": 0, "pitch": -6 },
+      "hotspots": [ { "tipo": "salir", "yaw": 0, "pitch": -5, "destino": "bodega", "texto": "Volver" } ] }
+  ]
+}

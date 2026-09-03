@@ -1,0 +1,11 @@
+{
+  "_comentario": "Terreno del tío Raúl en Huatusco. 1 esfera 360 del dron. Segundo plano — falta 360 dentro del lote y una toma más alejada para el contexto.",
+  "nombre": "Terreno en Huatusco (R.)",
+  "ubicacion": "Huatusco, Veracruz",
+  "descripcion": "Terreno en venta en Huatusco. Vista aérea 360.",
+  "portada": "panoramas/predio.webp",
+  "escenaInicial": "predio",
+  "escenas": [
+    { "id": "predio", "titulo": "Vista aérea del predio", "panorama": "panoramas/predio.webp", "miradaInicial": { "yaw": 0, "pitch": -6 }, "hotspots": [] }
+  ]
+}
